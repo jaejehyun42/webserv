@@ -1,0 +1,91 @@
+You must write a HTTP server in C++ 98.
+Your executable will be run as follows:
+	./webserv [configuration file]
+
+Requirements
+• Your program has to take a configuration file as argument, or use a default path.
+// 프로그램은 configuration file을 인자로 갖거나, 디폴트 경로를 사용해야한다
+• You can’t execve another web server.
+// 다른 웹서버를 실행시켜선 안된다
+• Your server must never block and the client can be bounced properly if necessary.
+// 서버는 절대 블록(블로킹 방식으로 구현)되면 안되며, 필요시 클라이언트가 적절히 거부할 수 있어야한다
+• It must be non-blocking and use only 1 poll() (or equivalent) for all the I/O operations between the client and the server (listen included).
+// 논블로킹 방식으로 구현해야하며, 서버와 클라이언트 사이의 모든 입/출력 작업에 대해 하나의 poll() 함수를 사용해야한다
+• poll() (or equivalent) must check read and write at the same time.
+// poll() 함수는 동시에 읽기/쓰기를 체크해야한다
+• You must never do a read or a write operation without going through poll() (or equivalent).
+// poll() 함수를 거치지 않고 읽기/쓰기 작업을 하면 안된다
+• Checking the value of errno is strictly forbidden after a read or a write operation.
+// 읽기/쓰기 작업 후에 errno의 값을 확인하는 것은 엄격하게 금지된다.
+• You don’t need to use poll() (or equivalent) before reading your configuration file.
+// configuration 파일을 읽기전에 poll() 함수를 쓰면 안된다.
+• You can use every macro and define like FD_SET, FD_CLR, FD_ISSET, FD_ZERO (understanding what and how they do it is very useful).
+// FD_SET, FD_CLR, FD_ISSET, FD_ZERO와 같은 모든 메크로를 사용해도 된다.
+• A request to your server should never hang forever.
+// 서버에 대한 리퀘스트를 계속해서 가지고 있으면 안된다
+• Your server must be compatible with the web browser of your choice.
+// 서버는 고른 웹브라우저와 호환되어야 한다.
+• We will consider that NGINX is HTTP 1.1 compliant and may be used to compare headers and answer behaviors.
+// Nginx가 HTTP 1.1을 준수하고 있다고 간주하며, 이를 통해 헤더와 응답 동작을 비교할 수 있다.
+• Your HTTP response status codes must be accurate.
+// HTTP 응답 상태 코드는 정확해야한다.
+• Your server must have default error pages if none are provided.
+// 서버는 디폴트 에러 페이지를 가지고 있어야 한다. 없는 것은 금지된다.
+• You can’t use fork for something else than CGI (like PHP, or Python, and so forth).
+// CGI 이외에 fork를 하면 안된다.
+• You must be able to serve a fully static website.
+// 정적 웹사이트를 제공할 수 있어야 한다.
+• Clients must be able to upload files.
+// 클라이언트는 파일을 업로드 할 수 있어야 한다.
+• You need at least GET, POST, and DELETE methods.
+// 적어도 GET, POST, DELETE 메소드는 구현해야 한다.
+• Stress tests your server. It must stay available at all cost.
+// 어떤 비용의 스트레스 테스트라도 서버가 견뎌야 한다.
+• Your server must be able to listen to multiple ports (see Configuration file).
+// 여러 개의 포트에서 접속 할 수 있어야 한다.
+
+In the configuration file, you should be able to:
+• Choose the port and host of each ’server’.
+// 각 서버의 호스트와 포트를 선택해라.
+• Setup the server_names or not.
+// server_names를 설정하지 말지.
+• The first server for a host:port will be the default for this host:port (that means it will answer to all the requests that don’t belong to an other server).
+// 첫 번째 host:port 서버는 해당 host:port의 디폴트 서버가 된다.
+• Setup default error pages.
+// 디폴트 에러 페이지를 설정해라
+• Limit client body size.
+// 클라이언트 바디 사이즈를 제한해라.
+• Setup routes with one or multiple of the following rules/configuration (routes wont be using regexp):
+// 다음의 하나 이상의 룰/규칙을 따라서 라우트를 설정해라.
+	◦ Define a list of accepted HTTP methods for the route.
+	// 해당 라우트에서 허용되는 http method list를 정의해라.
+	◦ Define a HTTP redirection.
+	// http redirection을 정의해라.
+	◦ Define a directory or a file from where the file should be searched (for example, if url /kapouet is rooted to /tmp/www, url /kapouet/pouic/toto/pouet is /tmp/www/pouic/toto/pouet).
+	// 파일이 검색되어야 할 디렉토리/파일을 정의해라.
+	◦ Turn on or off directory listing.
+	// 디렉토리 리스트를 끄거나 켜라.
+	◦ Set a default file to answer if the request is a directory.
+	// 요청이 디렉토리일 경우, 응답할 기본 파일을 설정해라.
+	◦ Execute CGI based on certain file extension (for example .php).
+	// 특정 파일 확장자에 따라 CGI를 실행해라.
+	◦ Make it work with POST and GET methods.
+	// POST/GET 메소드를 작동하도록 해라.
+	◦ Make the route able to accept uploaded files and configure where they should be saved.
+	// 업로드 된 파일을 라우트에서 받고, 저장할 수 있도록 설정해라.
+		∗ Do you wonder what a CGI is?
+		// CGI가 궁금함?
+		∗ Because you won’t call the CGI directly, use the full path as PATH_INFO.
+		// CGI를 직접 호출하지 않으므로, 전체 경로 PATH_INFO를 써라.
+		∗ Just remember that, for chunked request, your server needs to unchunk it, the CGI will expect EOF as end of the body.
+		// 청크 요청의 경우, 서버는 언청크 해야하며, CGI는 바디의 끝에 EOF가 있어야 한다.
+		∗ Same things for the output of the CGI. If no content_length is returned from the CGI, EOF will mark the end of the returned data.
+		// CGI 출력도 동일하다. 만약 CGI로 부터 content_length가 리턴되지 않는다면, EOF가 반환된 데이터의 끝을 의미한다.
+		∗ Your program should call the CGI with the file requested as first argument.
+		// 프로그램은 요청된 파일을 첫번째 인자로써 CGI를 호출해야한다.
+		∗ The CGI should be run in the correct directory for relative path file access.
+		// CGI는 상대 경로 파일 엑세스를 정확한 디렉토리에서 실행되어야 한다.
+		∗ Your server should work with one CGI (php-CGI, Python, and so forth).
+		// 서버는 하나의 CGI와 동작해야한다.
+		
+You must provide some configuration files and default basic files to test and demonstrate every feature works during evaluation.
