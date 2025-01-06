@@ -1,8 +1,8 @@
 #ifndef __RESPONSE_H__
 #define __RESPONSE_H__
 
-#include "Request.hpp"
-#include "ServConf.hpp"
+#include "../request/Request.hpp"
+#include "../config/ServConf.hpp"
 
 /* synopsis
 

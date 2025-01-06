@@ -10,7 +10,9 @@ SRCS := main.cpp\
 			GeneralHeader.cpp\
 			ResponseHeader.cpp\
 			EntityHeader.cpp\
-			Body.cpp
+			Body.cpp\
+			../request/Request.cpp\
+			../config/ServConf.cpp
 
 HEADERS := Response.hpp\
 			StatusLine.hpp\
@@ -19,8 +21,8 @@ HEADERS := Response.hpp\
 			ResponseHeader.hpp\
 			EntityHeader.hpp\
 			Body.hpp\
-			Request.hpp\
-			ServConf.hpp
+			../request/Request.hpp\
+			../config/ServConf.hpp
 # TESTFILE := test.sh
 
 OBJS = $(SRCS:.cpp=.o)

@@ -2,8 +2,8 @@
 #define __BODY_H__
 
 #include <string>
-#include "Request.hpp"
-#include "ServConf.hpp"
+#include "../request/Request.hpp"
+#include "../config/ServConf.hpp"
 using namespace std;
 
 /* synopsis

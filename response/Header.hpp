@@ -2,11 +2,8 @@
 #define __HEADER_H_
 
 #include <string>
-#include "Request.hpp"
-#include "ServConf.hpp"
-#include "GeneralHeader.hpp"
-#include "ResponseHeader.hpp"
-#include "EntityHeader.hpp"
+#include "../request/Request.hpp"
+#include "../config/ServConf.hpp"
 using namespace std;
 
 /* synopsis

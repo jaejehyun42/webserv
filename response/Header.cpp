@@ -1,4 +1,7 @@
 #include "Header.hpp"
+#include "GeneralHeader.hpp"
+#include "ResponseHeader.hpp"
+#include "EntityHeader.hpp"
 
 Header::Header(const Request& req, const ServConf& conf) : _req(req), _conf(conf){
     GeneralHeader   generalHeader(_req, _conf);
