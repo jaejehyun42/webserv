@@ -3,7 +3,8 @@
 
 
 #include <string>
-#include "Header.hpp"
+#include "Request.hpp"
+#include "ServConf.hpp"
 using namespace std;
 
 /* synopsis
@@ -27,10 +28,12 @@ entity header:
 
 class EntityHeader{
     public:
-        EntityHeader();
+        EntityHeader(const Request& req, const ServConf& conf);
         ~EntityHeader();
-        string  getMessage();
+        string  getMessage() const;
     private:
+        const Request&      _req;
+        const ServConf&     _conf;
         string  _message;
 };
 #endif

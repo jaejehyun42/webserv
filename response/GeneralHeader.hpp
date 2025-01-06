@@ -3,7 +3,8 @@
 
 
 #include <string>
-#include "Header.hpp"
+#include "Request.hpp"
+#include "ServConf.hpp"
 using namespace std;
 
 /* synopsis
@@ -21,10 +22,12 @@ general header:
 
 class GeneralHeader{
     public:
-        GeneralHeader();
+        GeneralHeader(const Request& req, const ServConf& conf);
         ~GeneralHeader();
-        string  getMessage();
+        string  getMessage() const;
     private:
+        const Request&      _req;
+        const ServConf&     _conf;
         string  _message;
 };
 

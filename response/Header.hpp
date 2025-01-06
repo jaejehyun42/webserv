@@ -2,11 +2,11 @@
 #define __HEADER_H_
 
 #include <string>
+#include "Request.hpp"
+#include "ServConf.hpp"
 #include "GeneralHeader.hpp"
 #include "ResponseHeader.hpp"
 #include "EntityHeader.hpp"
-#include "ServConf.hpp"
-#include "Request.hpp"
 using namespace std;
 
 /* synopsis
@@ -20,13 +20,12 @@ header :
 
 class Header{
     public:
-        Header();
-        // Header(ServConf conf, Request req);
+        Header(const Request& req, const ServConf& conf);
         ~Header();
         string  getMessage();
-    private:
-        // const   ServConf&   _conf;
-        // const   Request&    _req;
+    protected:
+        const   Request&    _req;
+        const   ServConf&   _conf;
         string              _message;
 };
 #endif
