@@ -41,7 +41,7 @@ void Request::_parseUrl()
 	}
 }
 
-void Request::_parseStatus(string line)
+void Request::_parseStatus(string& line)
 {
 	if (count(line.begin(), line.end(), ' ') != 2) // 상태 라인에 공백이 2개 이상 있으면 오류
 		throw runtime_error("Error: Wrong status line form (space)");
@@ -60,7 +60,7 @@ void Request::_parseStatus(string line)
 		throw runtime_error("Error: Wrong version");
 }
 
-void Request::_parseHeader(string line)
+void Request::_parseHeader(string& line)
 {
 	size_t delimiter_pos = line.find(':'); // key 와 value의 구분자인 ':'을 체크
 
