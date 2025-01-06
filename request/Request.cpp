@@ -18,10 +18,7 @@ void Request::initRequest(ifstream& file)
 	}
 
 	while (getline(file, line)) // 바디 초기화
-	{
-		_body += line;
-		_body += "\n";
-	}
+		_body += line + "\n";
 }
 
 Request::~Request() {}
