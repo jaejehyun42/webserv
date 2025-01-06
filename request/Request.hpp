@@ -22,9 +22,9 @@ class Request
 		unordered_map<string, string> _headers;	
 		string _body;
 
-		void _parseStatus(string line);
+		void _parseStatus(string& line);
 		void _parseUrl();
-		void _parseHeader(string line);
+		void _parseHeader(string& line);
 
 	public :
 		Request();
