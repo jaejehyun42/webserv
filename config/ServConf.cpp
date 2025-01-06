@@ -11,9 +11,9 @@ ServConf& ServConf::operator=(const ServConf& ref)
 {
 	if (this != &ref)
 	{
-		this->aliveTime = ref.aliveTime;
-		this->mime = ref.mime;
-		this->serv = ref.serv;
+		_aliveTime = ref._aliveTime;
+		_mime = ref._mime;
+		_serv = ref._serv;
 	}
 	return (*this);
 }
@@ -32,16 +32,16 @@ std::vector<std::string> splitString(std::string& line)
 	return (result);
 }
 
-void ServConf::includeFile(const std::string& fileName)
+void ServConf::_includeFile(const std::string& fileName)
 {
 	std::ifstream file(fileName.c_str());
 	if (!file)
 		throw std::runtime_error("Error: 파일이 없거나 열 수 없습니다.");
 
-	parseHTTP(file, true);
+	_parseHTTP(file, true);
 }
 
-void ServConf::parseMime(std::ifstream& file)
+void ServConf::_parseMime(std::ifstream& file)
 {
 	std::string line;
 	
@@ -72,14 +72,14 @@ void ServConf::parseMime(std::ifstream& file)
 			std::string& key = *it;
 			if (key.back() == ';')
 				key.pop_back();
-			mime[key] = value;
+			_mime[key] = value;
 		}
 	}
 	if (line.find("}") == std::string::npos)
 		throw std::runtime_error("Error: http 블록 포멧이 잘못 되었습니다.");
 }
 
-struct s_location ServConf::parsePath(std::ifstream& file, const std::string& path)
+struct s_location ServConf::_parsePath(std::ifstream& file, const std::string& path)
 {
 	std::string line;
 	struct s_location temp;
@@ -118,6 +118,8 @@ struct s_location ServConf::parsePath(std::ifstream& file, const std::string& pa
 			}
 			else if (key == "cgi_pass")
 				temp.cgiPass = value;
+			else if (key == "root")
+				temp.root = value;
 			else if (key == "autoindex")
 			{
 				if (value == "on")
@@ -161,7 +163,7 @@ struct s_location ServConf::parsePath(std::ifstream& file, const std::string& pa
 	return (temp);
 }
 
-struct s_serv ServConf::parseServ(std::ifstream& file)
+struct s_serv ServConf::_parseServ(std::ifstream& file)
 {
 	std::string line;
 	struct s_serv temp;
@@ -197,7 +199,7 @@ struct s_serv ServConf::parseServ(std::ifstream& file)
 					throw std::runtime_error("Error: location 블록 포멧이 잘못 되었습니다");
 
 				std::string& path = *(tokens.begin() + 1);
-				temp.path[path] = parsePath(file, path);
+				temp.path[path] = _parsePath(file, path);
 			}
 			else
 				throw std::runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
@@ -235,7 +237,7 @@ struct s_serv ServConf::parseServ(std::ifstream& file)
 	return (temp);
 }
 
-void ServConf::parseHTTP(std::ifstream& file, bool inc)
+void ServConf::_parseHTTP(std::ifstream& file, bool inc)
 {
 	std::string line;
 	while (std::getline(file, line))
@@ -262,9 +264,9 @@ void ServConf::parseHTTP(std::ifstream& file, bool inc)
 		if (value == "{")
 		{
 			if (key == "server")
-				this->serv.push_back(parseServ(file));
+				_serv.push_back(_parseServ(file));
 			else if (key == "types")
-				parseMime(file);
+				_parseMime(file);
 			else
 				throw std::runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
 		}
@@ -272,11 +274,11 @@ void ServConf::parseHTTP(std::ifstream& file, bool inc)
 		{
 			value.pop_back();
 			if (key == "include")
-				includeFile(value);
+				_includeFile(value);
 			else if (key == "default_type")
-				this->mime["default"] = value;
+				_mime["default"] = value;
 			else if (key == "keepalive_timeout")
-				this->aliveTime = strtol(value.c_str(), NULL, 10);
+				_aliveTime = strtol(value.c_str(), NULL, 10);
 			else
 				throw std::runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
 		}
@@ -313,29 +315,30 @@ void ServConf::parse(const std::string& fileName)
 		if (value == "{")
 		{
 			if (key == "http")
-				parseHTTP(file, false);
+				_parseHTTP(file, false);
 			else
 				throw std::runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
 		}
-		else if (value.back() == ';');
+		else if (value.back() == ';')
+			throw std::runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
 		else
 			throw std::runtime_error("Error: 파일 포멧이 잘못 되었습니다.");
 	}
-	if (serv.size() < 1 || mime.find("default") == mime.end())
+	if (_serv.size() < 1 || _mime.find("default") == _mime.end())
 		throw std::runtime_error("Error: 설정 파일의 필수 구성 요소가 없습니다.");
 }
 
 void ServConf::print() const
 {
-	std::cout << "keepalive_timeout: " << aliveTime << std::endl;
+	std::cout << "keepalive_timeout: " << _aliveTime << std::endl;
 
 	std::cout << "type {\n";
-	for (std::map<std::string, std::string>::const_iterator it = mime.begin(); it != mime.end(); it++)
+	for (std::map<std::string, std::string>::const_iterator it = _mime.begin(); it != _mime.end(); it++)
 		std::cout << "\t" << it->first << "\t" << it->second << std::endl;
 	std::cout << "}\n";
 
 	int idx = 1;
-	for (std::vector<struct s_serv>::const_iterator it = serv.begin(); it != serv.end(); it++)
+	for (std::vector<struct s_serv>::const_iterator it = _serv.begin(); it != _serv.end(); it++)
 	{
 		struct s_serv temp = *it;
 		std::cout << "server" << idx << " {\n";
@@ -361,7 +364,7 @@ void ServConf::print() const
 				std::cout << "\t\t" << "autoindex " << t_loca.autoindex << std::endl;
 			}
 			else
-				std::cout << "\t\t" << "cig-pass " << t_loca.cgiPass << std::endl;
+				std::cout << "\t\t" << "cgi_pass " << t_loca.cgiPass << std::endl;
 			std::cout << "\t}\n";
 		}
 		std::cout << "}\n";

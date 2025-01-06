@@ -16,9 +16,10 @@ typedef struct s_location
 {
 	bool method[3]; // 인덱스 순서는 GET, POST, DELETE 순서
 	bool autoindex;
+	std::string root;
 	std::string cgiPass;
 
-	std::vector<std::string> index; // index가 여러개 들어가는 경우 생각해야됨
+	std::vector<std::string> index;
 } t_location;
 
 typedef struct s_serv
@@ -35,16 +36,16 @@ typedef struct s_serv
 class ServConf
 {
 private:
-	long aliveTime;
-	std::map<std::string, std::string> mime;
-	std::vector<struct s_serv> serv;
+	long _aliveTime;
+	std::map<std::string, std::string> _mime;
+	std::vector<struct s_serv> _serv;
 
-	void includeFile(const std::string& fileName);
+	void _includeFile(const std::string& fileName);
 
-	void parseMime(std::ifstream& file);
-	void parseHTTP(std::ifstream& file, bool inc);
-	struct s_serv parseServ(std::ifstream& file);
-	struct s_location parsePath(std::ifstream& file, const std::string& path);
+	void _parseMime(std::ifstream& file);
+	void _parseHTTP(std::ifstream& file, bool inc);
+	struct s_serv _parseServ(std::ifstream& file);
+	struct s_location _parsePath(std::ifstream& file, const std::string& path);
 public:
 	ServConf();
 	ServConf(const ServConf& ref);
