@@ -96,27 +96,27 @@ void LocBlock::parseLocBlock(ifstream& file, const string& path)
 }
 
 // getter 함수
-bool LocBlock::getAutoindex() const
+const bool& LocBlock::getAutoindex() const
 {
 	return (_autoindex);
 }
 
-bool LocBlock::getMethod(int method) const
+const bool& LocBlock::getMethod(int method) const
 {
 	return (_method[method]);
 }
 
-string LocBlock::getRoot() const
+const string& LocBlock::getRoot() const
 {
 	return (_root);
 }
 
-string LocBlock::getCgipass() const
+const string& LocBlock::getCgipass() const
 {
 	return (_cgiPass);
 }
 
-vector<string> LocBlock::getIndex() const
+const vector<string>& LocBlock::getIndex() const
 {
 	return (_index);
 }

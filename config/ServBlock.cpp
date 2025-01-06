@@ -98,33 +98,44 @@ void ServBlock::parseServBlock(ifstream& file)
 }
 
 // getter 함수
-int ServBlock::getPort() const
+const int& ServBlock::getPort() const
 {
 	return (_port);
 }
 
-int ServBlock::getMaxSize() const
+const int& ServBlock::getMaxSize() const
 {
 	return (_maxSize);
 }
 
-string ServBlock::getRoot() const
+const string& ServBlock::getRoot() const
 {
 	return (_root);
 }
 
-vector<string> ServBlock::getName() const
+const vector<string>& ServBlock::getName() const
 {
 	return (_name);
 }
 
-string ServBlock::getErrorPage(int status) const
+const string& ServBlock::getErrorPage(int status) const
 {
 	unordered_map<long, string>::const_iterator cit = _error.find(status);
 	
 	if (cit != _error.end())
 		return (cit->second);
-	return ("");
+	else
+		throw ;
+}
+
+const LocBlock& ServBlock::getLocation(string path) const
+{
+	unordered_map<string, LocBlock>::const_iterator it = _path.find(path);
+
+	if (it != _path.end())
+		return (it->second);
+	else
+		throw ;
 }
 
 // 임시

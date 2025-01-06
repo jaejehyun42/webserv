@@ -29,11 +29,12 @@ public:
 
 	void parseServBlock(ifstream& file);
 
-	int getPort() const;
-	int getMaxSize() const;
-	string getRoot() const;
-	vector<string> getName() const;
-	string getErrorPage(int status) const;
+	const int& getPort() const;
+	const int& getMaxSize() const;
+	const string& getRoot() const;
+	const vector<string>& getName() const;
+	const string& getErrorPage(int status) const;
+	const LocBlock& getLocation(string path) const;
 
 	void print() const; // 임시
 };

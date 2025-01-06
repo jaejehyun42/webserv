@@ -27,9 +27,9 @@ public:
 
 	void parse(const string& fileName);
 
-	long getAliveTime() const;
-	vector<ServBlock> getServ() const;
-	string getMime(const string& key) const;
+	const long& getAliveTime() const;
+	const vector<ServBlock>& getServ() const;
+	const string& getMime(const string& key) const;
 
 	void print() const; // 임시
 };

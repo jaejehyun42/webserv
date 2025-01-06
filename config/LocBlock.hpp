@@ -29,11 +29,11 @@ public:
 
 	void parseLocBlock(ifstream& file, const string& path);
 
-	bool getAutoindex() const;
-	bool getMethod(int method) const;
-	string getRoot() const;
-	string getCgipass() const;
-	vector<string> getIndex() const;
+	const bool& getAutoindex() const;
+	const bool& getMethod(int method) const;
+	const string& getRoot() const;
+	const string& getCgipass() const;
+	const vector<string>& getIndex() const;
 
 	void print(string path) const; // 임시
 };

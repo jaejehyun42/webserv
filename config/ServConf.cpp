@@ -25,15 +25,15 @@ void ServConf::_parseMime(ifstream& file)
 			continue ;
 		if (tokens.front().front() == '#')
 			continue ;
-		if (tokens.back().back() != ';')
-			throw runtime_error("Error: http 블록 포멧이 잘못 되었습니다");
 		if (tokens.size() == 1)
 		{
 			if (tokens.back() == "}")
 				break ;
 			else
-				throw runtime_error("Error: http 블록 포멧이 잘못 되었습니다");
+				throw runtime_error("Error: http 블록 포멧이 잘못 되었습니다.");
 		}
+		if (tokens.back().back() != ';')
+			throw runtime_error("Error: http 블록 포멧이 잘못 되었습니다1");
 
 		string& value = tokens.front();
 		for (vector<string>::iterator it = tokens.begin() + 1; it != tokens.end(); it++)
@@ -117,7 +117,7 @@ void ServConf::parse(const string& fileName)
 		if (tokens.front().front() == '#')
 			continue ;
 		if (tokens.size() == 1)
-			throw runtime_error("Error: 파일 포멧이 잘못 되었습니다");
+			throw runtime_error("Error: 파일 포멧이 잘못 되었습니다.");
 
 		string& key = tokens.front();
 		string& value = tokens.back();
@@ -138,23 +138,24 @@ void ServConf::parse(const string& fileName)
 }
 
 // getter 함수
-long ServConf::getAliveTime() const
+const long& ServConf::getAliveTime() const
 {
 	return (_aliveTime);
 }
 
-vector<ServBlock> ServConf::getServ() const
+const vector<ServBlock>& ServConf::getServ() const
 {
 	return (_serv);
 }
 
-string ServConf::getMime(const string& key) const
+const string& ServConf::getMime(const string& key) const
 {
 	unordered_map<string, string>::const_iterator cit = _mime.find(key);
 	
 	if (cit != _mime.end())
 		return (cit->second);
-	return ("");
+	else
+		throw ;
 }
 
 // 임시
