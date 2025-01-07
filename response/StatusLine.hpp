@@ -56,18 +56,23 @@ Server error : 5xx
 504: gateway timeout
 505: HTTP version Not Supported
 */
+
 class StatusLine{
     public:
         StatusLine(const Request& req, const ServConf& conf);
         ~StatusLine();
-        string  getMessage();
-        void    setMessage();
+        std::string getMessage();
     private:
         const Request&      _req;
         const ServConf&     _conf;
-        string  _message;
-        string  _httpVersion;
-        string  _statusCode;
-        string  _reasonPhrase;
+        std::string  _message;
+        std::string  _httpVersion;
+        std::string  _statusCode;
+        std::string  _reasonPhrase;
+
+        void    _setMessage();
+        bool    _checkRequestError();
+        bool    _checkUrl();
+        bool    _checkHeader();
 };
 #endif

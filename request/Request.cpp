@@ -67,6 +67,12 @@ void Request::_parseVersion()
 		throw runtime_error("400");
 }
 
+try{
+	r.init();
+}catch(runtime_error& e){
+	Response(r, conf);
+}
+
 void Request::_parseStatus(const string& line)
 {
 	if (isspace(line[0])) // 시작이 공백인지 체크

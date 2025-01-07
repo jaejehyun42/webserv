@@ -3,6 +3,22 @@
 
 using namespace std;
 
-int main(){
-    cout<<"hi";
+int main(int ac, char** av){
+    if (ac != 2)
+        return (1);
+
+    ifstream ifs(av[1]);
+    if (!ifs)
+        return (1);
+
+    ServConf conf;
+	Request re;
+
+	try{
+        re.initRequest(ifs);
+    }catch(exception& e){
+        Response resp(re, conf);
+        resp.response(1);
+    }
+
 }
