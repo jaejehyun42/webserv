@@ -14,10 +14,10 @@ using namespace std;
 class ServBlock
 {
 private:
-	int _port;								// 서버 포트 넘버
 	int _maxSize;							// 클라이언트 최대 바디 사이즈
+	string _port;							// 서버 포트 넘버
 	string _root;							// root 위치 정보
-	vector<string> _name;					// 서버 이름 정보
+	string _name;							// 서버 이름 정보
 	unordered_map<long, string> _error;		// key: status, value: page
 	unordered_map<string, LocBlock>_path;	// path에 따른 location 정보
 
@@ -29,10 +29,10 @@ public:
 
 	void parseServBlock(ifstream& file);
 
-	const int& getPort() const;
 	const int& getMaxSize() const;
+	const string& getPort() const;
 	const string& getRoot() const;
-	const vector<string>& getName() const;
+	const string& getName() const;
 	const string& getErrorPage(int status) const;
 	const LocBlock& getLocation(string path) const;
 

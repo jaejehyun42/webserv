@@ -9,7 +9,7 @@ void ServConf::_includeFile(const string& fileName)
 {
 	ifstream file(fileName.c_str());
 	if (!file)
-		throw runtime_error("Error: 파일이 없거나 열 수 없습니다.");
+		throw runtime_error("Error: include: 파일이 없거나 열 수 없습니다.");
 
 	_parseHTTP(file, true);
 }

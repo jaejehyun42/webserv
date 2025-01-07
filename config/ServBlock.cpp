@@ -3,7 +3,6 @@
 
 ServBlock::ServBlock()
 {
-	_port = 0;
 	_maxSize = 0;
 }
 
@@ -17,14 +16,14 @@ void ServBlock::_parseLine(vector<string>& tokens)
 
 	if (tokens.size() == 2)
 	{
-		if (key == "listen")
-			_port = strtol(value.c_str(), NULL, 10);
-		else if (key == "client_max_body_size")
+		if (key == "client_max_body_size")
 			_maxSize = strtol(value.c_str(), NULL, 10);
+		else if (key == "listen")
+			_port = value;
 		else if (key == "root")
 			_root = value;
 		else if (key == "server_name")
-			_name.push_back(value);
+			_name = value;
 		else
 			throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
 	}
@@ -34,12 +33,6 @@ void ServBlock::_parseLine(vector<string>& tokens)
 		{
 			for (vector<string>::iterator it = tokens.begin() + 1; it != tokens.end() - 1; it++)
 				_error[strtol((*it).c_str(), NULL, 10)] = value;
-		}
-		else if (key == "server_name")
-		{
-			for (vector<string>::iterator it = tokens.begin() + 1; it != tokens.end() - 1; it++)
-				_name.push_back(*it);
-			_name.push_back(value);
 		}
 		else
 			throw runtime_error("Error: server 블록 포멧이 잘못 되었습니다");
@@ -91,21 +84,21 @@ void ServBlock::parseServBlock(ifstream& file)
 	}
 	if (line.find("}") == string::npos)
 		throw runtime_error("Error: server 블록 포멧이 잘못 되었습니다.");
-	if (_port == 0 || _maxSize == 0)
+	if (_port == "" || _maxSize == 0)
 		throw runtime_error("Error: 설정 파일의 필수 구성 요소가 없습니다.");
 	if (_error.size() == 0 || _path.size() == 0)
 		throw runtime_error("Error: 설정 파일의 필수 구성 요소가 없습니다.");
 }
 
 // getter 함수
-const int& ServBlock::getPort() const
-{
-	return (_port);
-}
 
 const int& ServBlock::getMaxSize() const
 {
 	return (_maxSize);
+}
+const string& ServBlock::getPort() const
+{
+	return (_port);
 }
 
 const string& ServBlock::getRoot() const
@@ -113,7 +106,7 @@ const string& ServBlock::getRoot() const
 	return (_root);
 }
 
-const vector<string>& ServBlock::getName() const
+const string& ServBlock::getName() const
 {
 	return (_name);
 }
@@ -146,9 +139,7 @@ void ServBlock::print() const
 	cout << "\t" << "listen " << _port << endl;
 	cout << "\t" << "client_max_body_size " << _maxSize << endl;
 	cout << "\t" << "root " << _root << endl;
-
-	for (vector<string>::const_iterator it = _name.begin(); it != _name.end(); it++)
-		cout << "\t" << "server_name " << *it << endl;
+	cout << "\t" << "server_name " << _name << endl;
 	
 	for (unordered_map<long, string>::const_iterator it = _error.begin(); it != _error.end(); it++)
 		cout << "\t" << "error_page " << it->first << " " << it->second << endl;
