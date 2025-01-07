@@ -1,59 +1,37 @@
-#ifndef CONFIG_HPP
-# define CONFIG_HPP
+#ifndef SERVCONF_HPP
+# define SERVCONF_HPP
 
-#include <map>
 #include <vector>
+#include <unordered_map>
 #include <fstream>
-#include <sstream>
 #include <iostream>
 #include <exception>
+#include "ServBlock.hpp"
 
-#define GET 0
-#define POST 1
-#define DELETE 2
+using namespace std;
 
-typedef struct s_location
-{
-	bool method[3]; // 인덱스 순서는 GET, POST, DELETE 순서
-	bool autoindex;
-	std::string cgiPass;
-
-	std::vector<std::string> index; // index가 여러개 들어가는 경우 생각해야됨
-} t_location;
-
-typedef struct s_serv
-{
-	int port;
-	int maxSize;
-	std::string root;
-	std::string name;
-
-	std::map<long, std::string> error;
-	std::map<std::string, struct s_location> path;
-} t_serv;
-
+// 전체적인 내용 및 http 블록 관련 클래스
 class ServConf
 {
 private:
-	long aliveTime;
-	std::map<std::string, std::string> mime;
-	std::vector<struct s_serv> serv;
+	long _aliveTime;
+	vector<ServBlock> _serv;
+	unordered_map<string, string> _mime;
 
-	void includeFile(const std::string& fileName);
-
-	void parseMime(std::ifstream& file);
-	void parseHTTP(std::ifstream& file, bool inc);
-	struct s_serv parseServ(std::ifstream& file);
-	struct s_location parsePath(std::ifstream& file, const std::string& path);
+	void _includeFile(const string& fileName);
+	void _parseMime(ifstream& file);
+	void _parseHTTP(ifstream& file, bool inc); // include를 통해서 들어간 경우 true, 그 외에 false
 public:
 	ServConf();
-	ServConf(const ServConf& ref);
-	ServConf& operator=(const ServConf& ref);
 	~ServConf();
 
-	void parse(const std::string& fileName);
+	void parse(const string& fileName);
 
-	void print() const; // 제대로 넣어졌는지 체크 용도
+	const long& getAliveTime() const;
+	const vector<ServBlock>& getServ() const;
+	const string& getMime(const string& key) const;
+
+	void print() const; // 임시
 };
 
 #endif
