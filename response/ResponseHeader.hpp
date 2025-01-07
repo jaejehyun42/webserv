@@ -31,5 +31,9 @@ class ResponseHeader{
         const Request&      _req;
         const ServConf&     _conf;
         string  _message;
+        void                _setMessage();
+        void                _setEtag();
+        void                _setServer();
+        void                _setAcceptRanges();
 };
 #endif

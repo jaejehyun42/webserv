@@ -7,3 +7,19 @@ ResponseHeader::~ResponseHeader(){}
 string  ResponseHeader::getMessage() const{
     return (_message);
 }
+
+void                ResponseHeader::_setMessage(){
+
+}
+
+void                ResponseHeader::_setEtag(){
+
+}
+
+void                ResponseHeader::_setServer(){
+
+}
+
+void                ResponseHeader::_setAcceptRanges(){
+
+}

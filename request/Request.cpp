@@ -97,12 +97,6 @@ void Request::_parseVersion()
 		_setError(400);
 }
 
-try{
-	r.init();
-}catch(runtime_error& e){
-	Response(r, conf);
-}
-
 void Request::_parseStatus(const string& line)
 {
 	if (isspace(line[0])) // 시작이 공백인지 체크
@@ -182,4 +176,14 @@ unordered_map<string, string> Request::getHeaders() const
 string Request::getBody() const
 {
 	return (_body);
+}
+
+string Request::getErrorMessage() const
+{
+	return (_errorMessage);
+}
+
+string Request::getErrorCode() const
+{
+	return (_errorCode);
 }

@@ -2,7 +2,7 @@
 #include <iostream>
 
 using namespace std;
-
+// make-> a.out <req>
 int main(int ac, char** av){
     if (ac != 2)
         return (1);

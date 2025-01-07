@@ -7,3 +7,19 @@ EntityHeader::~EntityHeader(){}
 string  EntityHeader::getMessage() const{
     return (_message);
 }
+
+void    EntityHeader::_setMessage(){
+
+}
+
+void    EntityHeader::_setContentLength(){
+
+}
+
+void    EntityHeader::_setContentType(){
+
+}
+
+void    EntityHeader::_setLastModified(){
+
+}

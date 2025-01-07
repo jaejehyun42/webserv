@@ -35,5 +35,9 @@ class EntityHeader{
         const Request&      _req;
         const ServConf&     _conf;
         string  _message;
+        void    _setMessage();
+        void    _setContentLength();
+        void    _setContentType();
+        void    _setLastModified();
 };
 #endif
