@@ -22,20 +22,20 @@ class Request
 		unordered_map<string, string> _headers;	
 		string _body;
 
-		void _parseStatus(string& line);
+		void _parseStatus(const string& line);
 		void _parseUrl();
-		void _parseHeader(string& line);
+		void _parseHeader(const string& line);
 
 	public :
 		Request();
 		~Request();
 		void initRequest(ifstream& file);
 
-		string getMethod();
-		string getUrl();
-		string getPath();
-		string getQuery();
-		string getVersion();
-		unordered_map<string, string> getHeaders();
-		string getBody();
+		string getMethod() const;
+		string getUrl() const;
+		string getPath() const;
+		string getQuery() const;
+		string getVersion() const;
+		unordered_map<string, string> getHeaders() const;
+		string getBody() const;
 };
