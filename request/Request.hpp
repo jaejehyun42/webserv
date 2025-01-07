@@ -8,6 +8,8 @@
 #include <string>
 #include <stdexcept>
 #include <sstream>
+#include <cctype>
+#include <cstdlib>
 
 using namespace std;
 
@@ -25,6 +27,7 @@ class Request
 		void _parseStatus(const string& line);
 		void _parseUrl();
 		void _parseHeader(const string& line);
+		void _parseVersion();
 
 	public :
 		Request();
