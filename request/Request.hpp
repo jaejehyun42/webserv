@@ -23,11 +23,15 @@ class Request
 		string _version;
 		unordered_map<string, string> _headers;	
 		string _body;
+		string _errorMessage;
+		string _errorCode;
 
 		void _parseStatus(const string& line);
 		void _parseUrl();
 		void _parseHeader(const string& line);
 		void _parseVersion();
+		void _parseHostAndMethod();
+		void _setError(int error_code);
 
 	public :
 		Request();
@@ -41,4 +45,6 @@ class Request
 		string getVersion() const;
 		unordered_map<string, string> getHeaders() const;
 		string getBody() const;
+		string getErrorMessage() const;
+		string getErrorCode() const;
 };
