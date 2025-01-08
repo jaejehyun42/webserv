@@ -16,14 +16,14 @@ void ServBlock::_parseLine(vector<string>& tokens)
 
 	if (tokens.size() == 2)
 	{
-		if (key == "client_max_body_size")
-			_maxSize = strtol(value.c_str(), NULL, 10);
-		else if (key == "listen")
+		if (key == "listen")
 			_port = value;
+		else if (key == "client_max_body_size")
+			_maxSize = strtol(value.c_str(), NULL, 10);
 		else if (key == "root")
 			_root = value;
 		else if (key == "server_name")
-			_name = value;
+			_name.push_back(value);
 		else
 			throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
 	}
@@ -33,6 +33,12 @@ void ServBlock::_parseLine(vector<string>& tokens)
 		{
 			for (vector<string>::iterator it = tokens.begin() + 1; it != tokens.end() - 1; it++)
 				_error[strtol((*it).c_str(), NULL, 10)] = value;
+		}
+		else if (key == "server_name")
+		{
+			for (vector<string>::iterator it = tokens.begin() + 1; it != tokens.end() - 1; it++)
+				_name.push_back(*it);
+			_name.push_back(value);
 		}
 		else
 			throw runtime_error("Error: server 블록 포멧이 잘못 되었습니다");
@@ -106,7 +112,7 @@ const string& ServBlock::getRoot() const
 	return (_root);
 }
 
-const string& ServBlock::getName() const
+const vector<string>& ServBlock::getName() const
 {
 	return (_name);
 }
@@ -139,7 +145,9 @@ void ServBlock::print() const
 	cout << "\t" << "listen " << _port << endl;
 	cout << "\t" << "client_max_body_size " << _maxSize << endl;
 	cout << "\t" << "root " << _root << endl;
-	cout << "\t" << "server_name " << _name << endl;
+
+	for (vector<string>::const_iterator it = _name.begin(); it != _name.end(); it++)
+		cout << "\t" << "server_name " << *it << endl;
 	
 	for (unordered_map<long, string>::const_iterator it = _error.begin(); it != _error.end(); it++)
 		cout << "\t" << "error_page " << it->first << " " << it->second << endl;

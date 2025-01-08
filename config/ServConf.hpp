@@ -19,13 +19,13 @@ private:
 	unordered_map<string, string> _mime;
 
 	void _includeFile(const string& fileName);
+	void _parseFile(ifstream& file);
 	void _parseMime(ifstream& file);
 	void _parseHTTP(ifstream& file, bool inc); // include를 통해서 들어간 경우 true, 그 외에 false
 public:
-	ServConf();
+	ServConf(const string& fileName);
 	~ServConf();
 
-	void parse(const string& fileName);
 
 	const long& getAliveTime() const;
 	const vector<ServBlock>& getServ() const;
