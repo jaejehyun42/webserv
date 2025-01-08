@@ -1,0 +1,31 @@
+맥에서 nginx컨테이너를 테스트하려는 경우 사용법
+
+1. 맥에서 도커 데스크탑(엔진)을 실행. 오른쪽 상단에 있는 설정에 들어가 리소스 카테고리 선택. 맨 밑에 리소스를 goinfre로 설정 후 다시 시작.
+
+2. docker build -t ubuntu <*>/container/ubuntu 로 ubuntu이미지 빌드.
+
+3. docker build -t nginx <*>/container/nginx 로 nginx이미지 빌드.
+
+4. 터미널 두개 준비.
+
+5. 첫번째 터미널에서, docker run -it --name ubuntu ubuntu 로 nginx 실행
+
+6. 두번째 터미널에서, docker run -d -p 8080:80 --name nginx nginx 로 nginx 실행
+
+7. 두번째 터미널에서, docker network inspect brdige 로 nginx ipv4 확인
+
+8. 첫번째 터미널인 ubuntu에서 telnet <<nginx ipv4 주소>> 80 으로 접속
+
+9. docker desktop에서 nginx 컨테이너 로그로 접속 및 에러 확인 가능
+
+10. 자리를 옮겨 리소스가 날라갔다면 처음부터 다시 시도. 그게 아니라 컨테이너 정보가 남아있다면 docker start 로 재실행 가능.
+
+---------------------------------------------------------------------------------------------
+
+nginx.conf 수정사항에 따른 테스트를 하고 싶은 경우.
+
+1. docker exec -it nginx /bin/bash 로 nginx에 접속
+
+2. nginx.conf 는 /etc/nginx/nginx.conf 에 존재
+
+3. nginx.conf 가 어떤 conf파일 include하는지 보고 수정 및 테스트.

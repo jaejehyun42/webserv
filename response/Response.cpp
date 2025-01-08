@@ -5,22 +5,22 @@
 #include <iostream>
 #include <unistd.h>
 
-Response::Response(Request& req, ServConf& conf) : _req(req), _conf(conf) {}
-
-Response::~Response(){}
-
-void    Response::checkRequest(){
+Response::Response(const Request& req, const ServConf& conf, const int& servBlockIdx)
+: _req(req), _conf(conf), _servBlockIdx(servBlockIdx){
 
 }
 
-void    Response::response(int fd){
-    StatusLine      statusLine(_req, _conf);
-    Header          header(_req, _conf);
-    Body            body(_req, _conf);
-    string          message;
+Response::~Response(){}
 
-    message = statusLine.getMessage() + "\r\n" + header.getMessage() + "\r\n" + body.getMessage();
+string    Response::getMessage(){
+    return (_message);
+}
 
-    if (write(fd, message.c_str(), message.size()) == -1)
-        cerr<<"Response write error!";
+void    Response::_setMessage(){
+    int             errCode = 0;
+    StatusLine      statusLine(_req, _conf, &errCode, _servBlockIdx); 
+    Header          header(_req, _conf, &errCode);
+    Body            body(_req, _conf, &errCode);
+
+    string          message = statusLine.getMessage() + header.getMessage() + "\r\n" + body.getMessage();
 }

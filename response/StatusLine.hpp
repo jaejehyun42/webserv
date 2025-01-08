@@ -5,7 +5,6 @@
 #include <string>
 #include "../request/Request.hpp"
 #include "../config/ServConf.hpp"
-using namespace std;
 
 /* synopsis
 
@@ -59,20 +58,25 @@ Server error : 5xx
 
 class StatusLine{
     public:
-        StatusLine(const Request& req, const ServConf& conf);
+        StatusLine(const Request& req, const ServConf& conf, int* errCode, const int& servBlockIdx);
         ~StatusLine();
         std::string getMessage();
     private:
         const Request&      _req;
         const ServConf&     _conf;
+
+        int*        _errCode;
+        const int&  _servBlockIdx;
         std::string  _message;
         std::string  _httpVersion;
         std::string  _statusCode;
         std::string  _reasonPhrase;
 
-        void    _setMessage();
+        void            _setMessage();
+        void            _setPath(string& path);
         bool    _checkRequestError();
         bool    _checkUrl();
         bool    _checkHeader();
+        bool    _checkBody();
 };
 #endif

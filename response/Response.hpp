@@ -14,16 +14,22 @@ Response      = Status-Line                 ;
                 [ message-body ] 
 
 */
+// Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
 
 class Response{
     public:
-        Response(Request& req, ServConf& conf);
+        Response(const Request& req, const ServConf& conf, const int& servBlockIdx);
         ~Response();
-        void    response(int fd);
-        void    checkRequest(); //check a request before responsing
+        string    getMessage();
     private:
         const Request&      _req;
         const ServConf&     _conf;
+        const int&          _servBlockIdx;
+        string              _statusCode;
+        string              _message;
+
+        bool    _checkRequestError();
+        void    _setMessage();
 };
 
 #endif

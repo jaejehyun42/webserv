@@ -21,5 +21,6 @@ class Body{
         const Request&      _req;
         const ServConf&     _conf;
         string  _message;
+        // void    _setMessage();
 };
 #endif

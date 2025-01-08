@@ -4,7 +4,7 @@
 #include "EntityHeader.hpp"
 
 Header::Header(const Request& req, const ServConf& conf) : _req(req), _conf(conf){
-    _setHeader();
+    _setMessage();
 }
 
 Header::~Header(){}
@@ -13,7 +13,7 @@ string  Header::getMessage(){
     return (_message);
 }
 
-void    Header::_setHeader(){
+void    Header::_setMessage(){
     GeneralHeader   generalHeader(_req, _conf);
     ResponseHeader  responseHeader(_req, _conf);
     EntityHeader    entityHeader(_req, _conf);

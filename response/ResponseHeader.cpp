@@ -16,8 +16,8 @@ void                ResponseHeader::_setEtag(){
 
 }
 
-void                ResponseHeader::_setServer(){
-
+void                ResponseHeader::_setServer(){ //e.g. Server: nginx/1.27.3
+    std::string     _serverName = "jjh/1.0";
 }
 
 void                ResponseHeader::_setAcceptRanges(){

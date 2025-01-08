@@ -5,7 +5,6 @@
 #include <string>
 #include "../request/Request.hpp"
 #include "../config/ServConf.hpp"
-using namespace std;
 
 /* synopsis
 
