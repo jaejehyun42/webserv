@@ -1,7 +1,5 @@
 #include "Request.hpp"
 
-typedef unordered_map<string, string>::iterator umap_it;
-
 void printRequest(Request re)
 {
 	cout << "Method = " << re.getMethod() << "\n";
@@ -11,7 +9,7 @@ void printRequest(Request re)
 	cout << "Version = " << re.getVersion() << "\n";
 	unordered_map<string, string> headers = re.getHeaders();
 	cout << "Headers = " << "\n";
-	for (umap_it it = headers.begin(); it != headers.end(); ++it)
+	for (Request::umap_it it = headers.begin(); it != headers.end(); ++it)
 		cout << it->first << ": " << it->second << "\n";
 	cout << "Body = " << "\n" << re.getBody() << endl;
 }

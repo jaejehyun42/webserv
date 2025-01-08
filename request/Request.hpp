@@ -30,7 +30,8 @@ class Request
 		void _parseUrl();
 		void _parseHeader(const string& line);
 		void _parseVersion();
-		void _parseHostAndMethod();
+		void _parseHost(const string& value);
+		void _parseMethod();
 		void _setError(int error_code);
 
 	public :
@@ -47,4 +48,6 @@ class Request
 		string getBody() const;
 		string getErrorMessage() const;
 		string getErrorCode() const;
+		
+		typedef unordered_map<string, string>::iterator umap_it;
 };
