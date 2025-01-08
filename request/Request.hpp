@@ -31,7 +31,7 @@ class Request
 		void _parseHeader(const string& line);
 		void _parseVersion();
 		void _parseHost(const string& value);
-		void _parseMethod();
+		void _parseMethodChkHost();
 		void _setError(int error_code);
 
 	public :

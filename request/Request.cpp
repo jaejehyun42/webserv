@@ -25,9 +25,11 @@ void Request::_setError(int error_code)
 	throw runtime_error(_errorCode + " " + _errorMessage); // 여기서 throw 까지 처리
 }
 
-void Request::_parseMethod()
+void Request::_parseMethodChkHost()
 {
-	if (_method != "GET" && _method != "POST" && _method != "DELETE")
+	if (_headers.find("Host") == _headers.end()) // Host 헤더가 존재하지 않음
+		_setError(400);
+	else if (_method != "GET" && _method != "POST" && _method != "DELETE")
 		_setError(405);
 }
 
@@ -58,7 +60,7 @@ void Request::initRequest(ifstream& file)
 			break ;
 		_parseHeader(line);
 	}
-	_parseMethod();
+	_parseMethodChkHost();
 
 	while (getline(file, line)) // 바디 초기화
 		_body += line + "\n";
