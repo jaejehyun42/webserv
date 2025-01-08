@@ -25,12 +25,22 @@ void Request::_setError(int error_code)
 	throw runtime_error(_errorCode + " " + _errorMessage); // 여기서 throw 까지 처리
 }
 
-void Request::_parseMethodChkHost()
+void Request::_parseMethod()
 {
-	if (_headers.find("Host") == _headers.end()) // Host 헤더가 존재하지 않음
-		_setError(400);
-	else if (_method != "GET" && _method != "POST" && _method != "DELETE")
-		_setError(405);
+	for (size_t i = 0; i < _method.size(); ++i) // 메서드는 전부 대문자여야함
+	{
+		if (!isupper(_method[i]))
+			_setError(400);
+	}
+}
+
+void Request::_parseKey(const string& key)
+{
+	for (size_t i = 0; i < key.size(); ++i) // key는 공백이 없어야함
+	{
+		if (isspace(key[i]))
+			_setError(400);
+	}
 }
 
 void Request::_parseHost(const string& value)
@@ -46,23 +56,32 @@ void Request::_parseHost(const string& value)
 			_setError(400);
 }
 
-void Request::initRequest(ifstream& file)
+void Request::_parseMethodChkHost()
 {
+	if (_headers.find("Host") == _headers.end()) // Host 헤더가 존재하지 않음
+		_setError(400);
+	else if (_method != "GET" && _method != "POST" && _method != "DELETE")
+		_setError(405);
+}
+
+void Request::initRequest(const string& input)
+{
+	istringstream form(input);
 	string line;
 
-	if (!getline(file, line))
+	if (!getline(form, line))
 		_setError(400);
 	_parseStatus(line); // 상태 라인 파싱
 
-	while (getline(file, line)) // 헤더 파싱 루프
+	while (getline(form, line)) // 헤더 파싱 루프
 	{
-		if (line.empty()) // 헤더와 바디를 구분하는 빈 줄 체크
+		if (line == "\r") // 헤더와 바디를 구분하는 빈 줄 체크
 			break ;
 		_parseHeader(line);
 	}
 	_parseMethodChkHost();
 
-	while (getline(file, line)) // 바디 초기화
+	while (getline(form, line)) // 바디 초기화
 		_body += line + "\n";
 }
 
@@ -85,7 +104,7 @@ void Request::_parseUrl()
 	else
 	{
 		_path = _url.substr(start, delim_pos - start);
-		_query = _url.substr(delim_pos + 1, _url.size() - 1); 
+		_query = _url.substr(delim_pos + 1, _url.size() - delim_pos); 
 	}
 }
 
@@ -97,7 +116,7 @@ void Request::_parseVersion()
 	if (HTTP != "HTTP")
 		_setError(400);
 
-	string version_num = _version.substr(delim_pos + 1, _version.size() - 1);
+	string version_num = _version.substr(delim_pos + 1, _version.size() - delim_pos);
 
 	char *endptr;
 	double version_num_doub = strtod(version_num.c_str(), &endptr);
@@ -114,10 +133,16 @@ void Request::_parseStatus(const string& line)
 {
 	if (isspace(line[0])) // 시작이 공백인지 체크
 		_setError(400);
+	for (size_t i = 0; i < line.size(); ++i) // 상태 라인은 탭 사용 불가
+	{
+		if (line[i] == '\t')
+			_setError(400);
+	}
 
 	istringstream stream(line);
 
 	stream >> _method;
+	_parseMethod();
 
 	stream >> _url;
 	_parseUrl();
@@ -139,15 +164,16 @@ void Request::_parseHeader(const string& line)
 		_setError(400);
 
 	string key = line.substr(0, delim_pos);
+	_parseKey(key);
 
-	size_t value_pos = line.find_first_not_of(" \t", delim_pos + 1); // ':' 이후 공백을 무시
+	size_t value_pos = line.find_first_not_of(" ", delim_pos + 1); // ':' 이후 공백을 무시
 
 	if (line[value_pos] == ':') // value의 시작이 ':' 이면 오류
 		_setError(400);
 	else if (value_pos == string::npos)
 		_setError(400);
 
-	string value = line.substr(value_pos, line.size() - 1);
+	string value = line.substr(value_pos, line.size() - value_pos - 1);
 
 	for (size_t i = 0; i < key.size(); ++i) // key 대소문자 변환
 	{

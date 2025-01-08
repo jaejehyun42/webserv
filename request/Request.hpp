@@ -30,14 +30,16 @@ class Request
 		void _parseUrl();
 		void _parseHeader(const string& line);
 		void _parseVersion();
+		void _parseKey(const string& key);
 		void _parseHost(const string& value);
+		void _parseMethod();
 		void _parseMethodChkHost();
 		void _setError(int error_code);
 
 	public :
 		Request();
 		~Request();
-		void initRequest(ifstream& file);
+		void initRequest(const string& input);
 
 		string getMethod() const;
 		string getUrl() const;
