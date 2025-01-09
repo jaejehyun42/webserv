@@ -20,6 +20,7 @@ class Request
 		string _url;
 		string _path;
 		string _query;
+		string _cgiPath;
 		string _version;
 		unordered_map<string, string> _headers;	
 		string _body;
@@ -45,6 +46,7 @@ class Request
 		string getUrl() const;
 		string getPath() const;
 		string getQuery() const;
+		string getCgiPath() const;
 		string getVersion() const;
 		unordered_map<string, string> getHeaders() const;
 		string getBody() const;

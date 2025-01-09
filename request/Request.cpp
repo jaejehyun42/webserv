@@ -106,6 +106,11 @@ void Request::_parseUrl()
 		_path = _url.substr(start, delim_pos - start);
 		_query = _url.substr(delim_pos + 1, _url.size() - delim_pos); 
 	}
+
+	size_t cgi_pos = _path.find(".py"); // cgi 경로 체크
+	
+	if (cgi_pos != string::npos)
+		_cgiPath = _path.substr(cgi_pos + 3, _path.size() - cgi_pos - 2);
 }
 
 void Request::_parseVersion()
@@ -206,6 +211,11 @@ string Request::getPath() const
 string Request::getQuery() const
 {
 	return (_query);
+}
+
+string Request::getCgiPath() const
+{
+	return (_cgiPath);
 }
 
 string Request::getVersion() const

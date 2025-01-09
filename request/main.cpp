@@ -6,6 +6,7 @@ void printRequest(Request re)
 	cout << "URL = " << re.getUrl() << "\n";
 	cout << "Path = " << re.getPath() << "\n";
 	cout << "Query = " << re.getQuery() << "\n";
+	cout << "CgiPath = " << re.getCgiPath() << "\n";
 	cout << "Version = " << re.getVersion() << "\n";
 	unordered_map<string, string> headers = re.getHeaders();
 	cout << "Headers = " << "\n";
@@ -30,7 +31,7 @@ int main(int argc, char** argv)
 		exit(1);
 	}
 
-	string input = "GET /get?key1=value&key2=value HTTP/1.1\r\n"
+	string input = "GET /get/cgi-bin/my_cgi.py/foo/bar?key1=value&key2=value HTTP/1.1\r\n"
 				  "User-Agent: PostmanRuntime/7.32.3\r\n"
 				  "Accept: */*\r\n"
 				  "Postman-Token: bda49f4f-8500-4559-a291-9bffaa08cd17\r\n"
