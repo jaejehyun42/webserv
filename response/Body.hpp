@@ -2,9 +2,7 @@
 #define __BODY_H__
 
 #include <string>
-#include "../request/Request.hpp"
-#include "../config/ServConf.hpp"
-using namespace std;
+#include <unordered_map>
 
 /* synopsis
 
@@ -14,13 +12,12 @@ message body:
 
 class Body{
     public:
-        Body(const Request& req, const ServConf& conf);
+        Body(std::unordered_map<int, std::string>& data);
         ~Body();
-        string  getMessage() const;
+        std::string  getMessage();
     private:
-        const Request&      _req;
-        const ServConf&     _conf;
-        string  _message;
-        // void    _setMessage();
+        std::unordered_map<int, std::string>& _data;
+        std::string _message;
+        void        _setMessage();
 };
 #endif

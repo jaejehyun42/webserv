@@ -2,9 +2,7 @@
 #define __HEADER_H_
 
 #include <string>
-#include "../request/Request.hpp"
-#include "../config/ServConf.hpp"
-using namespace std;
+#include <unordered_map>
 
 /* synopsis
 
@@ -17,12 +15,11 @@ header :
 
 class Header{
     public:
-        Header(const Request& req, const ServConf& conf);
+        Header(std::unordered_map<int, std::string>& data);
         ~Header();
         string  getMessage();
-    protected:
-        const   Request&    _req;
-        const   ServConf&   _conf;
+    private:
+        std::unordered_map<int, std::string>& _data;
         string              _message;
         void                _setMessage();
 };

@@ -6,19 +6,19 @@
 #include <iomanip>
 using namespace std;
 int main(){
+    string url = "/Users/jaeblee/ppp/kkk";
+    string location = "/";
+    string root = "/goinfre";
 
-//Date: Tue, 07 Jan 2025 05:29:17 GMT
-
-    std::time_t         now = std::time(NULL);
-    struct tm*          gmt = gmtime(&now); //GMT 시간버퍼
-    std::ostringstream  dateStream;
-    dateStream << std::put_time(gmt, "%a, %d %b %Y %H:%M:%S GMT");
-    std::cout << dateStream.str();
-
-
-
-
-
+    if (root.back() != '/')
+        root.append("/");
+    size_t pos = url.find(location);
+    if (pos == 0)
+        url.replace(pos, location.length(), root);
+    if ((pos != string::npos)){
+        //서버루트이용.
+    }
+    cout<<url;
 }
     // struct stat urlStatusBuf;
 

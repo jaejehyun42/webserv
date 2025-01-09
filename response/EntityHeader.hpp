@@ -3,8 +3,7 @@
 
 
 #include <string>
-#include "../request/Request.hpp"
-#include "../config/ServConf.hpp"
+#include "ResponseManager.hpp"
 using namespace std;
 
 /* synopsis
@@ -28,12 +27,11 @@ entity header:
 
 class EntityHeader{
     public:
-        EntityHeader(const Request& req, const ServConf& conf);
+        EntityHeader();
         ~EntityHeader();
         string  getMessage() const;
     private:
-        const Request&      _req;
-        const ServConf&     _conf;
+        ResponseManager&    manger;
         string  _message;
         void    _setMessage();
         void    _setContentLength();

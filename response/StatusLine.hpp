@@ -1,10 +1,8 @@
 #ifndef __STATUSLINE_H__
 #define __STATUSLINE_H__
 
-
 #include <string>
-#include "../request/Request.hpp"
-#include "../config/ServConf.hpp"
+#include <unordered_map>
 
 /* synopsis
 
@@ -58,22 +56,18 @@ Server error : 5xx
 
 class StatusLine{
     public:
-        StatusLine(const Request& req, const ServConf& conf, int* errCode, const int& servBlockIdx);
+        StatusLine(std::unordered_map<int, std::string>& data);
         ~StatusLine();
         std::string getMessage();
     private:
-        const Request&      _req;
-        const ServConf&     _conf;
+        std::unordered_map<int, std::string>& _data;
+        std::string         _message;
+        std::string         _httpVersion;
+        std::string         _statusCode;
+        std::string         _reasonPhrase;
 
-        int*        _errCode;
-        const int&  _servBlockIdx;
-        std::string  _message;
-        std::string  _httpVersion;
-        std::string  _statusCode;
-        std::string  _reasonPhrase;
-
-        void            _setMessage();
-        void            _setPath(string& path);
+        void    _setMessage();
+        void    _setPath(std::string& path);
         bool    _checkRequestError();
         bool    _checkUrl();
         bool    _checkHeader();

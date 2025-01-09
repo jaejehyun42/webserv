@@ -143,6 +143,11 @@ const long& ServConf::getAliveTime() const
 	return (_aliveTime);
 }
 
+const ServBlock& ServConf::getServBlock(int idx) const
+{
+	return (_serv[idx]);
+}
+
 const vector<ServBlock>& ServConf::getServ() const
 {
 	return (_serv);
