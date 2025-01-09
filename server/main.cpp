@@ -29,12 +29,17 @@ int main(int argc, char** argv)
 
 			for (int i = 0; i < nev; i++)
 			{
-				if (evList[i].filter == EVFILT_READ)
+				if (evList[i].flags & EV_EOF)
+				{
+					close(evList[i].ident);
+					cout << "Client disconnected\n";
+				}
+				else if (evList[i].filter == EVFILT_READ)
 				{
 					if (serv.getServerIdx(evList[i].ident) != -1)
 						serv.acceptClient(evList[i].ident);
 					else
-						serv.readClient(evList[i].ident, conf);
+						serv.readClient(evList[i].ident);
 				}
 				else if (evList[i].filter == EVFILT_WRITE)
 				{

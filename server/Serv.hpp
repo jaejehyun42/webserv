@@ -41,7 +41,7 @@ public:
 	~Serv();
 
 	void acceptClient(int fd);
-	void readClient(int fd, ServConf& sc);
+	void readClient(int fd);
 	void sendClient(int fd);
 
 	int getKq() const;
