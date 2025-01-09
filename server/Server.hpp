@@ -13,6 +13,7 @@
 #include <sys/socket.h>
 
 #include "../config/ServConf.hpp"
+#include "../request/Request.hpp"
 
 struct Client
 {
@@ -23,7 +24,7 @@ struct Client
 	Client(int n) : _index(n), _message("") {}
 };
 
-class Serv
+class Server
 {
 private:
 	int _kq;
@@ -37,16 +38,18 @@ private:
 	void setSocket(const vector<ServBlock>& serv);
 	void setKqueue();
 public:
-	Serv(ServConf& servConf);
-	~Serv();
+	Server(ServConf& servConf);
+	~Server();
 
 	void acceptClient(int fd);
 	void readClient(int fd);
 	void sendClient(int fd);
 
-	int getKq() const;
 	int getServerIdx(int fd) const;
 	int getClientIdx(int fd) const;
+
+	int getKq() const;
+	int getKevent();
 	vector<struct kevent>& getEvList();
 };
 

@@ -1,43 +1,68 @@
-CC = c++
-CFLAGS = -Wall -Wextra -Werror -std=c++98
+#-----STANDARD-----#
+NAME = Webserv
 
-# 폴더별 객체 파일
-SERVER_OBJ = server/Serv.o server/main.o
-CONFIG_OBJ = config/LocBlock.o config/ServBlock.o config/ServConf.o config/utils_conf.o
+CC =		c++
+CFLAG =		-Wall -Wextra -Werror -std=c++98
 
-# 최종 실행 파일
-TARGET = Webserv
+#------COLORS------#
+RED =		\033[0;31m
+BLUE =		\033[0;34m
+GREEN =		\033[1;32m
+YELLOW =	\033[0;33m
+RESET =		\033[0m
 
-# 기본 규칙
-all: $(TARGET)
+#-------FILES-------#
+MAIN_FILE =		server/main			\
 
-# 서버 파일 컴파일
-server/Serv.o: server/Serv.cpp server/Serv.hpp
-	$(CC) $(CFLAGS) -c server/Serv.cpp -o server/Serv.o
+SERVER_DIR = 	server/
+SERVER_FILE =	Server				\
 
-server/main.o: server/main.cpp
-	$(CC) $(CFLAGS) -c server/main.cpp -o server/main.o
+CONFIG_DIR = 	config/
+CONFIG_FILE =	ServConf			\
+				ServBlock			\
+				LocBlock			\
+				utils_conf			\
 
-# config 파일 컴파일
-config/LocBlock.o: config/LocBlock.cpp config/LocBlock.hpp
-	$(CC) $(CFLAGS) -c config/LocBlock.cpp -o config/LocBlock.o
+REQUEST_DIR = 	request/
+REQUEST_FILE =	Request				\
 
-config/ServBlock.o: config/ServBlock.cpp config/ServBlock.hpp
-	$(CC) $(CFLAGS) -c config/ServBlock.cpp -o config/ServBlock.o
+#RESPONCE_DIR = responce/
+#RESPONCE_FILE = Responce			
 
-config/ServConf.o: config/ServConf.cpp config/ServConf.hpp
-	$(CC) $(CFLAGS) -c config/ServConf.cpp -o config/ServConf.o
+HEADS += $(addprefix $(SERVER_DIR), $(SERVER_FILE))
+HEADS += $(addprefix $(CONFIG_DIR), $(CONFIG_FILE))
+HEADS += $(addprefix $(REQUEST_DIR), $(REQUEST_FILE))
 
-config/utils_conf.o: config/utils_conf.cpp config/utils_conf.hpp
-	$(CC) $(CFLAGS) -c config/utils_conf.cpp -o config/utils_conf.o
+FILES += $(MAIN_FILE)
+FILES += $(HEADS)
 
-# 최종 실행 파일 생성
-$(TARGET): $(SERVER_OBJ) $(CONFIG_OBJ)
-	$(CC) $(CFLAGS) $(SERVER_OBJ) $(CONFIG_OBJ) -o $(TARGET) $(LDFLAGS)
 
-# 클린
-clean:
-	rm -f $(SERVER_OBJ) $(CONFIG_OBJ)
+#------SOURCE------#
+SRCS = $(addsuffix .cpp, $(FILES))
+OBJS = $(addsuffix .o, $(FILES))
+INCS = $(addsuffix .hpp, $(HEADS))
 
-fclean: clean
-	rm -f $(TARGET)
+
+#------FUCTION------#
+all: $(NAME)
+
+%.o : %.cpp $(INCS)
+	@echo "$(YELLOW)Compiling $<$(RESET)"
+	@$(CC) $(CFLAG) -I. -c $< -o $@
+
+$(NAME) : $(OBJS) $(INCS)
+	@echo "$(GREEN)Linking Files...$(RESET)"
+	@$(CC) $(CFLAG) $(SRCS) -o $(NAME)
+	@echo "$(GREEN)Build Complete - $(NAME)$(RESET)"
+
+clean :
+	@echo "$(RED)Cleaning Object Files...$(RESET)"
+	@rm -rf $(OBJS)
+
+fclean : clean
+	@echo "$(RED)Removing Executable $(NAME)...$(RESET)"
+	@rm -rf $(NAME)
+
+re : fclean all
+
+.PHONY : all clean fclean re

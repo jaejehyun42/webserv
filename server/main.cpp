@@ -1,4 +1,4 @@
-#include "Serv.hpp"
+#include "Server.hpp"
 #include "../config/ServConf.hpp"
 
 int main(int argc, char** argv)
@@ -17,24 +17,22 @@ int main(int argc, char** argv)
 	try
 	{
 		ServConf conf(config);
-		Serv serv(conf);
+		Server serv(conf);
 
-		cout << "Server Wating...\n";
 		while (true)
 		{
 			vector<struct kevent>& evList = serv.getEvList();
 			int nev = kevent(serv.getKq(), NULL, 0, evList.data(), 32, NULL);
 			if (nev == -1)
 				throw runtime_error("kevent: " + string(strerror(errno)));
-
 			for (int i = 0; i < nev; i++)
 			{
-				if (evList[i].flags & EV_EOF)
-				{
-					close(evList[i].ident);
-					cout << "Client disconnected\n";
-				}
-				else if (evList[i].filter == EVFILT_READ)
+				// if (evList[i].flags & EV_EOF)
+				// {
+				// 	close(evList[i].ident);
+				// 	cout << "Client disconnected\n";
+				// }
+				if (evList[i].filter == EVFILT_READ)
 				{
 					if (serv.getServerIdx(evList[i].ident) != -1)
 						serv.acceptClient(evList[i].ident);

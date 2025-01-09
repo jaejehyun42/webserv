@@ -1,6 +1,6 @@
-#include "Serv.hpp"
+#include "Server.hpp"
 
-Serv::Serv(ServConf& sc)
+Server::Server(ServConf& sc)
 {
 	const vector<ServBlock>& serv = sc.getServ();
 
@@ -9,13 +9,13 @@ Serv::Serv(ServConf& sc)
 	setKqueue();
 }
 	
-Serv::~Serv()
+Server::~Server()
 {
 	for (unordered_map<int, int>::iterator it = _server.begin(); it != _server.end(); it++)
 		close(it->first);
 }
 
-void Serv::setAddrInfo()
+void Server::setAddrInfo()
 {
 	memset(&_hints, 0, sizeof(_hints));
 	_hints.ai_family = AF_INET;
@@ -23,7 +23,7 @@ void Serv::setAddrInfo()
 	_hints.ai_flags = AI_PASSIVE;
 }
 
-int Serv::initSocket(const char* domain, const char* port)
+int Server::initSocket(const char* domain, const char* port)
 {
 	struct addrinfo *res, *p;
 
@@ -57,7 +57,7 @@ int Serv::initSocket(const char* domain, const char* port)
 	return (tmpfd);
 }
 
-void Serv::setSocket(const vector<ServBlock>& serv)
+void Server::setSocket(const vector<ServBlock>& serv)
 {
 	int idx = 0;
 	for (vector<ServBlock>::const_iterator it = serv.begin(); it != serv.end(); it++)
@@ -75,7 +75,7 @@ void Serv::setSocket(const vector<ServBlock>& serv)
 	}
 }
 
-void Serv::setKqueue()
+void Server::setKqueue()
 {
 	_kq = kqueue();
 	if (_kq == -1)
@@ -91,7 +91,7 @@ void Serv::setKqueue()
 	}
 }
 
-void Serv::acceptClient(int fd)
+void Server::acceptClient(int fd)
 {
 	int client_fd = accept(fd, NULL, NULL);
 	if (client_fd == -1)
@@ -106,18 +106,16 @@ void Serv::acceptClient(int fd)
 	cout << "Client connected\n";
 }
 
-void Serv::readClient(int fd)
+void Server::readClient(int fd)
 {
 	char buffer[1024] = {0};
 	ssize_t size = read(fd, buffer, sizeof(buffer));
-	if (size < 0)
+	if (size <= 0)
 	{
 		close(fd);
 		cout << "Client disconnected\n";
 		return ;
 	}
-	if (size == 0)
-		return ;
 	_client[fd]._message += buffer;
 	
 	struct kevent evSet;
@@ -126,11 +124,26 @@ void Serv::readClient(int fd)
 		throw runtime_error("Error: kevent: " + string(strerror(errno)));
 }
 
-void Serv::sendClient(int fd)
+void Server::sendClient(int fd)
 {
 	unordered_map<int, struct Client>::iterator it = _client.find(fd);
 	if (it != _client.end())
 	{
+		Request request;
+		request.initRequest(it->second._message);
+
+		// cout << "Method = " << request.getMethod() << "\n";
+		// cout << "URL = " << request.getUrl() << "\n";
+		// cout << "Path = " << request.getPath() << "\n";
+		// cout << "Query = " << request.getQuery() << "\n";
+		// cout << "CgiPath = " << request.getCgiPath() << "\n";
+		// cout << "Version = " << request.getVersion() << "\n";
+		// unordered_map<string, string> headers = request.getHeaders();
+		// cout << "Headers = " << "\n";
+		// for (Request::umap_it it = headers.begin(); it != headers.end(); ++it)
+		// 	cout << it->first << ": " << it->second << "\n";
+		// cout << "Body = " << "\n" << request.getBody() << endl;
+
 		string message =
 			"HTTP/1.1 200 OK\r\n"
 			"Date: Sat, 06 Jan 2025 12:00:00 GMT\r\n"
@@ -156,12 +169,7 @@ void Serv::sendClient(int fd)
 	}
 }
 
-int Serv::getKq() const
-{
-	return (_kq);
-}
-
-int Serv::getServerIdx(int fd) const
+int Server::getServerIdx(int fd) const
 {
 	unordered_map<int, int>::const_iterator it = _server.find(fd);
 	if (it != _server.end())
@@ -169,7 +177,7 @@ int Serv::getServerIdx(int fd) const
 	return (-1);
 }
 
-int Serv::getClientIdx(int fd) const
+int Server::getClientIdx(int fd) const
 {
 	unordered_map<int, struct Client>::const_iterator it = _client.find(fd);
 	if (it != _client.end())
@@ -177,7 +185,18 @@ int Serv::getClientIdx(int fd) const
 	return (-1);
 }
 
-vector<struct kevent>& Serv::getEvList()
+int Server::getKq() const
+{
+	return (_kq);
+}
+
+int Server::getKevent()
+{
+	int nev = kevent(_kq, NULL, 0, _evList.data(), 32, NULL);
+	return (nev);
+}
+
+vector<struct kevent>& Server::getEvList()
 {
 	return (_evList);
 }
