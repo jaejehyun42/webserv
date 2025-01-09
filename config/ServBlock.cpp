@@ -23,7 +23,7 @@ void ServBlock::_parseLine(vector<string>& tokens)
 			_maxSize = strtol(value.c_str(), NULL, 10);
 		else if (key == "root")
 		{
-			if (value.back() == '/')
+			if (value.back() == '/' && value.size() != 1)
 				value.pop_back();
 			_root = value;
 		}
@@ -63,7 +63,7 @@ void ServBlock::_parseBlock(vector<string>& tokens, ifstream& file)
 
 		LocBlock lb;
 		string& path = *(tokens.begin() + 1);
-		if (path.back() == '/')
+		if (path.back() == '/' && path.size() != 1)
 			path.pop_back();
 		lb.parseLocBlock(file, path);
 
@@ -150,10 +150,12 @@ unordered_map<std::string, LocBlock>::iterator ServBlock::getPathIter(const std:
 			return (it);
 
 		std::size_t pos = current.find_last_of('/');
-		if (pos == std::string::npos)
+		if (pos == std::string::npos || current == "/")
 			break ;
-
-		current = current.substr(0, pos);
+		if (pos == 0)
+			current = "/";
+		else
+			current = current.substr(0, pos);
 	}
 	return (_path.end());
 }

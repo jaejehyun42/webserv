@@ -22,7 +22,7 @@ void LocBlock::_parseLine(vector<string>& tokens)
 			_cgiPass = value;
 		else if (key == "root")
 		{
-			if (value.back() == '/')
+			if (value.back() == '/' && value.size() != 1)
 				value.pop_back();
 			_root = value;
 		}
