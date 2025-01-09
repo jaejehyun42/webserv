@@ -22,7 +22,11 @@ void ServBlock::_parseLine(vector<string>& tokens)
 		else if (key == "client_max_body_size")
 			_maxSize = strtol(value.c_str(), NULL, 10);
 		else if (key == "root")
+		{
+			if (value.back() == '/')
+				value.pop_back();
 			_root = value;
+		}
 		else if (key == "server_name")
 			_name.push_back(value);
 		else
@@ -59,6 +63,8 @@ void ServBlock::_parseBlock(vector<string>& tokens, ifstream& file)
 
 		LocBlock lb;
 		string& path = *(tokens.begin() + 1);
+		if (path.back() == '/')
+			path.pop_back();
 		lb.parseLocBlock(file, path);
 
 		_path[path] = lb;
@@ -80,7 +86,7 @@ void ServBlock::parseServBlock(ifstream& file)
 			continue ;
 
 		string& delim = tokens.back();
-		if (delim == "}" && tokens.size() == 1)
+		if (delim == "}")
 			break ;
 		else if (delim == "{")
 			_parseBlock(tokens, file);
@@ -128,34 +134,26 @@ const string& ServBlock::getErrorPage(int status) const
 		throw ;
 }
 
-const LocBlock& ServBlock::getLocation(string path) const
+unordered_map<string, LocBlock>& ServBlock::getPath()
 {
-	unordered_map<string, LocBlock>::const_iterator it = _path.find(path);
-
-	if (it != _path.end())
-		return (it->second);
-	else
-		throw ;
+	return (_path);
 }
 
-// 임시
-void ServBlock::print() const
+unordered_map<std::string, LocBlock>::iterator ServBlock::getPathIter(const std::string& path)
 {
-	cout << "Server"<< " {\n";
+	std::string current = path;
 
-	cout << "\t" << "listen " << _port << endl;
-	cout << "\t" << "client_max_body_size " << _maxSize << endl;
-	cout << "\t" << "root " << _root << endl;
+	while (1)
+	{
+		unordered_map<std::string, LocBlock>::iterator it = _path.find(current);
+		if (it != _path.end())
+			return (it);
 
-	for (vector<string>::const_iterator it = _name.begin(); it != _name.end(); it++)
-		cout << "\t" << "server_name " << *it << endl;
-	
-	for (unordered_map<long, string>::const_iterator it = _error.begin(); it != _error.end(); it++)
-		cout << "\t" << "error_page " << it->first << " " << it->second << endl;
+		std::size_t pos = current.find_last_of('/');
+		if (pos == std::string::npos)
+			break ;
 
-	cout << endl;
-	for (unordered_map<string, LocBlock>::const_iterator it = _path.begin(); it != _path.end(); it++)
-		it->second.print(it->first);
-
-	cout << "}\n";
+		current = current.substr(0, pos);
+	}
+	return (_path.end());
 }

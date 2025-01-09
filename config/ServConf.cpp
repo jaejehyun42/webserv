@@ -143,8 +143,10 @@ const long& ServConf::getAliveTime() const
 	return (_aliveTime);
 }
 
-const ServBlock& ServConf::getServBlock(int idx) const
+ServBlock& ServConf::getServBlock(int idx)
 {
+	if (idx >= _serv.size())
+		throw std::out_of_range("Error: ServBlock index out of range");
 	return (_serv[idx]);
 }
 
@@ -161,18 +163,4 @@ const string& ServConf::getMime(const string& key) const
 		return (cit->second);
 	else
 		throw ;
-}
-
-// 임시
-void ServConf::print() const
-{
-	cout << "keepalive_timeout: " << _aliveTime << endl;
-
-	cout << "type {\n";
-	for (unordered_map<string, string>::const_iterator it = _mime.begin(); it != _mime.end(); it++)
-		cout << "\t" << it->first << "\t" << it->second << endl;
-	cout << "}\n";
-
-	for (vector<ServBlock>::const_iterator it = _serv.begin(); it != _serv.end(); it++)
-		it->print();
 }
