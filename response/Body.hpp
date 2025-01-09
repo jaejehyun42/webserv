@@ -12,7 +12,7 @@ message body:
 
 class Body{
     public:
-        Body(std::unordered_map<int, std::string>& data);
+        Body(const std::unordered_map<int, std::string>& data);
         ~Body();
         std::string  getMessage();
     private:

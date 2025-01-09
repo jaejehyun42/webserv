@@ -3,12 +3,10 @@
 
 Response::Response(const Request& req, const ServConf& conf, const int& servBlockIdx){
     ResponseManager manager(req, conf, servBlockIdx);
-    _message = manager.response();
+    _message = manager.makeMessage();
 }
 
-Response::~Response(){
-
-}
+Response::~Response(){}
 
 string    Response::getMessage(){
     return (_message);

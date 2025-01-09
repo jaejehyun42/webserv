@@ -15,7 +15,7 @@ header :
 
 class Header{
     public:
-        Header(std::unordered_map<int, std::string>& data);
+        Header(const std::unordered_map<int, std::string>& data);
         ~Header();
         string  getMessage();
     private:

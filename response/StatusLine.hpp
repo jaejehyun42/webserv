@@ -56,18 +56,18 @@ Server error : 5xx
 
 class StatusLine{
     public:
-        StatusLine(std::unordered_map<int, std::string>& data);
+        StatusLine(const std::unordered_map<int, std::string>& data);
         ~StatusLine();
         std::string getMessage();
     private:
-        std::unordered_map<int, std::string>& _data;
+        const std::unordered_map<int, std::string>& _data;
         std::string         _message;
         std::string         _httpVersion;
         std::string         _statusCode;
         std::string         _reasonPhrase;
 
         void    _setMessage();
-        void    _setPath(std::string& path);
+        void    _setCgiEnv();
         bool    _checkRequestError();
         bool    _checkUrl();
         bool    _checkHeader();
