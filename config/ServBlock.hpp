@@ -34,9 +34,9 @@ public:
 	const string& getRoot() const;
 	const vector<string>& getName() const;
 	const string& getErrorPage(int status) const;
-	const LocBlock& getLocation(string path) const;
 
-	void print() const; // 임시
+	unordered_map<string, LocBlock>& getPath();
+	unordered_map<string, LocBlock>::iterator getPathIter(const string& path);
 };
 
 #endif

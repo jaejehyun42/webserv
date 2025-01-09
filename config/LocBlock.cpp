@@ -21,7 +21,11 @@ void LocBlock::_parseLine(vector<string>& tokens)
 		if (key == "cgi_pass")
 			_cgiPass = value;
 		else if (key == "root")
+		{
+			if (value.back() == '/')
+				value.pop_back();
 			_root = value;
+		}
 		else if (key == "autoindex" && value == "on")
 			_autoindex = true;
 		else if (key == "index")
@@ -119,26 +123,4 @@ const string& LocBlock::getCgipass() const
 const vector<string>& LocBlock::getIndex() const
 {
 	return (_index);
-}
-
-// 임시
-void LocBlock::print(string path) const
-{
-	cout << "\t" << "location " << path << " {\n";
-
-	if (path.front() == '/')
-	{
-		if (_root != "")
-			cout << "\t\t" << "root: " << _root << endl;
-		for (vector<string>::const_iterator it = _index.begin(); it != _index.end(); it++)
-			cout << "\t\t" << "index " << *it << endl;	
-		if (_autoindex == true)
-			cout << "\t\t" << "autoindex: on\n";
-		else
-			cout << "\t\t" << "autoindex: off\n";
-	}
-	else
-		cout << "\t\t" << "cgi_pass " << _cgiPass << endl;
-
-	cout << "\t}\n";
 }

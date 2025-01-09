@@ -14,7 +14,11 @@ int main(int argc, char** argv)
 	{
 		ServConf sc;
 		sc.parse(fileName);
-		sc.print();
+		unordered_map<string, LocBlock>::iterator it = sc.getServBlock(0).getPathIter("/");
+		if (it != sc.getServBlock(0).getPath().end())
+            cout << "Path found: \"" << it->first << "\"" << endl;
+		else
+            cout << "Path not found." << endl;
 	}
 	catch(const std::exception& e)
 	{

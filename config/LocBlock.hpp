@@ -34,8 +34,6 @@ public:
 	const string& getRoot() const;
 	const string& getCgipass() const;
 	const vector<string>& getIndex() const;
-
-	void print(string path) const; // 임시
 };
 
 #endif
