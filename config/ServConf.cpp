@@ -143,7 +143,7 @@ const long& ServConf::getAliveTime() const
 	return (_aliveTime);
 }
 
-ServBlock& ServConf::getServBlock(int idx)
+const ServBlock& ServConf::getServBlock(int idx) const
 {
 	if (idx >= _serv.size())
 		throw std::out_of_range("Error: ServBlock index out of range");

@@ -35,8 +35,8 @@ public:
 	const vector<string>& getName() const;
 	const string& getErrorPage(int status) const;
 
-	unordered_map<string, LocBlock>& getPath();
-	unordered_map<string, LocBlock>::iterator getPathIter(const string& path);
+	const unordered_map<string, LocBlock>& getPath() const;
+	const unordered_map<string, LocBlock>::const_iterator getPathIter(const string& path) const;
 };
 
 #endif

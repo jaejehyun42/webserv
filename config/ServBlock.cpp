@@ -134,18 +134,18 @@ const string& ServBlock::getErrorPage(int status) const
 		throw ;
 }
 
-unordered_map<string, LocBlock>& ServBlock::getPath()
+const unordered_map<string, LocBlock>& ServBlock::getPath() const
 {
 	return (_path);
 }
 
-unordered_map<std::string, LocBlock>::iterator ServBlock::getPathIter(const std::string& path)
+const unordered_map<std::string, LocBlock>::const_iterator ServBlock::getPathIter(const std::string& path) const
 {
 	std::string current = path;
 
 	while (1)
 	{
-		unordered_map<std::string, LocBlock>::iterator it = _path.find(current);
+		unordered_map<std::string, LocBlock>::const_iterator it = _path.find(current);
 		if (it != _path.end())
 			return (it);
 
