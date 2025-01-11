@@ -7,22 +7,21 @@
 /* synopsis
 
 Response      = Status-Line                 ;
-                *(( general-header          ;
-                |   response-header         ;
-                |   entity-header ) CRLF)   ;
-                CRLF
-                [ message-body ] 
+				*(( general-header          ;
+				|   response-header         ;
+				|   entity-header ) CRLF)   ;
+				CRLF
+				[ message-body ] 
 
 */
 
 class Response{
-    public:
-        Response(const Request& req, const ServConf& conf, const int& servBlockIdx);
-        ~Response();
-        string      response();
-        string      getMessage();
-    private:
-        string    _message;
+	public:
+		Response(const Request& req, const ServConf& conf, const int& servBlockIdx);
+		~Response();
+		const string&   getMessage();
+	private:
+		string    _message;
 };
 
 #endif

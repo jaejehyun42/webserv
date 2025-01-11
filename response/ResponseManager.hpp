@@ -3,45 +3,49 @@
 
 #include "Response.hpp"
 #include <string>
+#include <unordered_map>
 
-enum Data{
+enum eData{
     __statusCode,
     __reasonPhrase,
-    __HttpVersion,
+    __hostName,
+    __keepAlive,
     __path,
-    __pathInfo,
-    __contentLength,
-    __contentType,
-    __query,
+    __autoindex,
     __body,
+    __contentType,
+    __requestMethod,
+    __requestPathInfo,
+    // __requestquery,
+    __requestContentLength,
+    __requestContentType,
+    __requestBody
 };
 
 class ResponseManager{
     public:
         ResponseManager(const Request& req, const ServConf& conf, const int& servBlockIdx);
         ~ResponseManager();
-        std::string    makeMessage();
+        std::string    getMessage();
     private:
-        void        _setMessage();
-        void        _setPath();
-        void        _setErrPath();
-        void        _checkRequestError();
-        void        _checkHost();
-        void        _checkBody();
-        void        _checkPath();
+        void        _getRequestData();
+        void        _getHeaderData();
 
-        const std::unordered_map<int, std::string>& _setStatusLineData();
-        const std::unordered_map<int, std::string>& _setHeaderData();
-        const std::unordered_map<int, std::string>& _setBodyData();
+        const std::unordered_map<int, std::string>& _setData();
         const std::unordered_map<int, std::string>& _setErrorData(const int errCode, const string& reasonPhrase);
+        void        _setMessage();
+        void        _setHost();
+        void        _setPath();
+        void        _setRequestBody();
+        void        _setErrorPath();
+
+        void        _checkRequestError();
 
         const Request&      _req;
         const ServConf&     _conf;
-        const ServBlock&    _sb;    //server block
+        const ServBlock&    _sb;
         std::unordered_map<int,string>  _data;
-        std::unordered_map<int,string>  _errData;
         std::string                     _message;
-        std::string                     _path;
 };
 
 #endif

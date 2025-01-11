@@ -3,6 +3,7 @@
 
 
 #include <string>
+#include <sys/stat.h>
 #include "ResponseManager.hpp"
 using namespace std;
 
@@ -27,15 +28,15 @@ entity header:
 
 class EntityHeader{
     public:
-        EntityHeader();
+        EntityHeader(const std::unordered_map<int, std::string>& data);
         ~EntityHeader();
         string  getMessage() const;
     private:
-        ResponseManager&    manger;
+        const std::unordered_map<int, std::string>& _data;
         string  _message;
         void    _setMessage();
-        void    _setContentLength();
+        void    _setContentLength(struct stat& fileStatus);
         void    _setContentType();
-        void    _setLastModified();
+        void    _setLastModified(struct stat& fileStatus);
 };
 #endif

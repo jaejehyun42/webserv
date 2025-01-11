@@ -1,6 +1,7 @@
 #include "ResponseHeader.hpp"
 
-ResponseHeader::ResponseHeader(const Request& req, const ServConf& conf) : _req(req), _conf(conf) {}
+ResponseHeader::ResponseHeader(const std::unordered_map<int, std::string>& data)
+: _data(data){}
 
 ResponseHeader::~ResponseHeader(){}
 
@@ -16,8 +17,8 @@ void                ResponseHeader::_setEtag(){
 
 }
 
-void                ResponseHeader::_setServer(){ //e.g. Server: nginx/1.27.3
-    std::string     _serverName = "jjh/1.0";
+void                ResponseHeader::_setServer(){
+    std::string     _serverName = "jaejehyun's webserv/1.0";
 }
 
 void                ResponseHeader::_setAcceptRanges(){

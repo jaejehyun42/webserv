@@ -3,22 +3,17 @@
 
 using namespace std;
 // make-> a.out <req>
-int main(int ac, char** av){
-    if (ac != 2)
-        return (1);
-
-    ifstream ifs(av[1]);
-    if (!ifs)
-        return (1);
-
-    ServConf conf;
-	Request re;
-
+int main(){
 	try{
-        re.initRequest(ifs);
+        Request re;
+        ifstream file("req");
+        re.initRequest(file); // 파싱, 초기화
+		ServConf sc;
+		sc.parse("../config/file/nginx.conf");
+        Response resp(re,sc,1);
+        cout<<resp.getMessage();
     }catch(exception& e){
-        Response resp(re, conf);
-        resp.response(1);
+        cerr<<e.what();
     }
 
 }

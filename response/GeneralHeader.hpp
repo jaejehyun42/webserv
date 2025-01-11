@@ -1,10 +1,8 @@
 #ifndef __GENERALHEADER_H_
 #define __GENERALHEADER_H_
 
-
 #include <string>
-#include "../request/Request.hpp"
-#include "../config/ServConf.hpp"
+#include "ResponseManager.hpp"
 
 /* synopsis
 general header:
@@ -21,14 +19,12 @@ general header:
 
 class GeneralHeader{
     public:
-        GeneralHeader(const Request& req, const ServConf& conf);
+        GeneralHeader(const std::unordered_map<int, std::string>& data);
         ~GeneralHeader();
         string  getMessage() const;
     private:
-        const Request&      _req;
-        const ServConf&     _conf;
+        const std::unordered_map<int, std::string>& _data;
         string  _message;
-
         void    _setMessage();
         void    _setConnection();
         void    _setDate();

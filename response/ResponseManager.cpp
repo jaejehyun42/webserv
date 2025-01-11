@@ -1,7 +1,7 @@
-#include <unordered_map>
-#include <exception>
 #include <sys/stat.h>
 #include <errno.h>
+#include <exception>
+#include <unordered_map>
 #include <vector>
 #include "ResponseManager.hpp"
 #include "StatusLine.hpp"
@@ -14,19 +14,43 @@ ResponseManager::ResponseManager(const Request& req, const ServConf& conf, const
     _setMessage();
 }
 
-ResponseManager::~ResponseManager(){
+ResponseManager::~ResponseManager(){}
 
+string    ResponseManager::getMessage(){
+    return (_message);
 }
 
-string    ResponseManager::makeMessage(){
-    return (_message);
+void        ResponseManager::_getRequestData(){
+    _setHost();
+    _setPath();
+    _setRequestBody();
+}
+
+void    ResponseManager::_getHeaderData(){
+ //keepAlive 필드가 무조건 있다고 가정
+    ostringstream oss;
+    if ((oss <<_conf.getAliveTime())){
+        _data[__keepAlive] = oss.str();
+    }
+//contentType
+    size_t i = _data[__path].find_last_of('.');
+    if (i == std::string::npos)
+        _data[__contentType] = "text/html";
+    else{
+        std::string type = _conf.getMime(_data[__path].substr(i));
+        if (type.size()) //getMime 안의 throw없어야. 못찾았으면 기본값이 text/html이라.
+            _data[__contentType] = type;
+        else
+            _data[__contentType] = "text/html";
+    }
 }
 
 void    ResponseManager::_setMessage(){
     try{
-        StatusLine      statusLine(_setStatusLineData()); 
-        Header          header(_setHeaderData());
-        Body            body(_setBodyData());
+        _setData();
+        StatusLine      statusLine(_data); 
+        Header          header(_data);
+        Body            body(_data);
         _message = statusLine.getMessage() + header.getMessage() + "\r\n" + body.getMessage();
     }catch(std::exception& e){
         ErrorResponse er;
@@ -40,101 +64,118 @@ void    ResponseManager::_setMessage(){
             er.setMessage(_setErrorData(413, "Request Entity Too Large"));
         }else if (e.what() == "500"){
             er.setMessage(_setErrorData(500, "Internal Server Error"));
+        }else{
+            er.setMessage(_setErrorData(500, "Internal Server Error"));
         }
         _message = er.getMessage();
     }
 }
 
-const std::unordered_map<int, std::string>& ResponseManager::_setStatusLineData(){
+const std::unordered_map<int, std::string>& ResponseManager::_setData(){
     _checkRequestError();
-    _checkHost();
-    _checkPath();
-    _checkBody();
-    _checkContent();
-}
-
-const std::unordered_map<int, std::string>& ResponseManager::_setHeaderData(){
-
-}
-
-const std::unordered_map<int, std::string>& ResponseManager::_setBodyData(){
-    _bodyData[__path] 
+    _getRequestData();
+    _getHeaderData();
 }
 
 const std::unordered_map<int, std::string>& ResponseManager::_setErrorData(int errCode, const string& reasonPhrase){
-    _errData[__statusCode] = errCode;
-    _errData[__reasonPhrase] = reasonPhrase;
-    _errData[__HttpVersion] = "HTTP/1.1";
-    _errData[__path] = "sdf";
+    _data[__statusCode] = errCode;
+    _data[__reasonPhrase] = reasonPhrase;
+    _setErrorPath();
+}
+
+void    ResponseManager::_setErrorPath(){
+    //location 블럭의 error_page를 먼저 탐색해야하는데
+    //server 블럭의 error_page 탐색
+    std::string errorPage = _sb.getErrorPage(strtol(_data[__statusCode].c_str(), 0, 10));
+    if (errorPage.size())
+        _data[__path] = _sb.getRoot() + "/" + errorPage;
+    //없다면 기본문구 만들어서 보내야함.
+}
+
+void    ResponseManager::_setHost(){
+    unordered_map<string,string> headers = _req.getHeaders();
+    if (headers.find("Host") == headers.end())
+        throw std::runtime_error("400");
+
+    std::vector<string>::const_iterator it = _sb.getName().begin();
+    for (it ; it!=_sb.getName().end() ; it++){
+        if (headers["Host"] == *it){
+            _data[__hostName] = *it;
+            return ;
+        }
+    }
+    throw std::runtime_error("400");
+}
+
+void    ResponseManager::_setPath(){
+    string      path = _req.getPath();
+    struct stat pathStatus;
+    int         saved_errno = errno;
+    std::unordered_map<string, LocBlock>::const_iterator it =  _sb.getPathIter(path);
+    const std::string&  serverRoot = _sb.getRoot();
+    const std::string&  locationIdentifier = it->first;
+    const LocBlock&     locationBlock = it->second;
+    const std::string&  locationRoot = locationBlock.getRoot();
+
+//이름이 어떤 로케이션블록 또는 서버블록의 루트와 완전히 일치하는게 있는지 있다면 그것을 사용하는데 반영?
+// 근데 로케이션 블록이 / 이라 ""로 되는지 아니면 아예 로케이션 블록이 없어서 ""인지 어떻게 아는지?
+    if (it == _sb.getPath().end() && serverRoot.size())//매핑되는 로케이션 블록이 없을 경우. 서버 루트 사용.
+        path.insert(0,serverRoot);
+    else if (locationRoot.empty())//매핑되는 로케이션블록이 있지만 로케이션블록의 루트가 없는경우. 서버 루트 이용.
+        path.insert(0,_sb.getRoot());
+    else
+        path.replace(0, locationIdentifier.size()-1, locationRoot);//매핑되는 로케이션 블록이 있고 루트도 있는 경우. 로케이션 블록의 루트 사용
+
+    if (stat(path.c_str(), &pathStatus) == -1){
+        if (errno == ENOENT && (errno = saved_errno))//no such file and directory
+            throw std::runtime_error("404");
+        else if (errno == ENOTDIR && (errno = saved_errno))//not directory
+            throw std::runtime_error("404");
+        else if (errno == EACCES && (errno = saved_errno))//permission denied          
+            throw std::runtime_error("403");
+        else{                               
+            errno = saved_errno;
+            throw std::runtime_error("500");//500 internal server error
+        }
+    }
+    _data[__path] = path;
+    if (S_ISDIR(pathStatus.st_mode)){
+        const std::vector<string> indexs = locationBlock.getIndex();
+        std::string savedPath = path;
+        saved_errno = errno;
+        if (indexs.size()){
+            for(size_t i=0; i<indexs.size(); i++){
+                path = savedPath;
+                if (*(path.end() - 1) == '/')
+                    path += indexs[i];
+                else
+                    path += "/" + indexs[i];
+                if (stat(path.c_str(), &pathStatus) == EXIT_SUCCESS){
+                    _data[__path] = path;
+                    errno = saved_errno;
+                    return ;
+                }
+            }
+            errno = saved_errno;
+        }
+        if(locationBlock.getAutoindex()){
+            _data[__path] = "AUTOINDEX";
+            return ;
+        }
+        throw std::runtime_error("404");
+    }
+}
+
+void    ResponseManager::_setRequestBody(){
+    std::string requestBody = _req.getBody();
+    if (requestBody.empty())
+        return ;
+    if (requestBody.size() < _sb.getMaxSize())
+        throw (std::runtime_error("413"));
+    _data[__requestBody] = requestBody;
 }
 
 void    ResponseManager::_checkRequestError(){
     if (_req.getErrorCode().size())
         throw(std::runtime_error(_req.getErrorCode()));
-}
-
-void    ResponseManager::_checkHost(){
-    unordered_map<string,string> headers = _req.getHeaders();
-
-    if (headers.find("Host") == headers.end())
-        throw std::runtime_error("400");
-    std::vector<string>::const_iterator it = _sb.getName().begin();
-    for (it ; it!=_sb.getName().end() ; it++){
-        if (headers["Host"] == *it)
-            return ;
-    }
-    throw std::runtime_error("400");
-}
-
-void    ResponseManager::_checkPath(){
-    _setPath();
-    struct stat urlStatusBuf;
-    int saved_errno = errno;
-    if (stat(_path.c_str(), &urlStatusBuf) == -1){
-        if (errno == ENOENT)                //no such file and directory
-            throw std::runtime_error("404");
-        else if (errno == ENOTDIR)          //not directory
-            throw std::runtime_error("404");
-        else if (errno == EACCES)           //permission denied
-            throw std::runtime_error("403");
-        else                                //500 internal server error
-            throw std::runtime_error("500");
-        errno = saved_errno;
-    }
-    _statusLineData[__path] = _path;
-}
-
-void    ResponseManager::_checkBody(){
-    if (_req.getBody().size())
-        return ;
-    if (_sb.getMaxSize())
-        throw (std::runtime_error("413"));
-    _statusLineData[__body] = _req.getBody();
-}
-
-void    ResponseManager::_setPath(){
-    _path = _req.getPath();
-    
-    ServBlock sb; //sb를 _sb로 변경해야함. 
-    std::unordered_map<string, LocBlock>::iterator it =  sb.getPathIter(_path);
-    std::string locationIdentifier = it->first;
-    LocBlock lb = it->second;
-    std::string root = lb.getRoot();
-
-    if (root.empty()){
-        root = sb.getRoot(); 
-        _path += root;
-    }
-    size_t pos = _path.find(root);
-    if (pos == 0){
-        _path.replace(pos, locationIdentifier.length(), root);
-    }
-    else(pos != string::npos){
-        root = sb.getRoot();
-        _path += root;
-    }
-}
-
-void    ResponseManager::_setErrPath(){
-    _sb.getErrorPage()   
 }

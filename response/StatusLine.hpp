@@ -68,9 +68,5 @@ class StatusLine{
 
         void    _setMessage();
         void    _setCgiEnv();
-        bool    _checkRequestError();
-        bool    _checkUrl();
-        bool    _checkHeader();
-        bool    _checkBody();
 };
 #endif

@@ -1,17 +1,15 @@
 #ifndef __RESPONSEHEADER_H__
 #define __RESPONSEHEADER_H__
 
-
 #include <string>
-#include "../request/Request.hpp"
-#include "../config/ServConf.hpp"
+#include "ResponseManager.hpp"
 
 /* synopsis
 
 response header:
-                   Accept-Ranges           ; Section 14.5        !
+                   Accept-Ranges           ; Section 14.5        !보류 
                        | Age                     ; Section 14.6
-                       | ETag                    ; Section 14.19 !
+                       | ETag                    ; Section 14.19 !보류
                        | Location                ; Section 14.30
                        | Proxy-Authenticate      ; Section 14.33
                        | Retry-After             ; Section 14.37
@@ -23,12 +21,11 @@ response header:
 
 class ResponseHeader{
     public:
-        ResponseHeader(const Request& req, const ServConf& conf);
+        ResponseHeader(const std::unordered_map<int, std::string>& data);
         ~ResponseHeader();
         string  getMessage() const;
     private:
-        const Request&      _req;
-        const ServConf&     _conf;
+        const std::unordered_map<int, std::string>& _data;
         string  _message;
         void                _setMessage();
         void                _setEtag();

@@ -8,8 +8,9 @@ class ErrorResponse{
     public:
         ErrorResponse();
         ~ErrorResponse();
-        void            setMessage(const std::unordered_map<int, std::string>& errData);
+        void            setMessage(const std::unordered_map<int, std::string>& data);
         const std::string    getMessage();
-        std::string          message;
+    private:
+        std::string          _message;
 };
 #endif

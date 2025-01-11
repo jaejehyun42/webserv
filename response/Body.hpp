@@ -16,8 +16,12 @@ class Body{
         ~Body();
         std::string  getMessage();
     private:
-        std::unordered_map<int, std::string>& _data;
+        const std::unordered_map<int, std::string>& _data;
         std::string _message;
-        void        _setMessage();
+
+        void    _setMessage();
+        void    _doGet();
+        void    _doPost();
+        void    _doDelete();
 };
 #endif
