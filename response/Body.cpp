@@ -36,7 +36,7 @@ void    Body::_doGet(){ //텍스트인 경우, 바이너리인 경우 나눠야.
     ifs.read(buf, size);
 
 //파일이 바이너리인 경우  
-    send(1,buf,size,0);
+    // send(1,buf,size,0);
 //텍스트인 경우
     _message += buf;
     delete[] buf;

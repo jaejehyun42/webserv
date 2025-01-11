@@ -54,16 +54,20 @@ void    ResponseManager::_setMessage(){
         _message = statusLine.getMessage() + header.getMessage() + "\r\n" + body.getMessage();
     }catch(std::exception& e){
         ErrorResponse er;
-        if (e.what() == "400"){
+        if (std::string(e.what()) == "400"){
             er.setMessage(_setErrorData(400, "Bad Request"));
-        }else if (e.what() == "403"){
+        }else if (std::string(e.what()) == "403"){
             er.setMessage(_setErrorData(403, "Forbidden"));
-        }else if (e.what() == "404"){
+        }else if (std::string(e.what()) == "404"){
             er.setMessage(_setErrorData(404, "Not Found"));
-        }else if (e.what() == "413"){
+        }else if (std::string(e.what()) == "405"){
+            er.setMessage(_setErrorData(405, "Method Not Allowed"));
+        }else if (std::string(e.what()) == "413"){
             er.setMessage(_setErrorData(413, "Request Entity Too Large"));
-        }else if (e.what() == "500"){
+        }else if (std::string(e.what()) == "500"){
             er.setMessage(_setErrorData(500, "Internal Server Error"));
+        }else if (std::string(e.what()) == "505"){
+            er.setMessage(_setErrorData(505, "HTTP Version Not Supported"));
         }else{
             er.setMessage(_setErrorData(500, "Internal Server Error"));
         }
@@ -71,7 +75,7 @@ void    ResponseManager::_setMessage(){
     }
 }
 
-const std::unordered_map<int, std::string>& ResponseManager::_setData(){
+void    ResponseManager::_setData(){
     _checkRequestError();
     _getRequestData();
     _getHeaderData();
@@ -81,6 +85,7 @@ const std::unordered_map<int, std::string>& ResponseManager::_setErrorData(int e
     _data[__statusCode] = errCode;
     _data[__reasonPhrase] = reasonPhrase;
     _setErrorPath();
+    return (_data);
 }
 
 void    ResponseManager::_setErrorPath(){
@@ -98,7 +103,7 @@ void    ResponseManager::_setHost(){
         throw std::runtime_error("400");
 
     std::vector<string>::const_iterator it = _sb.getName().begin();
-    for (it ; it!=_sb.getName().end() ; it++){
+    for (; it!=_sb.getName().end() ; it++){
         if (headers["Host"] == *it){
             _data[__hostName] = *it;
             return ;
@@ -178,4 +183,41 @@ void    ResponseManager::_setRequestBody(){
 void    ResponseManager::_checkRequestError(){
     if (_req.getErrorCode().size())
         throw(std::runtime_error(_req.getErrorCode()));
+}
+
+
+
+
+
+
+
+
+
+void    ResponseManager::printAllData(){
+    if (_data.find(__statusCode)!=_data.end())
+        cout<<_data[__statusCode];
+    if (_data.find(__reasonPhrase)!=_data.end())
+        cout<<_data[__reasonPhrase];
+    if (_data.find(__hostName)!=_data.end())
+        cout<<_data[__hostName];
+    if (_data.find(__keepAlive)!=_data.end())
+        cout<<_data[__keepAlive];
+    if (_data.find(__path)!=_data.end())
+        cout<<_data[__path];
+    if (_data.find(__autoindex)!=_data.end())
+        cout<<_data[__autoindex];
+    if (_data.find(__body)!=_data.end())
+        cout<<_data[__body];
+    if (_data.find(__contentType)!=_data.end())
+        cout<<_data[__contentType];
+    if (_data.find(__requestMethod)!=_data.end())
+        cout<<_data[__requestMethod];
+    if (_data.find(__requestPathInfo)!=_data.end())
+        cout<<_data[__requestPathInfo];
+    if (_data.find(__requestContentLength)!=_data.end())
+        cout<<_data[__requestContentLength];
+    if (_data.find(__requestContentType)!=_data.end())
+        cout<<_data[__requestContentType];
+    if (_data.find(__requestBody)!=_data.end())
+        cout<<_data[__requestBody];
 }

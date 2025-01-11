@@ -16,7 +16,6 @@ enum eData{
     __contentType,
     __requestMethod,
     __requestPathInfo,
-    // __requestquery,
     __requestContentLength,
     __requestContentType,
     __requestBody
@@ -26,12 +25,13 @@ class ResponseManager{
     public:
         ResponseManager(const Request& req, const ServConf& conf, const int& servBlockIdx);
         ~ResponseManager();
-        std::string    getMessage();
+        std::string     getMessage();
+        void            printAllData();
     private:
         void        _getRequestData();
         void        _getHeaderData();
 
-        const std::unordered_map<int, std::string>& _setData();
+        void        _setData();
         const std::unordered_map<int, std::string>& _setErrorData(const int errCode, const string& reasonPhrase);
         void        _setMessage();
         void        _setHost();
