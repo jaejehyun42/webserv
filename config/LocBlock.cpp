@@ -26,8 +26,14 @@ void LocBlock::_parseLine(vector<string>& tokens)
 				value.pop_back();
 			_root = value;
 		}
-		else if (key == "autoindex" && value == "on")
-			_autoindex = true;
+		else if (key == "autoindex")
+		{
+			if (value == "on")
+				_autoindex = true;
+			else if (value == "off");
+			else
+				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+		}
 		else if (key == "index")
 		{
 			for (vector<string>::iterator it = tokens.begin() + 1; it != tokens.end(); it++)
