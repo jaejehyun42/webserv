@@ -176,8 +176,10 @@ void Server::closeClient(int fd)
 
 void Server::checkTimeout(long timeout)
 {
+	if (timeout == 0)
+		return ;
+		
 	time_t now = time(NULL);
-
 	for (unordered_map<int, Client>::iterator it = _client.begin(); it != _client.end(); it++)
 	{
 		if (now - it->second.getLastTime() > timeout)
