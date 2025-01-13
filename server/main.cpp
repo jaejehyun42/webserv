@@ -21,36 +21,34 @@ int main(int argc, char** argv)
 
 		while (true)
 		{
-			vector<struct kevent>& evList = serv.getEvList();
-			int nev = kevent(serv.getKq(), NULL, 0, evList.data(), 32, NULL);
-			if (nev == -1)
-				throw runtime_error("kevent: " + string(strerror(errno)));
+			cout << "\rWaiting..." << flush;
+			int nev = serv.getKevent();
+
 			for (int i = 0; i < nev; i++)
 			{
-				// if (evList[i].flags & EV_EOF)
-				// {
-				// 	close(evList[i].ident);
-				// 	cout << "Client disconnected\n";
-				// }
-				if (evList[i].filter == EVFILT_READ)
+				const struct kevent& event = serv.getEvList(i);
+
+				if (serv.getServerIdx(event.ident) != -1)
+					serv.acceptClient(event.ident);
+				else if (serv.getClientIdx(event.ident) != -1)
 				{
-					if (serv.getServerIdx(evList[i].ident) != -1)
-						serv.acceptClient(evList[i].ident);
-					else
-						serv.readClient(evList[i].ident);
+					if (event.flags & EV_EOF)
+						serv.closeClient(event.ident);
+					else if (event.filter == EVFILT_READ)
+						serv.readClient(event.ident);
+					else if (event.filter == EVFILT_WRITE)
+						serv.sendClient(event.ident);
 				}
-				else if (evList[i].filter == EVFILT_WRITE)
-				{
-					if (serv.getClientIdx(evList[i].ident) != -1)
-						serv.sendClient(evList[i].ident);
-				}
+				else
+					throw runtime_error("Error: Failure to kqueue event handler");
 			}
+			serv.checkTimeout(conf.getAliveTime());
 		}
 	}
 	catch(const exception& e)
 	{
 		cerr << e.what() << '\n';
 	}
-
+		
 	return (0);
 }

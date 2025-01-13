@@ -7,6 +7,9 @@ Server::Server(ServConf& sc)
 	setAddrInfo();
 	setSocket(serv);
 	setKqueue();
+
+	_timeout.tv_sec = 5;
+	_timeout.tv_nsec = 0;
 }
 	
 Server::~Server()
@@ -118,8 +121,7 @@ void Server::readClient(int fd)
 	ssize_t size = read(fd, buffer, sizeof(buffer));
 	if (size <= 0)
 	{
-		close(fd);
-		_client.erase(fd);
+		closeClient(fd);
 		return ;
 	}
 	_client[fd].setMessage(buffer);
@@ -138,7 +140,7 @@ void Server::sendClient(int fd)
 		Request request;
 		request.initRequest(it->second.getMessage());
 
-		cout << "\033[33m[CLIENT "<< it->second.getIP() << ":" << it->second.getPort() << "]\033[0m ";
+		cout << "\r\033[33m[CLIENT "<< it->second.getIP() << ":" << it->second.getPort() << "]\033[0m ";
 		cout << "\033[32m" << request.getMethod() << " -> " << request.getUrl() << "\033[0m\n";
 
 		string message =
@@ -166,6 +168,24 @@ void Server::sendClient(int fd)
 	}
 }
 
+void Server::closeClient(int fd)
+{
+	close(fd);
+	_client.erase(fd);
+}
+
+void Server::checkTimeout(long timeout)
+{
+	time_t now = time(NULL);
+
+	for (unordered_map<int, Client>::iterator it = _client.begin(); it != _client.end(); it++)
+	{
+		if (now - it->second.getLastTime() > timeout)
+			closeClient(it->first);
+	}
+}
+
+// getter 함수
 int Server::getServerIdx(int fd) const
 {
 	unordered_map<int, int>::const_iterator it = _server.find(fd);
@@ -189,11 +209,13 @@ int Server::getKq() const
 
 int Server::getKevent()
 {
-	int nev = kevent(_kq, NULL, 0, _evList.data(), 32, NULL);
+	int nev = kevent(_kq, NULL, 0, _evList.data(), 32, &_timeout);
+	if (nev == -1)
+		throw runtime_error("kevent: " + string(strerror(errno)));
 	return (nev);
 }
 
-vector<struct kevent>& Server::getEvList()
+const struct kevent& Server::getEvList(int idx) const
 {
-	return (_evList);
+	return (_evList[idx]);
 }

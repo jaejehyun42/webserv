@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <cstring>
 #include <iostream>
+#include <time.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <sys/time.h>
@@ -22,8 +23,10 @@ class Server
 {
 private:
 	int _kq;
-	struct addrinfo _hints;
+	struct timespec _timeout;
 	vector<struct kevent> _evList;
+
+	struct addrinfo _hints;
 	unordered_map<int, int> _server;
 	unordered_map<int, Client> _client;
 
@@ -38,13 +41,15 @@ public:
 	void acceptClient(int fd);
 	void readClient(int fd);
 	void sendClient(int fd);
+	void closeClient(int fd);
+	void checkTimeout(long timeout);
 
 	int getServerIdx(int fd) const;
 	int getClientIdx(int fd) const;
 
 	int getKq() const;
 	int getKevent();
-	vector<struct kevent>& getEvList();
+	const struct kevent& getEvList(int idx) const;
 };
 
 #endif
