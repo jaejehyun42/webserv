@@ -12,8 +12,7 @@ int main(int argc, char** argv)
 
 	try
 	{
-		ServConf sc;
-		sc.parse(fileName);
+		ServConf sc(fileName);
 		unordered_map<string, LocBlock>::const_iterator it = sc.getServBlock(0).getPathIter("/test/abc/def/ghi/123/456/789");
 		if (it != sc.getServBlock(0).getPath().end())
             cout << "Path found: \"" << it->first << "\"" << endl;

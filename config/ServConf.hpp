@@ -22,11 +22,10 @@ private:
 	void _includeFile(const string& fileName);
 	void _parseMime(ifstream& file);
 	void _parseHTTP(ifstream& file, bool inc); // include를 통해서 들어간 경우 true, 그 외에 false
+	void _parse(ifstream& file);
 public:
-	ServConf();
+	ServConf(const string& fileName);
 	~ServConf();
-
-	void parse(const string& fileName);
 
 	const long& getAliveTime() const;
 	const ServBlock& getServBlock(int idx) const;
