@@ -21,22 +21,16 @@ string    ResponseManager::getMessage(){
 }
 
 void    ResponseManager::_setHeaderData(){
- //keepAlive 필드가 무조건 있다고 가정
+//keep-alive 
     ostringstream oss;
-    if ((oss <<_conf.getAliveTime())){
+    if (oss <<_conf.getAliveTime())
         _data[__keepAlive] = oss.str();
-    }
-//contentType
+//content-type
     size_t i = _data[__path].find_last_of('.');
-    if (i == std::string::npos)
-        _data[__contentType] = "text/html";
-    else{
-        std::string type = _conf.getMime(_data[__path].substr(i));
-        if (type.size()) //getMime 안의 throw없어야. 못찾았으면 기본값이 text/html이라.
-            _data[__contentType] = type;
-        else
-            _data[__contentType] = "text/html";
-    }
+    if (i == std::string::npos || (i + 1 == _data[__path].size()))
+        _data[__contentType] = _conf.getMime("default");
+    else
+        _data[__contentType] = _conf.getMime(_data[__path].substr(i));
 }
 
 void    ResponseManager::_setMessage(){
@@ -81,17 +75,12 @@ void    ResponseManager::_setData(){
 const std::unordered_map<int, std::string>& ResponseManager::_setErrorData(int errCode, const string& reasonPhrase){
     _data[__statusCode] = errCode;
     _data[__reasonPhrase] = reasonPhrase;
-    _setErrorPath();
-    return (_data);
-}
-
-void    ResponseManager::_setErrorPath(){
-    //location 블럭의 error_page를 먼저 탐색해야하는데
-    //server 블럭의 error_page 탐색
-    std::string errorPage = _sb.getErrorPage(strtol(_data[__statusCode].c_str(), 0, 10));
+    const std::string& errorPage = _sb.getErrorPage(strtol(_data[__statusCode].c_str(), 0, 10));
     if (errorPage.size())
         _data[__path] = _sb.getRoot() + "/" + errorPage;
-    //없다면 기본문구 만들어서 보내야함.
+    else
+        _data[__path] = ""; 
+    return (_data);
 }
 
 void    ResponseManager::_setHost(){
@@ -118,7 +107,7 @@ void    ResponseManager::_setPath(){
     const std::string&  locationIdentifier = it->first;
     const LocBlock&     locationBlock = it->second;
     const std::string&  locationRoot = locationBlock.getRoot();
-
+    
 //이름이 어떤 로케이션블록 또는 서버블록의 루트와 완전히 일치하는게 있는지 있다면 그것을 사용하는데 반영?
 // 근데 로케이션 블록이 / 이라 ""로 되는지 아니면 아예 로케이션 블록이 없어서 ""인지 어떻게 아는지?
     if (it == _sb.getPath().end() && serverRoot.size())//매핑되는 로케이션 블록이 없을 경우. 서버 루트 사용.

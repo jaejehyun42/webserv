@@ -242,23 +242,3 @@ string Request::getErrorCode() const
 {
 	return (_errorCode);
 }
-
-string Request::getErrorMessage() const
-{
-	return (_errorMessage);
-}
-
-string Request::getErrorCode() const
-{
-	return (_errorCode);
-}
-
-string Request::getErrorMessage() const
-{
-	return (_errorMessage);
-}
-
-string Request::getErrorCode() const
-{
-	return (_errorCode);
-}

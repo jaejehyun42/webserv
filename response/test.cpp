@@ -6,21 +6,19 @@
 #include <iomanip>
 #include <fstream>
 using namespace std;
-int main(){
-    ifstream file("test");
-    if (!file){
-        cerr<<"Error: flie open\n";
-        return EXIT_FAILURE;
-    }
-    string line;
-    if (!getline(file, line)){
-        cerr<<"Error: flie line\n";
-        return EXIT_FAILURE;
+// /바이너리파일을 읽고 내용을 string에 담을 수 있는지? 또는 char*에 답을 수있는지?
+
+
+int main() {
+    string s = "as..d.f.";
+    size_t i =s.find_last_of('.');
+    cout<<s.substr(i)<<"\n";
+    cout<<i<<"\n";
+    cout<<s.size();
+    return 0;
 }
-    while (getline(file, line)){
-        cout<<line;
-    }
-}
+
+
 
 
     // struct stat urlStatusBuf;

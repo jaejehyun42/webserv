@@ -23,23 +23,16 @@ void        Body::_setMessage(){
         _doDelete();
 }
 
-void    Body::_doGet(){ //텍스트인 경우, 바이너리인 경우 나눠야. //chunk할건지? 할거면 메모리를이용한 캐싱안될거같은데 바로send해야할거같은데 
+void    Body::_doGet(){
     std::ifstream ifs(_data.at(__path), std::ios::binary);
     if (!ifs)
         throw(std::runtime_error("500"));
-
-    ifs.seekg(0, std::ios::end); // 0:file offset
+    ifs.seekg(0, std::ios::end);
     std::streampos size = ifs.tellg();
     ifs.seekg(0, std::ios::beg);
-
-    char* buf = new char[size];
-    ifs.read(buf, size);
-
-//파일이 바이너리인 경우  
-    // send(1,buf,size,0);
-//텍스트인 경우
+    std::string buf(size, '\0');
+    ifs.read(&buf[0], size);
     _message += buf;
-    delete[] buf;
     ifs.close();
 }
 

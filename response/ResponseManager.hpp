@@ -38,7 +38,6 @@ class ResponseManager{
         void        _setPath();
         void        _setRequestBody();
 		void        _setRequestCgiEnv();
-        void        _setErrorPath();
 
         void        _checkRequestError();
 
