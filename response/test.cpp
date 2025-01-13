@@ -7,10 +7,19 @@
 #include <fstream>
 using namespace std;
 int main(){
-    string identifier = ".py";
-    string path= "/tmp/hello.py";
-    size_t i =path.find_last_of('.');
-    cout<<path.substr(i);
+    ifstream file("test");
+    if (!file){
+        cerr<<"Error: flie open\n";
+        return EXIT_FAILURE;
+    }
+    string line;
+    if (!getline(file, line)){
+        cerr<<"Error: flie line\n";
+        return EXIT_FAILURE;
+    }
+    while (getline(file, line)){
+        cout<<line;
+    }
 }
 
 

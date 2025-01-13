@@ -4,14 +4,6 @@ Request::Request() {}
 
 Request::~Request() {}
 
-void Request::_parseHostAndMethod()
-{
-	if (_headers.find("Host") == _headers.end()) // Host 헤더 체크
-		_setError(400);
-	else if (_method != "GET" && _method != "POST" && _method != "DELETE")
-		_setError(405);
-}
-
 void Request::_setError(int error_code)
 {
 	if (error_code == 400)
@@ -33,23 +25,63 @@ void Request::_setError(int error_code)
 	throw runtime_error(_errorCode + " " + _errorMessage); // 여기서 throw 까지 처리
 }
 
-void Request::initRequest(ifstream& file)
+void Request::_parseMethod()
 {
+	for (size_t i = 0; i < _method.size(); ++i) // 메서드는 전부 대문자여야함
+	{
+		if (!isupper(_method[i]))
+			_setError(400);
+	}
+}
+
+void Request::_parseKey(const string& key)
+{
+	for (size_t i = 0; i < key.size(); ++i) // key는 공백이 없어야함
+	{
+		if (isspace(key[i]))
+			_setError(400);
+	}
+}
+
+void Request::_parseHost(const string& value)
+{
+		if (_headers.find("Host") != _headers.end()) // Host 헤더는 2개 이상일 수 없음
+			_setError(400);
+
+		istringstream stream(value);
+
+		string str;
+		stream >> str;
+		if (stream >> str) // Host 헤더에는 value가 2개 이상일 수 없음
+			_setError(400);
+}
+
+void Request::_parseMethodChkHost()
+{
+	if (_headers.find("Host") == _headers.end()) // Host 헤더가 존재하지 않음
+		_setError(400);
+	else if (_method != "GET" && _method != "POST" && _method != "DELETE")
+		_setError(405);
+}
+
+void Request::initRequest(const string& input)
+{
+	istringstream form(input);
 	string line;
 
-	if (!getline(file, line))
+	if (!getline(form, line))
 		_setError(400);
 	_parseStatus(line); // 상태 라인 파싱
 
-	while (getline(file, line)) // 헤더 파싱 루프
+	while (getline(form, line)) // 헤더 파싱 루프
 	{
-		if (line.empty()) // 헤더와 바디를 구분하는 빈 줄 체크
+		if (line == "\r") // 헤더와 바디를 구분하는 빈 줄 체크
 			break ;
 		_parseHeader(line);
 	}
-	_parseHostAndMethod();
+	_parseMethodChkHost();
 
-	while (getline(file, line)) // 바디 초기화
+	while (getline(form, line)) // 바디 초기화
 		_body += line + "\n";
 }
 
@@ -72,8 +104,13 @@ void Request::_parseUrl()
 	else
 	{
 		_path = _url.substr(start, delim_pos - start);
-		_query = _url.substr(delim_pos + 1, _url.size() - 1); 
+		_query = _url.substr(delim_pos + 1, _url.size() - delim_pos); 
 	}
+
+	size_t cgi_pos = _path.find(".py"); // cgi 경로 체크
+	
+	if (cgi_pos != string::npos)
+		_cgiPath = _path.substr(cgi_pos + 3, _path.size() - cgi_pos - 2);
 }
 
 void Request::_parseVersion()
@@ -84,7 +121,7 @@ void Request::_parseVersion()
 	if (HTTP != "HTTP")
 		_setError(400);
 
-	string version_num = _version.substr(delim_pos + 1, _version.size() - 1);
+	string version_num = _version.substr(delim_pos + 1, _version.size() - delim_pos);
 
 	char *endptr;
 	double version_num_doub = strtod(version_num.c_str(), &endptr);
@@ -101,10 +138,16 @@ void Request::_parseStatus(const string& line)
 {
 	if (isspace(line[0])) // 시작이 공백인지 체크
 		_setError(400);
+	for (size_t i = 0; i < line.size(); ++i) // 상태 라인은 탭 사용 불가
+	{
+		if (line[i] == '\t')
+			_setError(400);
+	}
 
 	istringstream stream(line);
 
 	stream >> _method;
+	_parseMethod();
 
 	stream >> _url;
 	_parseUrl();
@@ -120,26 +163,33 @@ void Request::_parseStatus(const string& line)
 
 void Request::_parseHeader(const string& line)
 {
-	if (count(line.begin(), line.end(), ':') != 1) // ':' 구분자가 1개 이상 있으면 오류 
-		_setError(400);
-
 	size_t delim_pos = line.find(':'); // 구분자 ':' 위치 체크
 
 	if (delim_pos == string::npos)
 		_setError(400);
 
 	string key = line.substr(0, delim_pos);
+	_parseKey(key);
 
-	size_t value_pos = line.find_first_not_of(" \t", delim_pos + 1); // ':' 이후 공백을 무시
+	size_t value_pos = line.find_first_not_of(" ", delim_pos + 1); // ':' 이후 공백을 무시
 
-	if (value_pos == string::npos)
+	if (line[value_pos] == ':') // value의 시작이 ':' 이면 오류
+		_setError(400);
+	else if (value_pos == string::npos)
 		_setError(400);
 
-	string value = line.substr(value_pos, line.size() - 1);
+	string value = line.substr(value_pos, line.size() - value_pos - 1);
 
-	for (size_t i = 0; i < key.size(); ++i) // 소문자 변환
-		key[i] = tolower(key[i]);
-	key[0] = toupper(key[0]);
+	for (size_t i = 0; i < key.size(); ++i) // key 대소문자 변환
+	{
+		if (i && key[i - 1] != '-')
+			key[i] = tolower(key[i]);
+		else
+			key[i] = toupper(key[i]);
+	}
+
+	if (key == "Host")
+		_parseHost(value);
 
 	_headers[key] = value;
 }
@@ -163,6 +213,11 @@ string Request::getQuery() const
 	return (_query);
 }
 
+string Request::getCgiPath() const
+{
+	return (_cgiPath);
+}
+
 string Request::getVersion() const
 {
 	return (_version);
@@ -176,6 +231,26 @@ unordered_map<string, string> Request::getHeaders() const
 string Request::getBody() const
 {
 	return (_body);
+}
+
+string Request::getErrorMessage() const
+{
+	return (_errorMessage);
+}
+
+string Request::getErrorCode() const
+{
+	return (_errorCode);
+}
+
+string Request::getErrorMessage() const
+{
+	return (_errorMessage);
+}
+
+string Request::getErrorCode() const
+{
+	return (_errorCode);
 }
 
 string Request::getErrorMessage() const
