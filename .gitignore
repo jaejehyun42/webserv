@@ -2,8 +2,6 @@
 *.DS_*
 .vscode
 Webserv
-./confg
-./request
 
 # Prerequisites
 *.d
