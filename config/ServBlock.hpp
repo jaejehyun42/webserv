@@ -10,7 +10,8 @@
 
 using namespace std;
 
-/// Server 블록 관련
+// Server 블록 관련
+// 서버 포트, 클라이언트 바디 사이즈, location block 정의 안 되어 있는 경우 에러 처리
 class ServBlock
 {
 private:

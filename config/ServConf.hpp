@@ -11,6 +11,7 @@
 using namespace std;
 
 // 전체적인 내용 및 http 블록 관련 클래스
+// ServBlock나 default_type이 정의 안 되어 있는 경우 에러 처리
 class ServConf
 {
 private:

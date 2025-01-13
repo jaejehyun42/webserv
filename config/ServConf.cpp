@@ -1,7 +1,10 @@
 #include "ServConf.hpp"
 #include "utils_conf.hpp"
 
-ServConf::ServConf() {}
+ServConf::ServConf()
+{
+	_aliveTime = 0;
+}
 
 ServConf::~ServConf() {}
 
@@ -159,8 +162,7 @@ const string& ServConf::getMime(const string& key) const
 {
 	unordered_map<string, string>::const_iterator cit = _mime.find(key);
 	
-	if (cit != _mime.end())
-		return (cit->second);
-	else
-		throw ;
+	if (cit == _mime.end())
+		cit = _mime.find("default");
+	return (cit->second);
 }

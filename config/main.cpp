@@ -19,6 +19,7 @@ int main(int argc, char** argv)
             cout << "Path found: \"" << it->first << "\"" << endl;
 		else
             cout << "Path not found." << endl;
+		cout << sc.getMime("tttttt") << endl;
 	}
 	catch(const std::exception& e)
 	{

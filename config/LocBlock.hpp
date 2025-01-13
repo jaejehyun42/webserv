@@ -13,6 +13,8 @@ using namespace std;
 #define DELETE 2
 
 // location 블록 관련
+// path가 cgi인데 index도 같이 정의되어 있는 경우 에러 처리
+// 반대로 path가 디렉토리인데 cgi_pass가 정의되어 있는 경우 에러처리
 class LocBlock
 {
 private:
