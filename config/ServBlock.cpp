@@ -123,14 +123,9 @@ const vector<string>& ServBlock::getName() const
 	return (_name);
 }
 
-const string& ServBlock::getErrorPage(int status) const
+const unordered_map<long, string>& ServBlock::getErrorPage() const
 {
-	unordered_map<long, string>::const_iterator cit = _error.find(status);
-	
-	if (cit != _error.end())
-		return (cit->second);
-	else
-		throw ;
+	return (_error);
 }
 
 const unordered_map<string, LocBlock>& ServBlock::getPath() const
