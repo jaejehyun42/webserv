@@ -2,6 +2,7 @@
 *.DS_*
 .vscode
 Webserv
+client
 
 # Prerequisites
 *.d
