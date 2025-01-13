@@ -16,6 +16,7 @@ MAIN_FILE =		server/main			\
 
 SERVER_DIR = 	server/
 SERVER_FILE =	Server				\
+				Client				\
 
 CONFIG_DIR = 	config/
 CONFIG_FILE =	ServConf			\

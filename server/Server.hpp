@@ -1,5 +1,5 @@
-#ifndef SERV_HPP
-# define SERV_HPP
+#ifndef SERVER_HPP
+# define SERVER_HPP
 
 #include <vector>
 #include <unordered_map>
@@ -7,22 +7,16 @@
 #include <iostream>
 #include <netdb.h>
 #include <unistd.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/event.h>
-#include <sys/time.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
+#include "Client.hpp"
 #include "../config/ServConf.hpp"
 #include "../request/Request.hpp"
-
-struct Client
-{
-	int _index;
-	string _message;
-
-	Client() : _index(0), _message("") {}
-	Client(int n) : _index(n), _message("") {}
-};
 
 class Server
 {
@@ -31,7 +25,7 @@ private:
 	struct addrinfo _hints;
 	vector<struct kevent> _evList;
 	unordered_map<int, int> _server;
-	unordered_map<int, struct Client> _client;
+	unordered_map<int, Client> _client;
 
 	void setAddrInfo();
 	int initSocket(const char* domain, const char* port);

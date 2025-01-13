@@ -93,7 +93,10 @@ void Server::setKqueue()
 
 void Server::acceptClient(int fd)
 {
-	int client_fd = accept(fd, NULL, NULL);
+	struct sockaddr_in addr;
+	socklen_t addr_len = sizeof(addr);
+
+	int client_fd = accept(fd, (struct sockaddr*)&addr, &addr_len);
 	if (client_fd == -1)
 		throw runtime_error("Error: accept: " + string(strerror(errno)));
 
@@ -102,8 +105,11 @@ void Server::acceptClient(int fd)
 	if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
 		throw runtime_error("Error: kevent: " + string(strerror(errno)));
 
-	_client[client_fd] = Client(getServerIdx(fd));
-	cout << "Client connected\n";
+	char ip[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, &addr.sin_addr, ip, sizeof(ip));
+	int port = ntohs(addr.sin_port);
+
+	_client[client_fd] = Client(port, getServerIdx(fd), ip);
 }
 
 void Server::readClient(int fd)
@@ -114,10 +120,9 @@ void Server::readClient(int fd)
 	{
 		close(fd);
 		_client.erase(fd);
-		cout << "Client disconnected\n";
 		return ;
 	}
-	_client[fd]._message += buffer;
+	_client[fd].setMessage(buffer);
 	
 	struct kevent evSet;
 	EV_SET(&evSet, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
@@ -127,23 +132,14 @@ void Server::readClient(int fd)
 
 void Server::sendClient(int fd)
 {
-	unordered_map<int, struct Client>::iterator it = _client.find(fd);
-	if (it != _client.end() && it->second._message != "")
+	unordered_map<int, Client>::iterator it = _client.find(fd);
+	if (it != _client.end() && it->second.getMessage() != "")
 	{
 		Request request;
-		request.initRequest(it->second._message);
+		request.initRequest(it->second.getMessage());
 
-		// cout << "Method = " << request.getMethod() << "\n";
-		// cout << "URL = " << request.getUrl() << "\n";
-		// cout << "Path = " << request.getPath() << "\n";
-		// cout << "Query = " << request.getQuery() << "\n";
-		// cout << "CgiPath = " << request.getCgiPath() << "\n";
-		// cout << "Version = " << request.getVersion() << "\n";
-		// unordered_map<string, string> headers = request.getHeaders();
-		// cout << "Headers = " << "\n";
-		// for (Request::umap_it it = headers.begin(); it != headers.end(); ++it)
-		// 	cout << it->first << ": " << it->second << "\n";
-		// cout << "Body = " << "\n" << request.getBody() << endl;
+		cout << "\033[33m[CLIENT "<< it->second.getIP() << ":" << it->second.getPort() << "]\033[0m ";
+		cout << "\033[32m" << request.getMethod() << " -> " << request.getUrl() << "\033[0m\n";
 
 		string message =
 			"HTTP/1.1 200 OK\r\n"
@@ -166,6 +162,7 @@ void Server::sendClient(int fd)
 		EV_SET(&evSet, fd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
 		if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
 			throw runtime_error("Error: kevent: " + string(strerror(errno)));
+		it->second.setMessage("");
 	}
 }
 
@@ -179,9 +176,9 @@ int Server::getServerIdx(int fd) const
 
 int Server::getClientIdx(int fd) const
 {
-	unordered_map<int, struct Client>::const_iterator it = _client.find(fd);
+	unordered_map<int, Client>::const_iterator it = _client.find(fd);
 	if (it != _client.end())
-		return (it->second._index);
+		return (it->second.getIndex());
 	return (-1);
 }
 
