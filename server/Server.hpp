@@ -19,6 +19,12 @@
 #include "../config/ServConf.hpp"
 #include "../request/Request.hpp"
 
+#define RESET	"\033[0m"
+#define RED		"\033[31m"
+#define GREEN	"\033[32m"
+#define YELLOW	"\033[33m"
+#define BLUE	"\033[34m"
+
 class Server
 {
 private:
@@ -42,6 +48,8 @@ public:
 	void readClient(int fd);
 	void sendClient(int fd);
 	void closeClient(int fd);
+
+	void printLog(int fd, Request& rq);
 	void checkTimeout(long timeout);
 
 	int getServerIdx(int fd) const;

@@ -140,9 +140,8 @@ void Server::sendClient(int fd)
 		Request request;
 		request.initRequest(it->second.getMessage());
 
-		cout << "\r\033[33m[CLIENT "<< it->second.getIP() << ":" << it->second.getPort() << "]\033[0m ";
-		cout << "\033[32m" << request.getMethod() << " -> " << request.getUrl() << "\033[0m\n";
-
+		printLog(fd, request);
+		
 		string message =
 			"HTTP/1.1 200 OK\r\n"
 			"Date: Sat, 06 Jan 2025 12:00:00 GMT\r\n"
@@ -174,12 +173,24 @@ void Server::closeClient(int fd)
 	_client.erase(fd);
 }
 
+void Server::printLog(int fd, Request& req)
+{
+	time_t now = time(NULL);
+	char* timeInfo = ctime(&now);
+	unordered_map<int, Client>::iterator it = _client.find(fd);
+
+	timeInfo[strlen(timeInfo) - 1] = '\0';
+	cout << BLUE << "\r[" << timeInfo << "] " << RESET;
+	cout << it->second.getIP() << ":" << it->second.getPort() << " > ";
+	cout << req.getMethod() << " " << req.getUrl() << RESET << endl;
+}
+
 void Server::checkTimeout(long timeout)
 {
 	if (timeout == 0)
 		return ;
 		
-	time_t now = time(NULL);
+	time_t now = time(NULL); 
 	for (unordered_map<int, Client>::iterator it = _client.begin(); it != _client.end(); it++)
 	{
 		if (now - it->second.getLastTime() > timeout)
