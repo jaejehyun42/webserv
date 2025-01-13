@@ -19,7 +19,12 @@ void ServBlock::_parseLine(vector<string>& tokens)
 		if (key == "listen")
 			_port = value;
 		else if (key == "client_max_body_size")
-			_maxSize = strtol(value.c_str(), NULL, 10);
+		{
+			char* end;
+			_maxSize = strtol(value.c_str(), &end, 10);
+			if (_maxSize < 0 || *end != '\0')
+				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+		}
 		else if (key == "root")
 		{
 			if (value.back() == '/' && value.size() != 1)

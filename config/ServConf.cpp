@@ -91,7 +91,7 @@ void ServConf::_parseHTTP(ifstream& file, bool inc)
 			else
 				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
 		}
-		else if (value.back() == ';')
+		else if (value.back() == ';' && tokens.size() == 2)
 		{
 			value.pop_back();
 			if (key == "include")
@@ -99,7 +99,12 @@ void ServConf::_parseHTTP(ifstream& file, bool inc)
 			else if (key == "default_type")
 				_mime["default"] = value;
 			else if (key == "keepalive_timeout")
-				_aliveTime = strtol(value.c_str(), NULL, 10);
+			{
+				char *end;
+				_aliveTime = strtol(value.c_str(), &end, 10);
+				if (_aliveTime < 0 || *end != '\0')
+					throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+			}
 			else
 				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
 		}
