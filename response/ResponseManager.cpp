@@ -20,13 +20,7 @@ string    ResponseManager::getMessage(){
     return (_message);
 }
 
-void        ResponseManager::_getRequestData(){
-    _setHost();
-    _setPath();
-    _setRequestBody();
-}
-
-void    ResponseManager::_getHeaderData(){
+void    ResponseManager::_setHeaderData(){
  //keepAlive 필드가 무조건 있다고 가정
     ostringstream oss;
     if ((oss <<_conf.getAliveTime())){
@@ -77,8 +71,11 @@ void    ResponseManager::_setMessage(){
 
 void    ResponseManager::_setData(){
     _checkRequestError();
-    _getRequestData();
-    _getHeaderData();
+    _setHost();
+    _setPath();
+    _setRequestBody();
+    _setRequestCgiEnv();
+    _setHeaderData();
 }
 
 const std::unordered_map<int, std::string>& ResponseManager::_setErrorData(int errCode, const string& reasonPhrase){
@@ -180,18 +177,17 @@ void    ResponseManager::_setRequestBody(){
     _data[__requestBody] = requestBody;
 }
 
+void ResponseManager::_setRequestCgiEnv(){
+    if (_req.getCgiPath().size())
+        _data[__requestPathInfo] = _req.getCgiPath();
+    if (_req.getQuery().size())
+        _data[__requestQuery] = _req.getQuery();
+}
+
 void    ResponseManager::_checkRequestError(){
     if (_req.getErrorCode().size())
         throw(std::runtime_error(_req.getErrorCode()));
 }
-
-
-
-
-
-
-
-
 
 void    ResponseManager::printAllData(){
     if (_data.find(__statusCode)!=_data.end())

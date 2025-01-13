@@ -16,7 +16,7 @@ int main(){
     if (!getline(file, line)){
         cerr<<"Error: flie line\n";
         return EXIT_FAILURE;
-    }
+}
     while (getline(file, line)){
         cout<<line;
     }

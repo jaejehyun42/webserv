@@ -21,16 +21,15 @@ void    StatusLine::_setMessage(){
 }
 
 void    StatusLine::_setCgiEnv(){
-    size_t  pos;
-    const std::string identifier = ".py"; //.py 로 하드코딩?
-    if ((pos = _data.at(__path).find(identifier)) == std::string::npos) //location block의 cgi-pass의 식별자를 알아야 함. 하드코딩안할거면. getpathiter를 써도괜찮은지?
-        return ;
     int saved_errno = errno;
-    if (setenv("PATH_INFO", _data.at(__path).substr(pos+identifier.size(), _data.at(__path).size()-1).c_str(), 1) == -1){
+
+    if (_data.at(__requestCgiPath).size() && \
+    (setenv("PATH_INFO", _data.at(__requestCgiPath).c_str(), 1) == -1)){
         errno = saved_errno;
         throw std::runtime_error("500");            //errno == ENOMEM, EPERM 등
     }
-    if (setenv("QUERY_STRING", "_query", 1) == -1){
+    if (_data.at(__requestQuery).size() && \
+    (setenv("QUERY_STRING", _data.at(__requestQuery).c_str(), 1) == -1)){
         errno = saved_errno;
         throw std::runtime_error("500");
     }

@@ -22,9 +22,7 @@ void        Body::_setMessage(){
     else if (_data.at(__requestMethod) == "DELETE")
         _doDelete();
 }
-1a ff 23 1d -> "A B C D" -> "ABCD";
 
-sever request[] -> response[] -> responsing!!
 void    Body::_doGet(){ //텍스트인 경우, 바이너리인 경우 나눠야. //chunk할건지? 할거면 메모리를이용한 캐싱안될거같은데 바로send해야할거같은데 
     std::ifstream ifs(_data.at(__path), std::ios::binary);
     if (!ifs)

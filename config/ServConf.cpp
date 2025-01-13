@@ -1,7 +1,14 @@
 #include "ServConf.hpp"
 #include "utils_conf.hpp"
 
-ServConf::ServConf() {}
+ServConf::ServConf(const string& fileName)
+{
+	ifstream file(fileName.c_str());
+	if (!file)
+		throw runtime_error("Error: 파일이 없거나 열 수 없습니다.");
+
+	_parseFile(file);
+}
 
 ServConf::~ServConf() {}
 
@@ -9,7 +16,7 @@ void ServConf::_includeFile(const string& fileName)
 {
 	ifstream file(fileName.c_str());
 	if (!file)
-		throw runtime_error("Error: 파일이 없거나 열 수 없습니다.");
+		throw runtime_error("Error: include: 파일이 없거나 열 수 없습니다.");
 
 	_parseHTTP(file, true);
 }
@@ -102,11 +109,9 @@ void ServConf::_parseHTTP(ifstream& file, bool inc)
 		throw runtime_error("Error: http 블록 포멧이 잘못 되었습니다.");
 }
 
-void ServConf::parse(const string& fileName)
+void ServConf::_parseFile(ifstream& file)
 {
-	ifstream file(fileName.c_str());
-	if (!file)
-		throw runtime_error("Error: 파일이 없거나 열 수 없습니다.");
+
 
 	string line;
 	while (getline(file, line))
