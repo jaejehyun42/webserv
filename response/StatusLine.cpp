@@ -23,6 +23,10 @@ void    StatusLine::_setMessage(){
 void    StatusLine::_setCgiEnv(){
     int saved_errno = errno;
 
+    if (setenv("REQUESTED_METHOD", _data.at(__requestMethod).c_str(), 1) == -1){
+        errno = saved_errno;
+        throw std::runtime_error("500");
+    }
     if (_data.at(__requestCgiPath).size() && \
     (setenv("PATH_INFO", _data.at(__requestCgiPath).c_str(), 1) == -1)){
         errno = saved_errno;

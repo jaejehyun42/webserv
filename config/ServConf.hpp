@@ -11,6 +11,7 @@
 using namespace std;
 
 // 전체적인 내용 및 http 블록 관련 클래스
+// ServBlock나 default_type이 정의 안 되어 있는 경우 에러 처리
 class ServConf
 {
 private:
@@ -19,13 +20,12 @@ private:
 	unordered_map<string, string> _mime;
 
 	void _includeFile(const string& fileName);
-	void _parseFile(ifstream& file);
 	void _parseMime(ifstream& file);
 	void _parseHTTP(ifstream& file, bool inc); // include를 통해서 들어간 경우 true, 그 외에 false
+	void _parse(ifstream& file);
 public:
 	ServConf(const string& fileName);
 	~ServConf();
-
 
 	const long& getAliveTime() const;
 	const ServBlock& getServBlock(int idx) const;

@@ -3,6 +3,7 @@
 
 ServBlock::ServBlock()
 {
+	_port = 0;
 	_maxSize = 0;
 }
 
@@ -17,7 +18,7 @@ void ServBlock::_parseLine(vector<string>& tokens)
 	if (tokens.size() == 2)
 	{
 		if (key == "listen")
-			_port = value;
+			_port = strtol(value.c_str(), NULL, 10);
 		else if (key == "client_max_body_size")
 			_maxSize = strtol(value.c_str(), NULL, 10);
 		else if (key == "root")
@@ -85,7 +86,7 @@ void ServBlock::parseServBlock(ifstream& file)
 			continue ;
 
 		string& delim = tokens.back();
-		if (delim == "}")
+		if (delim == "}" && tokens.size() == 1)
 			break ;
 		else if (delim == "{")
 			_parseBlock(tokens, file);
@@ -96,21 +97,21 @@ void ServBlock::parseServBlock(ifstream& file)
 	}
 	if (line.find("}") == string::npos)
 		throw runtime_error("Error: server 블록 포멧이 잘못 되었습니다.");
-	if (_port == "" || _maxSize == 0)
+	if (_port == 0 || _maxSize == 0)
 		throw runtime_error("Error: 설정 파일의 필수 구성 요소가 없습니다.");
-	if (_error.size() == 0 || _path.size() == 0)
+	if (_path.size() == 0)
 		throw runtime_error("Error: 설정 파일의 필수 구성 요소가 없습니다.");
 }
 
 // getter 함수
+const int& ServBlock::getPort() const
+{
+	return (_port);
+}
 
 const int& ServBlock::getMaxSize() const
 {
 	return (_maxSize);
-}
-const string& ServBlock::getPort() const
-{
-	return (_port);
 }
 
 const string& ServBlock::getRoot() const

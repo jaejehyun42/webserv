@@ -7,7 +7,8 @@ ServConf::ServConf(const string& fileName)
 	if (!file)
 		throw runtime_error("Error: 파일이 없거나 열 수 없습니다.");
 
-	_parseFile(file);
+	_aliveTime = 0;
+	_parse(file);
 }
 
 ServConf::~ServConf() {}
@@ -16,7 +17,7 @@ void ServConf::_includeFile(const string& fileName)
 {
 	ifstream file(fileName.c_str());
 	if (!file)
-		throw runtime_error("Error: include: 파일이 없거나 열 수 없습니다.");
+		throw runtime_error("Error: 파일이 없거나 열 수 없습니다.");
 
 	_parseHTTP(file, true);
 }
@@ -109,10 +110,8 @@ void ServConf::_parseHTTP(ifstream& file, bool inc)
 		throw runtime_error("Error: http 블록 포멧이 잘못 되었습니다.");
 }
 
-void ServConf::_parseFile(ifstream& file)
+void ServConf::_parse(ifstream& file)
 {
-
-
 	string line;
 	while (getline(file, line))
 	{
@@ -164,8 +163,7 @@ const string& ServConf::getMime(const string& key) const
 {
 	unordered_map<string, string>::const_iterator cit = _mime.find(key);
 	
-	if (cit != _mime.end())
-		return (cit->second);
-	else
-		throw ;
+	if (cit == _mime.end())
+		cit = _mime.find("default");
+	return (cit->second);
 }

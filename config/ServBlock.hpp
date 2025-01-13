@@ -10,12 +10,13 @@
 
 using namespace std;
 
-/// Server 블록 관련
+// Server 블록 관련
+// 서버 포트, 클라이언트 바디 사이즈, location block 정의 안 되어 있는 경우 에러 처리
 class ServBlock
 {
 private:
+	int _port;								// 서버 포트 넘버
 	int _maxSize;							// 클라이언트 최대 바디 사이즈
-	string _port;							// 서버 포트 넘버
 	string _root;							// root 위치 정보
 	vector<string> _name;					// 서버 이름 정보
 	unordered_map<long, string> _error;		// key: status, value: page
@@ -29,8 +30,8 @@ public:
 
 	void parseServBlock(ifstream& file);
 
+	const int& getPort() const;
 	const int& getMaxSize() const;
-	const string& getPort() const;
 	const string& getRoot() const;
 	const vector<string>& getName() const;
 	const string& getErrorPage(int status) const;
