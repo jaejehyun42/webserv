@@ -64,7 +64,7 @@ void Server::setSocket(const vector<ServBlock>& serv)
 	{
 		const char* port = it->getPort().c_str();
 
-		if (it->getName().size() == 0)
+		if (it->getName().size() != 0)
 		{
 			for (vector<string>::const_iterator nit = it->getName().begin(); nit != it->getName().end(); nit++)
 				_server[initSocket((*nit).c_str(), port)] = idx;
@@ -113,6 +113,7 @@ void Server::readClient(int fd)
 	if (size <= 0)
 	{
 		close(fd);
+		_client.erase(it);
 		cout << "Client disconnected\n";
 		return ;
 	}
@@ -165,7 +166,6 @@ void Server::sendClient(int fd)
 		EV_SET(&evSet, fd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
 		if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
 			throw runtime_error("Error: kevent: " + string(strerror(errno)));
-		_client.erase(it);
 	}
 }
 
