@@ -113,7 +113,7 @@ void Server::readClient(int fd)
 	if (size <= 0)
 	{
 		close(fd);
-		_client.erase(it);
+		_client.erase(fd);
 		cout << "Client disconnected\n";
 		return ;
 	}
@@ -128,7 +128,7 @@ void Server::readClient(int fd)
 void Server::sendClient(int fd)
 {
 	unordered_map<int, struct Client>::iterator it = _client.find(fd);
-	if (it != _client.end())
+	if (it != _client.end() && it->second._message != "")
 	{
 		Request request;
 		request.initRequest(it->second._message);
