@@ -4,7 +4,7 @@ int main(int argc, char** argv)
 {
 	std::string fileName; 
 	if (argc == 1)
-		fileName = "./file/nginx.conf";
+		fileName = "../file/nginx.conf";
 	else if (argc == 2)
 		fileName = argv[1];
 	else
