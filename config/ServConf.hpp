@@ -28,7 +28,7 @@ public:
 	~ServConf();
 
 	const long& getAliveTime() const;
-	const ServBlock& getServBlock(int idx) const;
+	const ServBlock& getServBlock(size_t idx) const;
 	const vector<ServBlock>& getServ() const;
 	const string& getMime(const string& key) const;
 };

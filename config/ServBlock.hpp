@@ -34,8 +34,8 @@ public:
 	const string& getPort() const;
 	const string& getRoot() const;
 	const vector<string>& getName() const;
-	const string& getErrorPage(int status) const;
 
+	const unordered_map<long, string>& getErrorPage() const;
 	const unordered_map<string, LocBlock>& getPath() const;
 	const unordered_map<string, LocBlock>::const_iterator getPathIter(const string& path) const;
 };
