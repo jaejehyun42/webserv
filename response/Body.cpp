@@ -11,7 +11,7 @@
 #include "Body.hpp"
 #include "ResponseManager.hpp"
 
-Body::Body(const std::unordered_map<int, std::string>& data): _data(data){
+Body::Body(std::unordered_map<int, std::string>& data): _data(data){
 	_setMessage();
 }
 
@@ -21,8 +21,6 @@ std::string  Body::getMessage(){
 	return (_message);
 }
 void        Body::_setMessage(){
-	if (_data.find(__requestMethod) == _data.end())
-		throw std::runtime_error("500");
 	if (_data.at(__requestMethod) == "GET")
 		_makeGetMessage();
 	else if (_data.at(__requestMethod) == "POST")
@@ -33,16 +31,17 @@ void        Body::_setMessage(){
 
 void    Body::_makeAutoindexMessage(){
 	DIR* dir = opendir(_data.at(__path).c_str());
-	int savedErrno = errno;
-	if (dir == NULL){
-		errno = savedErrno;
-		throw(std::runtime_error("500"));
-	}
 	struct dirent   *entry;
 	std::string     relativePath;
 	std::string     currentPath = _data.at(__path);
 	std::string     root = _data.at(__root);
 	std::string		entryFileName;
+	int savedErrno = errno;
+
+	if (dir == NULL){
+		errno = savedErrno;
+		throw(std::runtime_error("500"));
+	}
 	if (currentPath.find(root) == 0 && currentPath.size() != root.size()){
 		relativePath = currentPath.erase(0, root.size());
 		if (currentPath.size())
@@ -132,15 +131,7 @@ void    Body::_makeCgiMessage(){
 	}
 }
 
-void    Body::_makeGetMessage(){
-	if (_data.find(__cgiEnvData) != _data.end() && _data.at(__cgiEnvData).find("PATH_INFO") != std::string::npos){
-		_makeCgiMessage();
-		return ;
-	}
-	if (_data.find(__autoindex) != _data.end()){
-		_makeAutoindexMessage();
-		return ;
-	}
+void	Body::_makeStaticFileMessage(){
 	std::ifstream ifs(_data.at(__path), std::ios::binary);
 	if (!ifs)
 		throw(std::runtime_error("500"));
@@ -151,6 +142,21 @@ void    Body::_makeGetMessage(){
 	ifs.read(&buf[0], size);
 	_message += buf;
 	ifs.close();
+}
+void    Body::_setContentLength(){
+	ostringstream	oss;
+	oss<<_message.length();
+	_data[__contentLength] = oss.str();
+}
+
+void    Body::_makeGetMessage(){
+	if (_data.find(__cgiEnvData) != _data.end() && _data.at(__cgiEnvData).find("PATH_INFO") != std::string::npos)
+		_makeCgiMessage();
+	else if (_data.find(__autoindex) != _data.end())
+		_makeAutoindexMessage();
+	else
+		_makeStaticFileMessage();
+	_setContentLength();
 }
 
 void    Body::_makePostMessage(){

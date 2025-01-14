@@ -13,6 +13,7 @@ enum eData{
     __path,
     __root,
     __autoindex,
+    __contentLength,
     __contentType,
     __requestMethod,
     __requestBody,
