@@ -41,8 +41,9 @@ void    Body::_makeAutoindexMessage(){
     struct dirent   *entry;
     while ((entry = readdir(dir)) != NULL){
         _message += entry->d_name;
-        _message += "\r\n";
+        _message += "\r\n"; //마지막에 개행 들어가는 문제있음
     }
+    // _message.erase
     closedir(dir);
 }
 
