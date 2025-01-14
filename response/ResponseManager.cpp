@@ -52,6 +52,7 @@ void    ResponseManager::_setMessage(){
 
 void    ResponseManager::_setData(){
     _checkRequestError();
+    _data[__contentType] = _conf.getMime("dafault");
     _setHost();
     _setPath();
     _setRequestData();
@@ -74,8 +75,7 @@ void    ResponseManager::_setHost(){
     // unordered_map<string,string> headers = _req.getHeaders();
     // if (headers.find("Host") == headers.end())
     //     throw std::runtime_error("400");
-
-    // std::vector<string>::const_iterator it = _sb.getName().begin();
+// std::vector<string>::const_iterator it = _sb.getName().begin();
     // for (; it!=_sb.getName().end() ; it++){
     //     if (headers["Host"] == *it){
     //         _data[__hostName] = *it;

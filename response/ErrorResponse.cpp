@@ -9,7 +9,10 @@ ErrorResponse::~ErrorResponse(){}
 
 void    ErrorResponse::setMessage(const std::unordered_map<int, std::string>& data){
     _message = "HTTP/1.1 " + data.at(__statusCode) + " " + data.at(__reasonPhrase) + "\r\n";
-    _message += "Content-Type: " + data.at(__contentType) + "\r\n";
+    if (data.find(__contentType) != data.end())
+        _message += "Content-Type: " + data.at(__contentType) + "\r\n";
+    else
+        _message += "Content-Type: " + daat.at(__contentTypeDefault) + "\r\n";
 
     if (data.at(__path).empty()){ //error page가 없는경우
         std::string tmpMessage;
@@ -37,14 +40,13 @@ void    ErrorResponse::setMessage(const std::unordered_map<int, std::string>& da
     ifs.seekg(0, std::ios::end);
     std::streampos size = ifs.tellg();
     ifs.seekg(0, std::ios::beg);
+
     oss<<size;
     _message += "Content-Length: " + oss.str() + "\r\n\r\n";
 
     std::string buf(size, '\0');
     ifs.read(&buf[0], size); //에러나면? 
-
     _message += buf;
-
     ifs.close();
 }
 
