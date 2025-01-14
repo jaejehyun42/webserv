@@ -150,8 +150,8 @@
                 <li>소켓의 이벤트를 감지하기 위해 Kernel Queue에 넣어 감지합니다.</li>
                 <li>서버 소켓의 이벤트를 감지하면 클라이언트 소켓와 연결하여, 연결된 소켓은 Kqueue에 넣습니다.</li>
                 <li>클라이언트 소켓의 이벤트를 감지하면, 이벤트 필터에 맞춰서 각 필터에 맞는 기능을 수행합니다.</li>
-                <li>만약 클라이언트가 요청을 보낸다면, 요청 메세지를 임시적으로 보관합니다.</li>
-                <li>클라이언트가 응답을 받을 준비가 되었다면, 보관한 메세지를 해석하여 이에 맞는 응답 메세지를 보냅니다.</li>
+                <li>만약 클라이언트가 요청을 보낸다면, 요청 메세지를 임시적으로 보관하여 대기합니다.</li>
+                <li>응답을 받을 준비가 되었다면, 보관한 메세지를 해석하여 이에 맞는 응답 메세지를 보냅니다.</li>
             </ul>
         </section>
 
@@ -173,7 +173,7 @@
             </ul>
             <div class="button-container">
                 <button onclick="window.location.href='/post.html';">파일 업로드</button>
-                <button onclick="window.location.href='/post.html';">파일 삭제</button>
+                <button onclick="window.location.href='/delete.html';">파일 삭제</button>
                 <button onclick="alert('Webserv를 시작해 주셔서 감사합니다!')">더 알아보기</button>
             </div>
         </section>
