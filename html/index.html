@@ -78,12 +78,19 @@
         li {
             margin-bottom: 5px;
         }
+
+        .button-container {
+            display: flex; /* 플렉스 컨테이너 설정 */
+            justify-content: center; /* 버튼을 수평 중앙 정렬 */
+            align-items: center; /* 버튼을 수직 중앙 정렬 */
+            gap: 15px; /* 버튼 간격 */
+            margin-top: 15px; /* 컨테이너 위쪽 여백 */
+            margin-bottom: 10px;
+        }
         
         button {
             display: inline-block;
             padding: 10px 15px;
-            margin-top: 5px;
-            margin-left: 650px;
             font-size: 15px;
             color: #eee;
             background-color: #858585;
@@ -164,9 +171,11 @@
             <ul>
                 <li>아래 버튼을 통해 서버에 파일을 업로드/삭제 해보세요.</li>
             </ul>
-            <button onclick="window.location.href='/post.html';">파일 업로드</button>
-            <button onclick="window.location.href='/post.html';">파일 삭제</button>
-            <button onclick="alert('Webserv를 시작해 주셔서 감사합니다!')">더 알아보기</button>
+            <div class="button-container">
+                <button onclick="window.location.href='/post.html';">파일 업로드</button>
+                <button onclick="window.location.href='/post.html';">파일 삭제</button>
+                <button onclick="alert('Webserv를 시작해 주셔서 감사합니다!')">더 알아보기</button>
+            </div>
         </section>
 
         <section>
