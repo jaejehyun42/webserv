@@ -26,7 +26,7 @@ void    ResponseManager::_setMessage(){
         StatusLine      statusLine(_data); 
         Header          header(_data);
         Body            body(_data);
-        _message = statusLine.getMessage() + header.getMessage() + "\r\n" + body.getMessage();
+        _message = statusLine.getMessage() + header.getMessage() + body.getMessage();
     }catch(std::exception& e){
         ErrorResponse er;
         if (std::string(e.what()) == "400"){
@@ -52,16 +52,21 @@ void    ResponseManager::_setMessage(){
 
 void    ResponseManager::_setData(){
     _checkRequestError();
-    _data[__contentType] = _conf.getMime("dafault");
     _setHost();
     _setPath();
-    _setRequestData();
-    _setHeaderData();
+    _setMethod();
+    _setBody();
+    _setContentType();
+    _setConnection();
+    _setCgiEnv();
 }
 
 const std::unordered_map<int, std::string>& ResponseManager::_setErrorData(const std::string& errCode, const std::string& reasonPhrase){
     _data[__statusCode] = errCode;
     _data[__reasonPhrase] = reasonPhrase;
+    _data[__contentType] = _conf.getMime("dafault");
+    _data[__connection] = "closed";
+
     const std::unordered_map<long, string>& errPageMap = _sb.getErrorPage();
 	std::unordered_map<long, string>::const_iterator it = errPageMap.find(strtol(_data[__statusCode].c_str(), 0, 10));
     if (it != errPageMap.end())
@@ -75,7 +80,7 @@ void    ResponseManager::_setHost(){
     // unordered_map<string,string> headers = _req.getHeaders();
     // if (headers.find("Host") == headers.end())
     //     throw std::runtime_error("400");
-// std::vector<string>::const_iterator it = _sb.getName().begin();
+    // std::vector<string>::const_iterator it = _sb.getName().begin();
     // for (; it!=_sb.getName().end() ; it++){
     //     if (headers["Host"] == *it){
     //         _data[__hostName] = *it;
@@ -145,6 +150,7 @@ void    ResponseManager::_setPath(){
         if (_sb.getRoot() != "/")
             path.insert(0,_sb.getRoot());
         _data[__path] = path;
+        _data[__root] = _sb.getRoot();
         _checkPathStatus(path, pathStatus);
         _checkPathIsDir(path, pathStatus, NULL);
     }else{
@@ -153,10 +159,14 @@ void    ResponseManager::_setPath(){
         const LocBlock&     locationBlock = it->second;
         const std::string&  locationRoot = locationBlock.getRoot();
         
-        if (locationRoot.empty() && (_sb.getRoot() != "/"))//매핑되는 로케이션블록이 있지만 로케이션블록의 루트가 없는경우. 서버 루트 이용.
+        if (locationRoot.empty() && (_sb.getRoot() != "/")){//매핑되는 로케이션블록이 있지만 로케이션블록의 루트가 없는경우. 서버 루트 이용.
             path.insert(0,_sb.getRoot());
-        else if (locationRoot != "/")
+            _data[__root] = _sb.getRoot();
+        }
+        else if (locationRoot != "/"){
             path.replace(0, locationIdentifier.size() - 1, locationRoot);//매핑되는 로케이션 블록이 있고 루트도 있는 경우. 로케이션 블록의 루트 사용
+            _data[__root] = locationRoot;
+        }
         _data[__path] = path;
         _checkPathStatus(path, pathStatus);
         _checkPathIsDir(path, pathStatus, &locationBlock);
@@ -165,21 +175,21 @@ void    ResponseManager::_setPath(){
     }
 }
 
-void    ResponseManager::_setRequestData(){
+void    ResponseManager::_setMethod(){
     if (_req.getMethod().size()) //method
         _data[__requestMethod] = _req.getMethod();
+}
 
+void    ResponseManager::_setBody(){
     std::string requestBody = _req.getBody(); //body
     if (requestBody.empty())
         return ;
     if (requestBody.size() < (unsigned long)_sb.getMaxSize())
         throw (std::runtime_error("413"));
     _data[__requestBody] = requestBody;
-
-    _setRequestCgiEnv(); //cgi
 }
 
-void ResponseManager::_setRequestCgiEnv(){
+void ResponseManager::_setCgiEnv(){
     if (_req.getCgiPath().empty())
         return ;
 
@@ -188,19 +198,22 @@ void ResponseManager::_setRequestCgiEnv(){
         _data[__cgiEnvData] += "PATH_INFO=" + _req.getCgiPath() + " ";
     if (_req.getQuery().size())
         _data[__cgiEnvData] += "QUERY_STRING=" + _req.getQuery() + " ";
+
     std::unordered_map<std::string, std::string> requestHeaderMap = _req.getHeaders();
     if (requestHeaderMap.find("Content-Length") != requestHeaderMap.end())
         _data[__cgiEnvData] += "CONTENT_LENGTH=" + requestHeaderMap["Content-Length"] + " ";
     if (requestHeaderMap.find("Content-Type") != requestHeaderMap.end())
         _data[__cgiEnvData] += "CONTENT_TYPE=" + requestHeaderMap["Content-Type"] + " ";
+    _data[__cgiEnvData] += "DOCUMENT_ROOT=" + _data[__root] + " ";
 }
 
-void    ResponseManager::_setHeaderData(){
-//keep-alive 
+void    ResponseManager::_setConnection(){
     ostringstream oss;
     if (oss <<_conf.getAliveTime())
-        _data[__keepAlive] = oss.str();
-//content-type
+        _data[__connection] = oss.str();
+}
+
+void    ResponseManager::_setContentType(){
     size_t i = _data[__path].find_last_of('.');
     if (i == std::string::npos || (i + 1 == _data[__path].size()))
         _data[__contentType] = _conf.getMime("default");
@@ -220,14 +233,12 @@ void    ResponseManager::printAllData(){
         cout<<"ReasonPhrase: "<<_data[__reasonPhrase]<<"\n";
     if (_data.find(__hostName)!=_data.end())
         cout<<"HostName: "<<_data[__hostName]<<"\n";
-    if (_data.find(__keepAlive)!=_data.end())
-        cout<<"KeepAlive: "<<_data[__keepAlive]<<"\n";
+    if (_data.find(__connection)!=_data.end())
+        cout<<"Connection: "<<_data[__connection]<<"\n";
     if (_data.find(__path)!=_data.end())
         cout<<"Path: "<<_data[__path]<<"\n";
     if (_data.find(__autoindex)!=_data.end())
         cout<<"AutoIndex: "<<_data[__autoindex]<<"\n";
-    if (_data.find(__body)!=_data.end())
-        cout<<"Body: "<<_data[__body]<<"\n";
     if (_data.find(__contentType)!=_data.end())
         cout<<"ContentType: "<<_data[__contentType]<<"\n";
     if (_data.find(__requestMethod)!=_data.end())

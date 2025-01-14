@@ -17,13 +17,13 @@ void                ResponseHeader::_setMessage(){
 }
 
 void                ResponseHeader::_setEtag(){
-
+    ;
 }
 
 void                ResponseHeader::_setServer(){
-    std::string     _serverName = "jaejehyun's webserv/1.0";
+    _message += "Server: jaejehyun\r\n";
 }
-
+    
 void                ResponseHeader::_setAcceptRanges(){
-
+    ;
 }

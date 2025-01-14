@@ -10,35 +10,11 @@
 #include <vector>
 #include <cstdlib>
 #include <unistd.h>
+#include <map>
 using namespace std;
+int main(){
 
-int main(int ac, char**av, char**en) {
-
-        char *file = const_cast<char*>("/bin/ls");
-        char *argv[3] = {file, const_cast<char*>("/Users/jeshin/42Cursus/webserv"), 0}; //위험할 수 있음 수정하면 
-        string s;
-        for(int i=0;en[i]!=0;i++){
-            s += en[i];
-            s += "\n";
-        }
-        std::istringstream  iss(s);
-        std::string         token;
-        std::vector<char*>  tmpEnvp;
-        while (std::getline(iss,token,' '))
-            tmpEnvp.push_back(const_cast<char*>(token.c_str()));
-        tmpEnvp.push_back(NULL);
-        char **envp = tmpEnvp.data();
-
-        if (execve(file, argv, envp)){
-            std::cerr<<"Error: Failed execve in Cgi process\n";
-            exit(EXIT_FAILURE);
-        }
-
-    return 0;
 }
-
-
-
 
     // struct stat urlStatusBuf;
 
@@ -86,3 +62,90 @@ int main(int ac, char**av, char**en) {
 //     delete[] buf;
 //     ifs.close();
 //     cout<<_message<<"\n";
+
+//cgi{
+    // DIR* dir = opendir(_data.at(__path).c_str());
+    // int savedErrno = errno;
+    // if (dir == NULL){
+    //     errno = savedErrno;
+    //     throw(std::runtime_error("500"));
+    // }
+    // struct dirent   *entry;
+    // std::string     relativePath;
+    // std::string     currentPath = _data.at(__path);
+    // std::string     root = _data.at(__root);
+    // if (currentPath.find(root) == 0 && currentPath.size() != root.size()){
+    //     relativePath = currentPath.erase(0, root.size() - 1);
+    // }
+    // while ((entry = readdir(dir)) != NULL){
+    //     if (relativePath.size())
+    //         _message += relativePath + entry->d_name;
+    //     else
+    //         _message += entry->d_name;
+    //     _message += "\r\n"
+    // }
+    // _message.erase(_message.size() - 1);
+    // closedir(dir);
+// }
+
+//autoindex{
+
+// enum e{
+//     __path,
+//     __root
+// };
+// int main(int ac, char**av, char**en) {
+//     string _message;
+//     map<int,string> _data;
+//     _data[__path] = "/Users/jeshin/42Cursus/webserv";
+//     _data[__root] = "/Users/jeshin";
+
+
+//     DIR* dir = opendir(_data.at(__path).c_str());
+//     int savedErrno = errno;
+//     if (dir == NULL){
+//         errno = savedErrno;
+//         throw(std::runtime_error("500"));
+//     }
+//     struct dirent   *entry;
+//     std::string     relativePath;
+//     std::string     currentPath = _data.at(__path);
+//     std::string     root = _data.at(__root);
+//     std::string		entryFileName;
+//     if (currentPath.find(root) == 0 && currentPath.size() != root.size()){
+//         relativePath = currentPath.erase(0, root.size());
+//         if (currentPath.size())
+//             relativePath += "/";
+//     }
+//     _message += 
+//                 "<!DOCTYPE html>"
+//                 "<html>"
+//                 "<head>"
+//                 "<title>Index</title>"
+//                 "</head>"
+//                 "<body>";
+//     if (relativePath.size()){
+//         _message += 
+//                 "	<h1>Index of" + relativePath + "</h1>";
+//     }
+//                 "	<hr>"
+//                 "	<ul>";
+
+//     while ((entry = readdir(dir)) != NULL){
+//         if (entry->d_name[0] == '.')
+//             continue;
+//         if (relativePath.size())
+//             entryFileName = relativePath + entry->d_name;
+//         else
+//             entryFileName = entry->d_name;
+//         _message +="		<li><a href=\"" + entryFileName + "\">" + entry->d_name + "</a></li>";
+//     }
+//     _message +=
+//             "	</ul>"
+//             "	<hr>"
+//             "</body>"
+//             "</html>";
+//     closedir(dir);
+//     cout<<_message;
+//     return 0;
+// }

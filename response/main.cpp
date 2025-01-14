@@ -26,7 +26,7 @@ int main(){
         ServConf conf(c);
 
         Response resp(re,conf,0);
-
+        cout<<"-----------reponse:-----------\n";
         cout<<resp.getMessage();
     }catch(exception& e){
         cerr<<e.what();
