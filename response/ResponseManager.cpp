@@ -12,7 +12,6 @@
 ResponseManager::ResponseManager(const Request& req, const ServConf& conf, const int& servBlockIdx)
 :_req(req), _conf(conf), _sb(conf.getServBlock(servBlockIdx)){
     _setMessage();
-    // _printAllData();
 }
 
 ResponseManager::~ResponseManager(){}
@@ -72,18 +71,18 @@ const std::unordered_map<int, std::string>& ResponseManager::_setErrorData(const
 }
 
 void    ResponseManager::_setHost(){
-    unordered_map<string,string> headers = _req.getHeaders();
-    if (headers.find("Host") == headers.end())
-        throw std::runtime_error("400");
+    // unordered_map<string,string> headers = _req.getHeaders();
+    // if (headers.find("Host") == headers.end())
+    //     throw std::runtime_error("400");
 
-    std::vector<string>::const_iterator it = _sb.getName().begin();
-    for (; it!=_sb.getName().end() ; it++){
-        if (headers["Host"] == *it){
-            _data[__hostName] = *it;
-            return ;
-        }
-    }
-    throw std::runtime_error("400");
+    // std::vector<string>::const_iterator it = _sb.getName().begin();
+    // for (; it!=_sb.getName().end() ; it++){
+    //     if (headers["Host"] == *it){
+    //         _data[__hostName] = *it;
+    //         return ;
+    //     }
+    // }
+    // throw std::runtime_error("400");
 }
 
 void    ResponseManager::_checkPathStatus(const std::string& path, struct stat& pathStatus){
@@ -206,7 +205,7 @@ void    ResponseManager::_setHeaderData(){
     if (i == std::string::npos || (i + 1 == _data[__path].size()))
         _data[__contentType] = _conf.getMime("default");
     else
-        _data[__contentType] = _conf.getMime(_data[__path].substr(i));
+        _data[__contentType] = _conf.getMime(_data[__path].substr(i + 1));
 }
 
 void    ResponseManager::_checkRequestError(){
@@ -214,7 +213,7 @@ void    ResponseManager::_checkRequestError(){
         throw(std::runtime_error(_req.getErrorCode()));
 }
 
-void    ResponseManager::_printAllData(){
+void    ResponseManager::printAllData(){
     if (_data.find(__statusCode)!=_data.end())
         cout<<"StatusCode: "<<_data[__statusCode]<<"\n";
     if (_data.find(__reasonPhrase)!=_data.end())
@@ -233,10 +232,6 @@ void    ResponseManager::_printAllData(){
         cout<<"ContentType: "<<_data[__contentType]<<"\n";
     if (_data.find(__requestMethod)!=_data.end())
         cout<<"RequestMethod: "<<_data[__requestMethod]<<"\n";
-    // if (_data.find(__requestContentLength)!=_data.end())
-    //     cout<<"RequestContentLength: "<<_data[__requestContentLength]<<"\n";
-    // if (_data.find(__requestContentType)!=_data.end())
-    //     cout<<"RequestContentType: "<<_data[__requestContentType]<<"\n";
     if (_data.find(__requestBody)!=_data.end())
         cout<<"RequestBody: "<<_data[__requestBody]<<"\n";
 }

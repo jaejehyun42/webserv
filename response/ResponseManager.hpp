@@ -25,6 +25,7 @@ class ResponseManager{
         ResponseManager(const Request& req, const ServConf& conf, const int& servBlockIdx);
         ~ResponseManager();
         std::string     getMessage();
+        void            printAllData();
     private:
         void        _setData();
         const std::unordered_map<int, std::string>& _setErrorData(const std::string& errCode, const std::string& reasonPhrase);
@@ -39,7 +40,6 @@ class ResponseManager{
         void    _checkPathStatus(const std::string& path, struct stat& pathStatus);
         void    _checkRequestError();
 
-        void    _printAllData();
 
         const Request&      _req;
         const ServConf&     _conf;
