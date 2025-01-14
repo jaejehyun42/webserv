@@ -27,6 +27,8 @@ void        Body::_setMessage(){
 		_makePostMessage();
 	else if (_data.at(__requestMethod) == "DELETE")
 		_makeDeleteMessage();
+	else
+		throw(std::runtime_error("405"));
 }
 
 void    Body::_makeAutoindexMessage(){
@@ -62,7 +64,7 @@ void    Body::_makeAutoindexMessage(){
 				"	<hr>\n"
 				"	<ul>\n";
 
-	while ((entry = readdir(dir)) != NULL){
+	while ((entry = readdir(dir)) != NULL){ //dir먼저보이게?
 		if (entry->d_name[0] == '.')
 			continue;
 		if (relativePath.size())
@@ -94,7 +96,7 @@ void    Body::_makeCgiMessage(){
 		std::cerr<<"Error: failed fork cgi process\n";
 		errno = savedErrno;
 		throw(std::runtime_error("500"));
-	}else if (cgiProc == 0){ //자식프로세스
+	} else if (cgiProc == 0){ //자식프로세스
 		close(pfd[0]);
 		if (dup2(pfd[1], STDOUT_FILENO) < 0){
 			std::cerr<<"Error: Failed dup2 Cgi process\n";
@@ -117,7 +119,7 @@ void    Body::_makeCgiMessage(){
 			exit(EXIT_FAILURE);
 		}
 		exit(EXIT_SUCCESS);
-	}else{ //부모프로세스
+	} else{ //부모프로세스
 		close(pfd[1]);
 		int cgiProcStatus;
 		waitpid(cgiProc, &cgiProcStatus,0);
@@ -160,9 +162,11 @@ void    Body::_makeGetMessage(){
 }
 
 void    Body::_makePostMessage(){
-
+	_makeCgiMessage();
+	_setContentLength();
 }
 
 void    Body::_makeDeleteMessage(){
-
+	_makeCgiMessage();
+	_setContentLength();
 }

@@ -35,8 +35,9 @@ class EntityHeader{
         const std::unordered_map<int, std::string>& _data;
         string  _message;
         void    _setMessage();
-        void    _setContentLength(struct stat& fileStatus);
         void    _setContentType();
+        void    _setContentLength();
+        void    _setContentLength(struct stat& fileStatus);
         void    _setLastModified(struct stat& fileStatus);
 };
 #endif
