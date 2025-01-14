@@ -67,10 +67,12 @@ void ServBlock::_parseBlock(vector<string>& tokens, ifstream& file)
 
 		LocBlock lb;
 		string& path = *(tokens.begin() + 1);
-		if (path.back() == '/' && path.size() != 1)
-			path.pop_back();
 		lb.parseLocBlock(file, path);
 
+		if (path.back() == '/' && path.size() != 1)
+			path.pop_back();
+		else if (path.front() == '.' && path.back() == '$')
+			path.pop_back();
 		_path[path] = lb;
 	}
 	else
