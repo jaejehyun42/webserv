@@ -9,10 +9,7 @@ ErrorResponse::~ErrorResponse(){}
 
 void    ErrorResponse::setMessage(const std::unordered_map<int, std::string>& data){
     _message = "HTTP/1.1 " + data.at(__statusCode) + " " + data.at(__reasonPhrase) + "\r\n";
-    if (data.find(__contentType) != data.end())
-        _message += "Content-Type: " + data.at(__contentType) + "\r\n";
-    else
-        _message += "Content-Type: " + daat.at(__contentTypeDefault) + "\r\n";
+    _message += "Content-Type: " + data.at(__contentType) + "\r\n";
 
     if (data.at(__path).empty()){ //error page가 없는경우
         std::string tmpMessage;

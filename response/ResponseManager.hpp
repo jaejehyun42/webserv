@@ -14,7 +14,6 @@ enum eData{
     __autoindex,
     __body,
     __contentType,
-    __contentTypeDefault,
     __requestMethod,
     __requestBody,
     __cgiPass,
