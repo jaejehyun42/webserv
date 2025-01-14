@@ -9,9 +9,9 @@ ErrorResponse::~ErrorResponse(){}
 
 void    ErrorResponse::setMessage(const std::unordered_map<int, std::string>& data){
     _message = "HTTP/1.1 " + data.at(__statusCode) + " " + data.at(__reasonPhrase) + "\r\n";
-    _message += "Content-Type: " + data.at(__contentType) + "\r\n";
 
     if (data.at(__path).empty()){ //error page가 없는경우
+        _message += "Content-Type: text/html\r\n";
         std::string tmpMessage;
         std::ostringstream oss;
         tmpMessage += "<!DOCTYPE html>\n"
@@ -29,6 +29,7 @@ void    ErrorResponse::setMessage(const std::unordered_map<int, std::string>& da
         return ;
     }
     //error page가 있는경우
+    _message += "Content-Type: " + data.at(__contentType) + "\r\n";
     std::ifstream ifs(data.at(__path), std::ios::binary);
     std::ostringstream oss;
     if (!ifs){
