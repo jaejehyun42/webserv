@@ -72,18 +72,18 @@ const std::unordered_map<int, std::string>& ResponseManager::_setErrorData(const
 }
 
 void    ResponseManager::_setHost(){
-    unordered_map<string,string> headers = _req.getHeaders();
-    if (headers.find("Host") == headers.end())
-        throw std::runtime_error("400");
+    // unordered_map<string,string> headers = _req.getHeaders();
+    // if (headers.find("Host") == headers.end())
+    //     throw std::runtime_error("400");
 
-    std::vector<string>::const_iterator it = _sb.getName().begin();
-    for (; it!=_sb.getName().end() ; it++){
-        if (headers["Host"] == *it){
-            _data[__hostName] = *it;
-            return ;
-        }
-    }
-    throw std::runtime_error("400");
+    // std::vector<string>::const_iterator it = _sb.getName().begin();
+    // for (; it!=_sb.getName().end() ; it++){
+    //     if (headers["Host"] == *it){
+    //         _data[__hostName] = *it;
+    //         return ;
+    //     }
+    // }
+    // throw std::runtime_error("400");
 }
 
 void    ResponseManager::_checkPathStatus(const std::string& path, struct stat& pathStatus){

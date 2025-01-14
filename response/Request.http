@@ -1,7 +1,0 @@
-GET /Users/jeshin/42Cursus/webserv/response/test.html HTTP/1.1
-User-Agent: PostmanRuntime/7.32.3
-Accept: */*
-Postman-Token: bda49f4f-8500-4559-a291-9bffaa08cd17
-Host: localhost
-Accept-Encoding: gzip, deflate, br
-Connection: keep-alive
