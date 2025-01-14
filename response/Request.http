@@ -1,24 +1,7 @@
-GET /get?key1=value&key2=value HTTP/1.1
+GET /Users/jeshin/42Cursus/webserv/response/test.html HTTP/1.1
 User-Agent: PostmanRuntime/7.32.3
 Accept: */*
 Postman-Token: bda49f4f-8500-4559-a291-9bffaa08cd17
-Host: postman-echo.com
+Host: localhost
 Accept-Encoding: gzip, deflate, br
 Connection: keep-alive
-
-{
-"args": {},
-"headers": {
-"host": "postman-echo.com",
-"x-request-start": "t1735812866.422",
-"connection": "close",
-"x-forwarded-proto": "https",
-"x-forwarded-port": "443",
-"x-amzn-trace-id": "Root=1-67766702-2dbc12913f7b4a781499325d",
-"user-agent": "PostmanRuntime/7.32.3",
-"accept": "*/*",
-"postman-token": "bda49f4f-8500-4559-a291-9bffaa08cd17",
-"accept-encoding": "gzip, deflate, br"
-},
-"url": "https://postman-echo.com/get"
-}

@@ -25,7 +25,7 @@ int main(int ac, char** av){
         string c = "nginx.conf";
         ServConf conf(c);
 
-        Response resp(re,conf,1);
+        Response resp(re,conf,0);
 
         cout<<resp.getMessage();
     }catch(exception& e){

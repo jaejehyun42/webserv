@@ -67,6 +67,6 @@ class StatusLine{
         std::string         _reasonPhrase;
 
         void    _setMessage();
-        void    _setCgiEnv();
+        void    _setCgiValToEnv();
 };
 #endif

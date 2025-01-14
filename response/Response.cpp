@@ -3,8 +3,7 @@
 
 Response::Response(const Request& req, const ServConf& conf, const int& servBlockIdx){
     ResponseManager manager(req, conf, servBlockIdx);
-    // _message = manager.getMessage();
-    manager.printAllData();
+    _message = manager.getMessage();
 }
 
 Response::~Response(){}

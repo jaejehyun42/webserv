@@ -20,8 +20,10 @@ class Body{
         std::string _message;
 
         void    _setMessage();
-        void    _doGet();
-        void    _doPost();
-        void    _doDelete();
+        void    _makeGetMessage();
+        void    _makeAutoindexMessage();
+        void    _makeCgiMessage();
+        void    _makePostMessage();
+        void    _makeDeleteMessage();
 };
 #endif

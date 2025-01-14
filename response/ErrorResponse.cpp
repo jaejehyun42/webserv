@@ -8,8 +8,8 @@ ErrorResponse::ErrorResponse(){}
 ErrorResponse::~ErrorResponse(){}
 
 void    ErrorResponse::setMessage(const std::unordered_map<int, std::string>& data){
-    _message = "HTTP/1.1 " + data.at(__statusCode) + " " + data.at(__reasonPhrase) + "\r\n";
-    if (data.find(__path) != data.end() || data.at(__path).empty()){
+    _message = "HTTP/1.1 " + data.at(__statusCode) + " " + data.at(__reasonPhrase) + "\r\n\r\n";
+    if (data.at(__path).empty()){
         _message += data.at(__statusCode) + " " + data.at(__reasonPhrase);
     }else{
         std::ifstream ifs(data.at(__path), std::ios::binary);

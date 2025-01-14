@@ -55,3 +55,11 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+#response directory
+response/Makefile
+response/test.cpp
+response/test.*
+response/nginx.conf
+response/mime.types
+response/main.cpp

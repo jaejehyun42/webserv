@@ -4,7 +4,9 @@
 #include <iomanip>
 
 GeneralHeader::GeneralHeader(const std::unordered_map<int, std::string>& data)
-: _data(data){}
+: _data(data){
+    _setMessage();
+}
 
 GeneralHeader::~GeneralHeader(){}
 
@@ -14,11 +16,12 @@ void  GeneralHeader::_setMessage(){
 }
 
 void  GeneralHeader::_setConnection(){
-    if (_data.at(__keepAlive).empty() ||\
-    _data.at(__keepAlive).size() && (strtol(_data.at(__keepAlive).c_str(), 0, 10) > 0)){
+    if ((_data.find(__keepAlive) != _data.end()) && \
+    (strtol(_data.at(__keepAlive).c_str(), 0, 10) > 0)){
         _message += "Connection: keep-alive\r\n";
+    }else {
+        _message += "Connection: closed\r\n";
     }
-    _message += "Connection: closed\r\n";
 }
 
 void  GeneralHeader::_setDate(){ //e.g Date: Tue, 07 Jan 2025 05:29:17 GMT

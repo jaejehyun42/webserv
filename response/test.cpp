@@ -5,16 +5,35 @@
 #include <sstream>
 #include <iomanip>
 #include <fstream>
+#include <dirent.h>
+#include <stdio.h>
+#include <vector>
+#include <cstdlib>
+#include <unistd.h>
 using namespace std;
-// /바이너리파일을 읽고 내용을 string에 담을 수 있는지? 또는 char*에 답을 수있는지?
 
+int main(int ac, char**av, char**en) {
 
-int main() {
-    string s = "as..d.f.";
-    size_t i =s.find_last_of('.');
-    cout<<s.substr(i)<<"\n";
-    cout<<i<<"\n";
-    cout<<s.size();
+        char *file = const_cast<char*>("/bin/ls");
+        char *argv[3] = {file, const_cast<char*>("/Users/jeshin/42Cursus/webserv"), 0}; //위험할 수 있음 수정하면 
+        string s;
+        for(int i=0;en[i]!=0;i++){
+            s += en[i];
+            s += "\n";
+        }
+        std::istringstream  iss(s);
+        std::string         token;
+        std::vector<char*>  tmpEnvp;
+        while (std::getline(iss,token,' '))
+            tmpEnvp.push_back(const_cast<char*>(token.c_str()));
+        tmpEnvp.push_back(NULL);
+        char **envp = tmpEnvp.data();
+
+        if (execve(file, argv, envp)){
+            std::cerr<<"Error: Failed execve in Cgi process\n";
+            exit(EXIT_FAILURE);
+        }
+
     return 0;
 }
 

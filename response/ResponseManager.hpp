@@ -15,12 +15,9 @@ enum eData{
     __body,
     __contentType,
     __requestMethod,
-    __requestPathInfo,
-    __requestContentLength,
-    __requestContentType,
     __requestBody,
-    __requestCgiPath,
-    __requestQuery
+    __cgiPass,
+    __cgiEnvData // requestCgiPath, requestQuery, requestContentLength, requestContentType
 };
 
 class ResponseManager{
@@ -28,18 +25,21 @@ class ResponseManager{
         ResponseManager(const Request& req, const ServConf& conf, const int& servBlockIdx);
         ~ResponseManager();
         std::string     getMessage();
-        void            printAllData();
     private:
         void        _setData();
-        const std::unordered_map<int, std::string>& _setErrorData(const int errCode, const string& reasonPhrase);
+        const std::unordered_map<int, std::string>& _setErrorData(const std::string& errCode, const std::string& reasonPhrase);
         void        _setMessage();
         void        _setHeaderData();
         void        _setHost();
         void        _setPath();
-        void        _setRequestBody();
+        void        _setRequestData();
 		void        _setRequestCgiEnv();
 
-        void        _checkRequestError();
+        void    _checkPathIsDir(std::string& path, struct stat& pathStatus, const LocBlock* locationBlock);
+        void    _checkPathStatus(const std::string& path, struct stat& pathStatus);
+        void    _checkRequestError();
+
+        void    _printAllData();
 
         const Request&      _req;
         const ServConf&     _conf;

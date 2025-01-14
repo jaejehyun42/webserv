@@ -29,3 +29,9 @@ nginx.conf 수정사항에 따른 테스트를 하고 싶은 경우.
 2. nginx.conf 는 /etc/nginx/nginx.conf 에 존재
 
 3. nginx.conf 가 어떤 conf파일 include하는지 보고 수정 및 테스트.
+
+4. 기본 conf의 루트 경로는 /var/www/html 임.
+
+5. /usr/sbin/nginx -t 로 conf파일 수정 오류확인.
+
+6. /usr/sbin/nginx -s reload 로 재시작. conf파일을 수정하면 재시작해야 반영됨.
