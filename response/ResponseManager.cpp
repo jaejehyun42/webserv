@@ -149,7 +149,7 @@ void    ResponseManager::_setPath(){
         _checkPathStatus(path, pathStatus);
         _checkPathIsDir(path, pathStatus, NULL);
     }else{
-        const std::string&  serverRoot = _sb.getRoot();
+        // const std::string&  serverRoot = _sb.getRoot();
         const std::string&  locationIdentifier = it->first;
         const LocBlock&     locationBlock = it->second;
         const std::string&  locationRoot = locationBlock.getRoot();
@@ -173,7 +173,7 @@ void    ResponseManager::_setRequestData(){
     std::string requestBody = _req.getBody(); //body
     if (requestBody.empty())
         return ;
-    if (requestBody.size() < _sb.getMaxSize())
+    if (requestBody.size() < (unsigned long)_sb.getMaxSize())
         throw (std::runtime_error("413"));
     _data[__requestBody] = requestBody;
 

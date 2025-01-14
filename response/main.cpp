@@ -5,7 +5,7 @@
 
 using namespace std;
 
-int main(int ac, char** av){
+int main(){
     ifstream f("Request.http");
     if (!f){
         cerr<<"Error: failed flie open\n";
