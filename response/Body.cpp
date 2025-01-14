@@ -49,18 +49,19 @@ void    Body::_makeAutoindexMessage(){
 			relativePath += "/";
 	}
 	_message += 
-				"<!DOCTYPE html>"
-				"<html>"
-				"<head>"
-				"<title>Index</title>"
-				"</head>"
-				"<body>";
+				"<!DOCTYPE html>\n"
+				"<html>\n"
+				"<head>\n"
+				"<title>Index</title>\n"
+				"</head>\n"
+				"<body>\n";
 	if (relativePath.size()){
 		_message += 
-				"	<h1>Index of" + relativePath + "</h1>";
+				"	<h1>Index of" + relativePath + "</h1>\n";
 	}
-				"	<hr>"
-				"	<ul>";
+	_message += 
+				"	<hr>\n"
+				"	<ul>\n";
 
 	while ((entry = readdir(dir)) != NULL){
 		if (entry->d_name[0] == '.')
@@ -69,12 +70,12 @@ void    Body::_makeAutoindexMessage(){
 			entryFileName = relativePath + entry->d_name;
 		else
 			entryFileName = entry->d_name;
-		_message +="		<li><a href=\"" + entryFileName + "\">" + entry->d_name + "</a></li>";
+		_message +="		<li><a href=\"" + entryFileName + "\">" + entry->d_name + "</a></li>\n";
 	}
 	_message +=
-			"	</ul>"
-			"	<hr>"
-			"</body>"
+			"	</ul>\n"
+			"	<hr>\n"
+			"</body>\n"
 			"</html>";
 	closedir(dir);
 }

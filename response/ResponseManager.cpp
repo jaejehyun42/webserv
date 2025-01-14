@@ -23,9 +23,9 @@ string    ResponseManager::getMessage(){
 void    ResponseManager::_setMessage(){
     try{
         _setData();
+        Body            body(_data);
         StatusLine      statusLine(_data); 
         Header          header(_data);
-        Body            body(_data);
         _message = statusLine.getMessage() + header.getMessage() + body.getMessage();
     }catch(std::exception& e){
         ErrorResponse er;
