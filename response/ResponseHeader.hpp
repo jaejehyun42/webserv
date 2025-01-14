@@ -7,9 +7,9 @@
 /* synopsis
 
 response header:
-                   Accept-Ranges           ; Section 14.5        !보류 
+                   Accept-Ranges           ; Section 14.5        !x
                        | Age                     ; Section 14.6
-                       | ETag                    ; Section 14.19 !보류
+                       | ETag                    ; Section 14.19 !x
                        | Location                ; Section 14.30
                        | Proxy-Authenticate      ; Section 14.33
                        | Retry-After             ; Section 14.37

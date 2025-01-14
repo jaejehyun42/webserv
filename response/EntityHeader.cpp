@@ -31,7 +31,7 @@ void    EntityHeader::_setContentLength(struct stat& fileStatus){ //e.g Content-
 }
 
 void    EntityHeader::_setContentType(){ //e.g Content-Type: text/html
-//기본값은 text/html
+
     _message += "Content-Type: " + _data.at(__contentType) + "\r\n";
 }
 
@@ -40,5 +40,5 @@ void    EntityHeader::_setLastModified(struct stat& fileStatus){//Last-Modified:
     struct tm*  gmt = gmtime(&lastModified);
     std::ostringstream  dateStream;
     dateStream << std::put_time(gmt, "%a, %d %b %Y %H:%M:%S GMT");
-    _message += dateStream.str() + "\r\n";
+    _message += "Last-Modified: " + dateStream.str() + "\r\n";
 }

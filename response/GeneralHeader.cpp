@@ -16,12 +16,12 @@ void  GeneralHeader::_setMessage(){
 }
 
 void  GeneralHeader::_setConnection(){
-    if ((_data.find(__keepAlive) != _data.end()) && \
-    (strtol(_data.at(__keepAlive).c_str(), 0, 10) > 0)){
+    if ((_data.find(__connection) != _data.end()) && \
+    (strtol(_data.at(__connection).c_str(), 0, 10) > 0)){
         _message += "Connection: keep-alive\r\n";
-    }else {
-        _message += "Connection: closed\r\n";
+        return ;
     }
+    _message += "Connection: closed\r\n";
 }
 
 void  GeneralHeader::_setDate(){ //e.g Date: Tue, 07 Jan 2025 05:29:17 GMT
@@ -29,7 +29,7 @@ void  GeneralHeader::_setDate(){ //e.g Date: Tue, 07 Jan 2025 05:29:17 GMT
     struct tm*  gmt = gmtime(&now);
     std::ostringstream  dateStream;
     dateStream << std::put_time(gmt, "%a, %d %b %Y %H:%M:%S GMT");
-    _message += dateStream.str() + "\r\n";
+    _message += "Date: " + dateStream.str() + "\r\n";
 }
 
 string  GeneralHeader::getMessage() const{
