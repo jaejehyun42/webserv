@@ -27,12 +27,23 @@ CONFIG_FILE =	ServConf			\
 REQUEST_DIR = 	request/
 REQUEST_FILE =	Request				\
 
-#RESPONCE_DIR = responce/
-#RESPONCE_FILE = Responce			
+RESPONSE_DIR =	response/
+RESPONSE_FILE = Response			\
+				Response			\
+				StatusLine			\
+				Header				\
+				GeneralHeader		\
+				ResponseHeader		\
+				EntityHeader		\
+				Body				\
+				ResponseManager		\
+				ErrorResponse		\
+
 
 HEADS += $(addprefix $(SERVER_DIR), $(SERVER_FILE))
 HEADS += $(addprefix $(CONFIG_DIR), $(CONFIG_FILE))
 HEADS += $(addprefix $(REQUEST_DIR), $(REQUEST_FILE))
+HEADS += $(addprefix $(RESPONSE_DIR), $(RESPONSE_FILE))
 
 FILES += $(MAIN_FILE)
 FILES += $(HEADS)

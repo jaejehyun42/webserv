@@ -18,6 +18,7 @@
 #include "Client.hpp"
 #include "../config/ServConf.hpp"
 #include "../request/Request.hpp"
+#include "../response/Response.hpp"
 
 #define RESET	"\033[0m"
 #define RED		"\033[31m"
@@ -46,7 +47,7 @@ public:
 
 	void acceptClient(int fd);
 	void readClient(int fd);
-	void sendClient(int fd);
+	void sendClient(int fd, const ServConf& conf);
 	void closeClient(int fd);
 
 	void printLog(int fd, Request& rq);

@@ -132,31 +132,19 @@ void Server::readClient(int fd)
 		throw runtime_error("Error: kevent: " + string(strerror(errno)));
 }
 
-void Server::sendClient(int fd)
+void Server::sendClient(int fd, const ServConf& conf)
 {
 	unordered_map<int, Client>::iterator it = _client.find(fd);
 	if (it != _client.end() && it->second.getMessage() != "")
 	{
-		Request request;
-		request.initRequest(it->second.getMessage());
+		Request req;
+		req.initRequest(it->second.getMessage());
 
-		printLog(fd, request);
+		printLog(fd, req);
 		
-		string message =
-			"HTTP/1.1 200 OK\r\n"
-			"Date: Sat, 06 Jan 2025 12:00:00 GMT\r\n"
-			"Server: SimpleHTTPServer/1.0\r\n"
-			"Content-Type: text/html; charset=UTF-8\r\n"
-			"Content-Length: 88\r\n"
-			"Connection: Keep-Alive\r\n"
-			"\r\n"
-			"<!DOCTYPE html>\n"
-			"<html>\n"
-			"<head><title>Hello, World!</title></head>\n"
-			"<body><h1>Hello, World!</h1></body>\n"
-			"</html>";
+		Response res(req, conf, it->second.getIndex());
 
-		if (write(fd, message.c_str(), message.size()) == -1)
+		if (write(fd, res.getMessage().c_str(), res.getMessage().size()) == -1)
 			throw runtime_error("Error: write: ");
 
 		struct kevent evSet;

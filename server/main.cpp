@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 					else if (event.filter == EVFILT_READ)
 						serv.readClient(event.ident);
 					else if (event.filter == EVFILT_WRITE)
-						serv.sendClient(event.ident);
+						serv.sendClient(event.ident, conf);
 				}
 				else
 					throw runtime_error("Error: Failure to kqueue event handler");
