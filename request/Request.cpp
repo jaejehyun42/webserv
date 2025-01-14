@@ -21,8 +21,6 @@ void Request::_setError(int error_code)
 		_errorCode = "405";
 		_errorMessage = "Method Not Allowed";
 	}
-	
-	throw runtime_error(_errorCode + " " + _errorMessage); // 여기서 throw 까지 처리
 }
 
 void Request::_parseMethod()
