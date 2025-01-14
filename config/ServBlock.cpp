@@ -74,7 +74,7 @@ void ServBlock::_parseBlock(vector<string>& tokens, ifstream& file)
 		else if (path.front() == '.' && path.back() == '$')
 		{
 			if (path.find("py") == std::string::npos)
-				throw runtime_error("Error: 설정 파일의 필수 구성 요소가 없습니다.");
+				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
 			path.pop_back();
 		}
 		_path[path] = lb;
