@@ -2,6 +2,7 @@
 
 ResponseHeader::ResponseHeader(const std::unordered_map<int, std::string>& data)
 : _data(data){
+    (void)_data;
     _setMessage();
 }
 

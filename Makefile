@@ -29,7 +29,6 @@ REQUEST_FILE =	Request				\
 
 RESPONSE_DIR =	response/
 RESPONSE_FILE = Response			\
-				Response			\
 				StatusLine			\
 				Header				\
 				GeneralHeader		\
