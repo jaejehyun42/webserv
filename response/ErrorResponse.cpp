@@ -9,8 +9,17 @@ ErrorResponse::~ErrorResponse(){}
 
 void    ErrorResponse::setMessage(const std::unordered_map<int, std::string>& data){
     _message = "HTTP/1.1 " + data.at(__statusCode) + " " + data.at(__reasonPhrase) + "\r\n\r\n";
+
     if (data.at(__path).empty()){
-        _message += data.at(__statusCode) + " " + data.at(__reasonPhrase);
+        _message += "<!DOCTYPE html>\n"
+                "<head>\n"
+                    "<title>" + data.at(__statusCode) + " " + data.at(__reasonPhrase) +"</title>\n"
+                "</head>\n"
+                "<body>\n"
+                    "<h1>404</h1>\n"
+                    "<p>" + data.at(__statusCode) + data.at(__reasonPhrase) + "</p>\n"
+                "</body>\n"
+                "</html>";
     }else{
         std::ifstream ifs(data.at(__path), std::ios::binary);
         if (!ifs)
