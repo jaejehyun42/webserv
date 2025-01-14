@@ -12,7 +12,7 @@
 ResponseManager::ResponseManager(const Request& req, const ServConf& conf, const int& servBlockIdx)
 :_req(req), _conf(conf), _sb(conf.getServBlock(servBlockIdx)){
     _setMessage();
-    _printAllData();
+    // _printAllData();
 }
 
 ResponseManager::~ResponseManager(){}
