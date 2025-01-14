@@ -25,7 +25,11 @@ void    EntityHeader::_setMessage(){
 }
 
 void    EntityHeader::_setContentLength(struct stat& fileStatus){ //e.g Content-Length: 615
-    std::ostringstream oss;
+    if (_data.find(__contentLength) != _data.end()){ //파일을 만드는 경우
+        _message += "Content-Length: " + _data.at(__contentLength) + "\r\n";
+        return ;
+    }
+    std::ostringstream oss; //파일을 읽는경우
     oss<<fileStatus.st_size;
     _message += "Content-Length: " + oss.str() + "\r\n";
 }
