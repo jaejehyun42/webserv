@@ -74,7 +74,7 @@ void    Body::_makeAutoindexMessage(){
 	}
 	_message +=
 			"	</ul>\n"
-			"	<hr>\n"
+			"	</hr>\n"
 			"</body>\n"
 			"</html>";
 	closedir(dir);

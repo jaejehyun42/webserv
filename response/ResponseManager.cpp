@@ -23,9 +23,9 @@ string    ResponseManager::getMessage(){
 void    ResponseManager::_setMessage(){
     try{
         _setData();
-        Body            body(_data);
         StatusLine      statusLine(_data); 
         Header          header(_data);
+        Body            body(_data);
         _message = statusLine.getMessage() + header.getMessage() + body.getMessage();
     }catch(std::exception& e){
         ErrorResponse er;
@@ -136,6 +136,7 @@ void    ResponseManager::_checkPathIsDir(std::string& path, struct stat& pathSta
     }
     if (locationBlock->getAutoindex()){
         _data[__autoindex] = "on";
+        _data[__contentType] = "text/html";
         return ;
     }
     throw std::runtime_error("404");
@@ -214,6 +215,8 @@ void    ResponseManager::_setConnection(){
 }
 
 void    ResponseManager::_setContentType(){
+    if (_data.find(__contentType) != _data.end())
+        return ;
     size_t i = _data[__path].find_last_of('.');
     if (i == std::string::npos || (i + 1 == _data[__path].size()))
         _data[__contentType] = _conf.getMime("default");
