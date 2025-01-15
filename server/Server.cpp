@@ -139,14 +139,9 @@ void Server::sendClient(int fd, const ServConf& conf)
 	{
 		Request req;
 		req.initRequest(it->second.getMessage());
-
-		printLog(fd, req);
-		
 		Response res(req, conf, it->second.getIndex());
 
-		cout << "Response> " << endl;
-		cout << res.getMessage() << "(END)\n"; 
-
+		printLog(fd, req);
 		if (write(fd, res.getMessage().c_str(), res.getMessage().size()) == -1)
 			throw runtime_error("Error: write: ");
 
