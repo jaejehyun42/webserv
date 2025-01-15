@@ -21,6 +21,7 @@
             width: 100%;
             background-color: #696969;
             padding: 10px 0;
+            border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             z-index: 1000;
         }
@@ -33,20 +34,16 @@
         }
         
         main {
-            position: absolute; /* 절대 위치 지정 */
-            top: 0;
-            left: 50%; /* 화면 가로의 50% */
-            transform: translateX(-50%); /* 중앙 정렬 */
             margin-top: 100px;
             padding: 20px;
             padding-bottom: 50px;
-            max-width: 800px; /* 콘텐츠의 최대 너비를 800px로 제한 */
-            width: 200%; /* 작은 화면에서는 너비를 100%로 유지 */
         }
-
+        
         section {
+            margin: 0 auto;
             margin-bottom: 30px;
             padding: 20px;
+            max-width: 800px;
             background-color: #696969;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
