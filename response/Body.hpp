@@ -21,11 +21,15 @@ class Body{
 
         void    _setMessage();
         void    _setContentLength();
+
         void    _makeGetMessage();
         void    _makeAutoindexMessage();
-        void    _makeCgiMessage();
         void	_makeStaticFileMessage();
         void    _makePostMessage();
         void    _makeDeleteMessage();
+
+        void    _makeCgiMessage();
+        void	_execCgiProc(int* pfd);
+        void    _readCgiMessage(pid_t& cgiProc, int* pfd);
 };
 #endif
