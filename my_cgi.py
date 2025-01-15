@@ -9,6 +9,12 @@ import cgi
 import mimetypes
 import shutil
 
+def chkError(e):
+    if "Permission denied" in str(e):
+        return "403 Forbidden"
+    else:
+        return "500 Internal Server Error"
+
 # 환경 변수에서 각종 정보 읽기
 #path_info = os.environ.get("PATH_INFO", "")
 #query_string = os.environ.get("QUERY_STRING", "")
@@ -17,13 +23,13 @@ import shutil
 #content_length = os.environ.get("CONTENT_LENGTH", 0)
 #root_dir = os.environ.get("DOCUMENT_ROOT", "")
 
-path_info = "/test.txt"
+path_info = "/now_files"
 #query_string = "name=John&&age=30&hobby=reading&hobby=traveling"
 query_string = ""
 request_method = "DELETE"
 content_length = 0;
 content_type = "text/plain";
-root_dir = "/Users/seunghan/42_projects/webserv/working/CGI/files"
+root_dir = "/Users/seunghan/42_projects/webserv/working/CGI"
 
 # HTML 제목
 title = ""
@@ -37,8 +43,6 @@ if not os.path.exists(root_dir):
 
 # PATH_INFO 의 경로를 추가
 if path_info:
-    # os.join.path 는 인수 중 하나라도 절대 경로를 사용하면('/'로 시작) 이전 경로를 무시
-    #path = os.path.join(root_dir, path_info)
     path = root_dir + path_info
 else:
     path = root_dir
@@ -89,7 +93,6 @@ if request_method == "GET" and path_info:
                 else:
                     content = file.read()
         else:
-            print("binary read")
             with open(path, "rb") as file: # 바이너리 읽기, 옵션에 b 가 붙으면 바이너리로 수행
                 if content_length > 0:
                     content = file.read(content_length)
@@ -98,7 +101,7 @@ if request_method == "GET" and path_info:
     except Exception as e:
         # 파일을 open 하는데 실패할 경우
         params["status"] = [f"Error reading file {filename} : {str(e)}"]
-        status = "500 Internal Server Error"
+        status = chkError(e)
 
 # POST 인데 multipart 인 경우
 elif request_method == "POST" and content_type.startswith("multipart/form-data"):
@@ -124,9 +127,10 @@ elif request_method == "POST" and content_type.startswith("multipart/form-data")
         except Exception as e:
             # 업로드에 실패한 경우
             params["status"] = [f"Error uploading file {filename} : {str(e)}"]
-            status = "500 Internal Server Error"
+            status = chkError(e)
     else:
         params["status"] = ["No file was uploaded."]
+        status = "400 Bad Request"
 
 # POST 인데 multipart 가 아닌 경우
 elif request_method == "POST":
@@ -161,14 +165,13 @@ elif request_method == "POST":
             with open(save_path, "w") as file:
                 file.write(body)
         else:
-            print("binary write")
             with open(save_path, "wb") as file:
                 file.write(body)
         params["status"] = [f"File '{filename}' uploaded successfully."]
         status = "201 Created"
     except Exception as e:
         params["status"] = [f"Error uploading file {filename} : {str(e)}"]
-        status = "500 Internal Server Error"
+        status = chkError(e)
 
 # DELETE는 PATH_INFO 가 존재해야만 작동
 elif request_method == "DELETE" and path_info:
@@ -184,7 +187,7 @@ elif request_method == "DELETE" and path_info:
             status = "404 Not Found"
     except Exception as e:
         params["status"] = [f"Error deleting '{filename}' : {str(e)}"]
-        status = "500 Internal Server Error"
+        status = chkError(e)
 elif request_method == "DELETE":
     params["status"] = ["Error: Need path info"]
     status = "400 Bad Request"
