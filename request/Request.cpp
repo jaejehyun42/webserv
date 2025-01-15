@@ -23,6 +23,8 @@ void Request::_setError(int error_code)
 	}
 }
 
+// parse
+
 void Request::_parseMethod()
 {
 	for (size_t i = 0; i < _method.size(); ++i) // 메서드는 전부 대문자여야함
@@ -193,6 +195,17 @@ void Request::_parseHeader(const string& line)
 		_parseHost(value);
 
 	_headers[key] = value;
+}
+
+// utility
+
+bool Request::chkConnection() const
+{
+	umap_it it = _headers.find("Connection");
+
+	if (it != _headers.end() && it->second == "Closed")
+		return (true);
+	return(false);
 }
 
 string Request::getMethod() const

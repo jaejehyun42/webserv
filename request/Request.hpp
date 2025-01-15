@@ -52,6 +52,8 @@ class Request
 		string getBody() const;
 		string getErrorMessage() const;
 		string getErrorCode() const;
+
+		bool chkConnection() const;
 		
-		typedef unordered_map<string, string>::iterator umap_it;
+		typedef unordered_map<string, string>::const_iterator umap_it;
 };
