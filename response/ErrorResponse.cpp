@@ -7,58 +7,89 @@ ErrorResponse::ErrorResponse(){}
 
 ErrorResponse::~ErrorResponse(){}
 
-void    ErrorResponse::f(const std::unordered_map<int, std::string>& data){
-    _message += "Content-Type: text/html\r\n";
-    std::string tmpMessage;
-    tmpMessage += "<!DOCTYPE html>\n"
+
+const std::string    ErrorResponse::getMessage(){
+    return (_message);
+}
+
+void    ErrorResponse::_makeErrorMessageBody(std::string& body, const std::string& statusCode, const std::string& reasonPhrase){
+    body += "<!DOCTYPE html>\n"
             "<head>\n"
-                "   <title>" + data.at(__statusCode) + " " + data.at(__reasonPhrase) +"</title>\n"
+                "   <title>" + statusCode + " " + reasonPhrase +"</title>\n"
             "</head>\n"
             "<body>\n"
-                "   <h1>404</h1>\n"
-                "   <p>" + data.at(__statusCode) + " " + data.at(__reasonPhrase) + "</p>\n"
+                "   <h1>" + statusCode + "</h1>\n"
+                "   <p>" + statusCode + " " + reasonPhrase + "</p>\n"
             "</body>\n"
             "</html>";
-    std::ostringstream oss;
-    oss<<tmpMessage.size();
-    _message += "Content-Length: " + oss.str() + "\r\n\r\n";
-    _message += tmpMessage;
 }
-// void    ErrorResponse::_setContentLength(){
-
-// }
 
 void    ErrorResponse::setMessage(const std::unordered_map<int, std::string>& data){
     _message = "HTTP/1.1 " + data.at(__statusCode) + " " + data.at(__reasonPhrase) + "\r\n";
-    _message += "Connection: closed\r\n";
-    if (data.at(__path).empty()){ //error page가 없는경우
-        f(data);
+
+    if (data.find(__path) != data.end() && data.at(__path).empty()){ //error page가 없는경우
+        _makeErrorMessage(data);
         return ;
     }
-    //error page가 있는경우
-    _message += "Content-Type: " + data.at(__contentType) + "\r\n";
     std::ifstream ifs(data.at(__path), std::ios::binary);
+    if (!ifs) //error page field는 있는데 실제로 존재하지 않는 경우
+        _makeErrorMessage(data);
+    else //error page가 실제로 존재하는 경우
+        _makeErrorMessageFromErrorPage(ifs, data);
+}
+
+void    ErrorResponse::_setContentTypeHeader(std::string& header){
+    header += "Content-Type: text/html\r\n";
+}
+
+void	ErrorResponse::_setContentTypeHeader(std::string& header, const std::string& type){
+    header += "Content-Type: " + type + "\r\n";
+}
+
+void    ErrorResponse::_setContentLengthHeader(std::string& header, const size_t& size){
     std::ostringstream oss;
-    if (!ifs){
-        f(data);
-        return ;
-    }
+    oss<<size;
+    header += "Content-Length: " + oss.str() + "\r\n";
+}
+
+void	ErrorResponse::_setContentLengthHeader(std::string& header, const std::streampos& size){
+    std::ostringstream oss;
+    oss<<size;
+    header += "Content-Length: " + oss.str() + "\r\n";
+}
+
+void    ErrorResponse::_setConnectionHeader(std::string& header){
+    header += "Connection: closed\r\n";
+}
+
+void    ErrorResponse::_makeErrorMessage(const std::unordered_map<int, std::string>& data){
+    std::string header;
+    std::string body;
+
+    _setConnectionHeader(header);
+    _setContentTypeHeader(header);
+    _makeErrorMessageBody(body, data.at(__statusCode), data.at(__reasonPhrase));
+    _setContentLengthHeader(header, body.size());
+    _message += header + "\r\n" + body;
+}
+
+void    ErrorResponse::_makeErrorMessageFromErrorPage(std::ifstream& ifs, const std::unordered_map<int, std::string>& data){
     ifs.seekg(0, std::ios::end);
     std::streampos size = ifs.tellg();
     ifs.seekg(0, std::ios::beg);
 
-    oss<<size;
-    _message += "Content-Length: " + oss.str() + "\r\n\r\n";
+    std::string header;
+    _setConnectionHeader(header);
+    _setContentTypeHeader(header, data.at(__contentType));
+    _setContentLengthHeader(header, size);
 
-    std::string buf(size, '\0');
-    if (ifs.read(&buf[0], size)){ //에러나면? 
+    std::string body(size, '\0');
+    ifs.read(&body[0], size);
+    if (!ifs){
         ifs.close();
+        _makeErrorMessage(data);
         return ;
     }
-    _message += buf;
     ifs.close();
-}
-
-const std::string    ErrorResponse::getMessage(){
-    return (_message);
+    _message += header + "\r\n" + body;
 }
