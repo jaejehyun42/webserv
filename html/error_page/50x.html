@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            background-color: #808080;
+            color: #eee;
+            text-align: center;
+        }
+
+        header {
+            background-color: #696969;
+            padding: 10px 0;
+            margin: 0 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 40px;
+            color: #eee;
+        }
+
+        main {
+            margin-top: 10px;
+            padding: 20px;
+        }
+
+        section {
+            margin: 0 auto;
+            padding: 20px;
+            max-width: 800px;
+            background-color: #696969;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        section h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #fff;
+            font-size: 30px;
+        }
+
+        section p {
+            font-size: 18px;
+        }
+
+        .button-container {
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 15px;
+            color: #eee;
+            background-color: #858585;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 7px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background-color: #aaa;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            padding: 0px 0;
+            font-size: 12px;
+            background-color: #696969;
+            color: #eee;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Error Page</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Server Error!</h2>
+            <p>요청하신 페이지를 처리하는 중 문제가 발생했습니다.</p>
+            <p>아래 버튼을 통해 홈으로 돌아가거나, 문제가 지속될 경우 관리자에게 문의하세요.</p>
+            <div class="button-container">
+                <button onclick="window.location.href='/';">홈으로 가기</button>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 jaejehyun webserv</p>
+    </footer>
+</body>
+</html>
