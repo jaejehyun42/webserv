@@ -17,6 +17,7 @@ ResponseManager::ResponseManager(const Request& req, const ServConf& conf, const
 ResponseManager::~ResponseManager(){}
 
 string    ResponseManager::getMessage(){
+    printAllData();
     return (_message);
 }
 
@@ -167,6 +168,7 @@ void    ResponseManager::_setPath(){
         else if (locationRoot != "/"){
             path.replace(0, locationIdentifier.size(), locationRoot);//매핑되는 로케이션 블록이 있고 루트도 있는 경우. 로케이션 블록의 루트 사용
             _data[__root] = locationRoot;
+            _data[__locationIdentifier] = locationIdentifier;
         }
         _data[__path] = path;
         _checkPathStatus(path, pathStatus);

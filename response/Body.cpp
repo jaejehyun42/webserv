@@ -34,44 +34,45 @@ void        Body::_setMessage(){
 void    Body::_makeAutoindexMessage(){
 	DIR* dir = opendir(_data.at(__path).c_str());
 	struct dirent   *entry;
-	std::string     relativePath;
-	std::string     currentPath = _data.at(__path);
-	std::string     root = _data.at(__root);
-	std::string		entryFileName;
+	std::string     relativePath; //e.g test_dir
+	std::string     currentPath = _data.at(__path); //e.g Users/goinfre/test_dir
+	std::string     root = _data.at(__root); //e.g Users/goinfre
+	// std::string		entryFileName;
 	int savedErrno = errno;
 
 	if (dir == NULL){
 		errno = savedErrno;
 		throw(std::runtime_error("500"));
 	}
-	if (currentPath.find(root) == 0 && currentPath.size() != root.size()){
+	if (currentPath.size() > root.size())
 		relativePath = currentPath.erase(0, root.size());
-		if (currentPath.size())
-			relativePath += "/";
-	}
+	else if (currentPath.size() == root.size() && _data.find(__locationIdentifier) != _data.end())
+		relativePath = _data.at(__locationIdentifier);
 	_message += 
 				"<!DOCTYPE html>\n"
 				"<html>\n"
 				"<head>\n"
 				"<title>Index</title>\n"
 				"</head>\n"
-				"<body>\n";
-	if (relativePath.size()){
-		_message += 
-				"	<h1>Index of " + relativePath + "</h1>\n";
-	}
-	_message += 
+				"<body>\n"
+				"	<h1>Index of " + relativePath + "</h1>\n"
 				"	<hr>\n"
 				"	<ul>\n";
-
-	while ((entry = readdir(dir)) != NULL){ //dir먼저보이게 처리할건지?
+	// if (relativePath.size())
+	// 	_message += "	<h1>Index of " + relativePath + "</h1>\n";
+	// _message += 
+	// 			"	<hr>\n"
+	// 			"	<ul>\n";
+	while ((entry = readdir(dir)) != NULL){
 		if (entry->d_name[0] == '.')
 			continue;
-		if (relativePath.size())
-			entryFileName = relativePath + entry->d_name;
-		else
-			entryFileName = entry->d_name;
-		_message +="		<li><a href=\"" + entryFileName + "\">" + entry->d_name + "</a></li>\n";
+		_message +=
+		"		<li><a href=\"" + relativePath + "/" + entry->d_name + "\">" + entry->d_name + "</a></li>\n";
+		// if (relativePath.size())
+		// 	entryFileName = relativePath + "/" + entry->d_name;
+		// else
+		// 	entryFileName = entry->d_name;
+		// _message +="		<li><a href=\"" + entryFileName + "\">" + entry->d_name + "</a></li>\n";
 	}
 	_message +=
 			"	</ul>\n"
