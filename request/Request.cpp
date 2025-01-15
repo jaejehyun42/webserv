@@ -96,7 +96,7 @@ void Request::_parseUrl()
 	start--;
 	
 	size_t end_pos = _url.size() - 1;
-	if (_url[end_pos] == '/') // 마지막 '/' 삭제
+	if (end_pos && _url[end_pos] == '/') // 마지막 '/' 삭제
 		_url.erase(end_pos, 1);
 
 	size_t delim_pos = _url.find('?'); // 쿼리 구분자 체크
