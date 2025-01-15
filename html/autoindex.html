@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directory Listing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #808080;
+            color: #eee;
+            text-align: center;
+        }
+
+        header {
+            background-color: #696969;
+            padding: 20px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 40px;
+            color: #eee;
+        }
+
+        main {
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 800px;
+            background-color: #696969;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        ul, ol {
+			list-style-position: inside;
+			text-align: center;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            margin: 10px 0;
+        }
+
+        li a {
+            color: #1E90FF;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        li a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            margin-top: 20px;
+            padding: 10px 0;
+            background-color: #696969;
+            color: #eee;
+            font-size: 12px;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Directory Listing</h1>
+    </header>
+    <main>
+        <h2>Directory</h2>
+        <ul>
+            <li><a href="/error">error</a></li>
+            <li><a href="/assets">assets</a></li>
+            <li><a href="/feature">feature</a></li>
+        </ul>
+        <h2>file</h2>
+        <ul>
+			<li><a href="/index.html">index.html</a></li>
+            <li><a href="/autoindex.html">autoindex.html</a></li>
+        </ul>
+    </main>
+    <footer>
+        <p>&copy; 2025 jaejehyun webserv</p>
+    </footer>
+</body>
+</html>
