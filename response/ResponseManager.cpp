@@ -177,8 +177,8 @@ void    ResponseManager::_setPath(){
             _data[__locationIdentifier] = locationIdentifier;
         }
         _data[__path] = path;
-        _checkPathStatus(path, pathStatus);
-        _checkPathIsDir(path, pathStatus, &locationBlock);
+        // _checkPathStatus(path, pathStatus);
+        // _checkPathIsDir(path, pathStatus, &locationBlock);
         if (locationBlock.getCgipass().size())
             _data[__cgiPass] += locationBlock.getCgipass() + " ";
     }

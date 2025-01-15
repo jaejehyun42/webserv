@@ -77,29 +77,36 @@ void	Body::_readCgiMessage(pid_t& cgiProc, int* pfd){
 
 	int cgiProcStatus;
 	waitpid(cgiProc, &cgiProcStatus,0);
-	if (WEXITSTATUS(cgiProcStatus))
-		throw(std::runtime_error("500"));
+	if (WEXITSTATUS(cgiProcStatus)){
+		std::cout<<"******cgiProcStatus**********";
+		throw(std::runtime_error("501"));//500
+	}
 
 	char buf[1024];
 	std::string cgiMessage;
+	std::cout<<"********start********";
 	while (read(pfd[0], buf, sizeof(buf)) > 0){
 		cgiMessage += buf;
+		std::cout<<buf;
 	}
+	std::cout<<"********end8********";
 	istringstream iss(cgiMessage);
 	std::string line;
 	std::string key;
 	size_t i;
 	std::getline(iss, line, '\n');
 	i = line.find(' ');
-	if (i == std::string::npos || i == 0 || i == line.size() - 1)
-		throw std::runtime_error("500");
+	if (i == std::string::npos || i == 0 || i == line.size() - 1){
+		std::cout<<"******iiiiiiiiiiiiii**********";
+		throw std::runtime_error("502"); //500
+	}
 	_data[__statusCode] = line.substr(0,i);
 	_data[__reasonPhrase] = line.substr(i+1);
 
 	while (std::getline(iss, line, '\n') && line != ""){ 
 		i = line.find(':');
 		if (i == std::string::npos || i == 0 || i == line.size() - 1)
-			throw std::runtime_error("500");
+			throw std::runtime_error("503"); //500
 		key = line.substr(0,i);
 		if (key == "Content-Length")
 			_data[__contentLength] = line.substr(i+1);
@@ -114,24 +121,57 @@ void	Body::_readCgiMessage(pid_t& cgiProc, int* pfd){
 void	Body::_execCgiProc(int* pfd){
 	close(pfd[0]);
 
-	if (dup2(pfd[1], STDOUT_FILENO) < 0)
+	if (dup2(pfd[1], STDOUT_FILENO) < 0){
+
+		std::cerr<<"******dup**********";
 		exit(EXIT_FAILURE);
+	}
 
 	char *file = const_cast<char*>(_data.at(__cgiPass).c_str());
-	char *argv[3] = {file, const_cast<char*>("my_cgi.py"), 0};
+	char *argv[3] = {file, const_cast<char*>("/Users/jeshin/goinfre/my_cgi.py"), 0};
 
-	if (_data.find(__cgiEnvData) == _data.end())
-		exit(EXIT_FAILURE);
-	std::istringstream  iss(_data.at(__cgiEnvData));
-	std::string         token;
-	std::vector<char*>  tmpEnvp;
-	while (std::getline(iss,token,' '))
-		tmpEnvp.push_back(const_cast<char*>(token.c_str()));
-	tmpEnvp.push_back(NULL);
-	char **envp = tmpEnvp.data();
+	// if (_data.find(__cgiEnvData) == _data.end()){
+	// 	std::cerr<<"******cgiEndData**********";
+	// 	exit(EXIT_FAILURE);
+	// }
+	const char* env_array[] = {
+        "PATH_INFO=/seung.txt",
+        "QUERY_STRING=",
+        "REQUESTED_METHOD=GET",
+        "CONTENT_LENGTH=0",
+        "CONTENT_TYPE=text/plain",
+        "DOCUMENT_ROOT=/Users/jeshin/goinfre/seunghan",
+        nullptr // 마지막에 nullptr 추가
+    };
 
-	if (execve(file, argv, envp))
+    // char** envp에 할당
+    char** envp = new char*[sizeof(env_array) / sizeof(env_array[0])];
+    for (size_t i = 0; env_array[i] != nullptr; ++i) {
+        envp[i] = new char[std::strlen(env_array[i]) + 1];
+        std::strcpy(envp[i], env_array[i]);
+    }
+    envp[sizeof(env_array) / sizeof(env_array[0]) - 1] = nullptr;
+	std::cerr<<"*******file: "<<file<<"\n";
+	for(int i=0; argv[i]!=0;i++){
+		std::cerr<<"*******argv: "<<argv[i]<<"\n";
+	}
+	for(int i=0; envp[i]!=0;i++){
+		std::cerr<<"*******envp: "<<envp[i]<<"\n";
+	}
+	// vector<char*> temp;
+	// temp.push_back("PATH_INFO = /seung.txt");
+	// temp.push_back("QUERY_STRING=");
+	// temp.push_back("REQUESTED_METHOD=GET");
+	// temp.push_back("CONTENT_LENGTH = 0");
+	// temp.push_back("CONTENT_TYPE = text/plain");
+	// temp.push_back("DOCUMENT_ROOT = /Users/jeshin/goinfre/seunghan");
+	char *args[] = {"/bin/ls", NULL};
+	// char **envp = temp.data();
+	if (execve(*args, args, envp) == -1){
+		perror("");
+		std::cerr<<")))))))))))))))))))))))))))))00";
 		exit(EXIT_FAILURE);
+	}
 	exit(EXIT_SUCCESS);
 }
 
