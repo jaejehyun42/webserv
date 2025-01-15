@@ -23,6 +23,8 @@ void Request::_setError(int error_code)
 	}
 }
 
+// parse
+
 void Request::_parseMethod()
 {
 	for (size_t i = 0; i < _method.size(); ++i) // 메서드는 전부 대문자여야함
@@ -92,6 +94,10 @@ void Request::_parseUrl()
 	for (int i = 0; _url[i] == '/'; ++i) // Url 시작이 '/'이 연속되면 하나 빼고 무시
 		start++;
 	start--;
+	
+	size_t end_pos = _url.size() - 1;
+	if (end_pos && _url[end_pos] == '/') // 마지막 '/' 삭제
+		_url.erase(end_pos, 1);
 
 	size_t delim_pos = _url.find('?'); // 쿼리 구분자 체크
 
@@ -106,7 +112,6 @@ void Request::_parseUrl()
 	}
 
 	size_t cgi_pos = _path.find(".py"); // cgi 경로 체크
-	
 	if (cgi_pos != string::npos)
 		_cgiPath = _path.substr(cgi_pos + 3, _path.size() - cgi_pos - 2);
 }
@@ -190,6 +195,17 @@ void Request::_parseHeader(const string& line)
 		_parseHost(value);
 
 	_headers[key] = value;
+}
+
+// utility
+
+bool Request::chkConnection() const
+{
+	umap_it it = _headers.find("Connection");
+
+	if (it != _headers.end() && it->second == "Closed")
+		return (true);
+	return(false);
 }
 
 string Request::getMethod() const

@@ -17,7 +17,7 @@ ResponseManager::ResponseManager(const Request& req, const ServConf& conf, const
 ResponseManager::~ResponseManager(){}
 
 string    ResponseManager::getMessage(){
-    printAllData();
+    // printAllData();
     return (_message);
 }
 
