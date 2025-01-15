@@ -13,12 +13,14 @@ int main(int argc, char** argv)
 	try
 	{
 		ServConf sc(fileName);
-		unordered_map<string, LocBlock>::const_iterator it = sc.getServBlock(0).getPathIter("/test/abc/def/ghi/123/456/789");
+		for (const auto& pair : sc.getServBlock(0).getPath()) {
+			std::cout << "Key: " << pair.first << std::endl;
+		}
+		unordered_map<string, LocBlock>::const_iterator it = sc.getServBlock(0).getPathIter(".py");
 		if (it != sc.getServBlock(0).getPath().end())
             cout << "Path found: \"" << it->first << "\"" << endl;
 		else
             cout << "Path not found." << endl;
-		cout << sc.getMime("tttttt") << endl;
 	}
 	catch(const std::exception& e)
 	{
