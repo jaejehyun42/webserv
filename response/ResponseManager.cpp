@@ -17,7 +17,7 @@ ResponseManager::ResponseManager(const Request& req, const ServConf& conf, const
 ResponseManager::~ResponseManager(){}
 
 string    ResponseManager::getMessage(){
-    printAllData();
+    // printAllData();
     return (_message);
 }
 
@@ -65,7 +65,6 @@ void    ResponseManager::_setData(){
 const std::unordered_map<int, std::string>& ResponseManager::_setErrorData(const std::string& errCode, const std::string& reasonPhrase){
     _data[__statusCode] = errCode;
     _data[__reasonPhrase] = reasonPhrase;
-    _data[__contentType] = _conf.getMime("dafault");
     _data[__connection] = "closed";
 
     const std::unordered_map<long, string>& errPageMap = _sb.getErrorPage();
@@ -74,6 +73,8 @@ const std::unordered_map<int, std::string>& ResponseManager::_setErrorData(const
         _data[__path] = _sb.getRoot() + "/" + it->second;
     else
         _data[__path] = ""; 
+
+    _setContentType();
     return (_data);
 }
 
@@ -146,7 +147,12 @@ void    ResponseManager::_checkPathIsDir(std::string& path, struct stat& pathSta
 void    ResponseManager::_setPath(){
     string      path = _req.getPath();
     struct stat pathStatus;
-    std::unordered_map<string, LocBlock>::const_iterator it =  _sb.getPathIter(path);
+    std::unordered_map<string, LocBlock>::const_iterator it;
+    size_t i = path.find(".py");
+    if (i != std::string::npos && path.size() > i + 1 && path[i + 3] == '/')
+        it =  _sb.getPathIter(".py");
+    else
+        it =  _sb.getPathIter(path);
 
     if (it == _sb.getPath().end() && _sb.getRoot().size()){//매핑되는 로케이션 블록이 없을 경우. 서버 루트 사용.
         if (_sb.getRoot() != "/")
@@ -217,8 +223,6 @@ void    ResponseManager::_setConnection(){
 }
 
 void    ResponseManager::_setContentType(){
-    if (_data.find(__contentType) != _data.end())
-        return ;
     size_t i = _data[__path].find_last_of('.');
     if (i == std::string::npos || (i + 1 == _data[__path].size()))
         _data[__contentType] = _conf.getMime("default");

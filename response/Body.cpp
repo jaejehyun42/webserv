@@ -37,7 +37,6 @@ void    Body::_makeAutoindexMessage(){
 	std::string     relativePath; //e.g test_dir
 	std::string     currentPath = _data.at(__path); //e.g Users/goinfre/test_dir
 	std::string     root = _data.at(__root); //e.g Users/goinfre
-	// std::string		entryFileName;
 	int savedErrno = errno;
 
 	if (dir == NULL){
@@ -57,22 +56,13 @@ void    Body::_makeAutoindexMessage(){
 				"<body>\n"
 				"	<h1>Index of " + relativePath + "</h1>\n"
 				"	<hr>\n"
-				"	<ul>\n";
-	// if (relativePath.size())
-	// 	_message += "	<h1>Index of " + relativePath + "</h1>\n";
-	// _message += 
-	// 			"	<hr>\n"
-	// 			"	<ul>\n";
+				"	<ul>\n"
+				"		<li><a href=\"..\">..</a></li>\n";
 	while ((entry = readdir(dir)) != NULL){
 		if (entry->d_name[0] == '.')
 			continue;
 		_message +=
 		"		<li><a href=\"" + relativePath + "/" + entry->d_name + "\">" + entry->d_name + "</a></li>\n";
-		// if (relativePath.size())
-		// 	entryFileName = relativePath + "/" + entry->d_name;
-		// else
-		// 	entryFileName = entry->d_name;
-		// _message +="		<li><a href=\"" + entryFileName + "\">" + entry->d_name + "</a></li>\n";
 	}
 	_message +=
 			"	</ul>\n"
@@ -106,7 +96,7 @@ void	Body::_readCgiMessage(pid_t& cgiProc, int* pfd){
 	_data[__statusCode] = line.substr(0,i);
 	_data[__reasonPhrase] = line.substr(i+1);
 
-	while (std::getline(iss, line, '\n') && line != "\n"){ 
+	while (std::getline(iss, line, '\n') && line != ""){ 
 		i = line.find(':');
 		if (i == std::string::npos || i == 0 || i == line.size() - 1)
 			throw std::runtime_error("500");

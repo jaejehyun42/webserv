@@ -21,8 +21,8 @@ path_info = "/test.txt"
 #query_string = "name=John&&age=30&hobby=reading&hobby=traveling"
 query_string = ""
 request_method = "DELETE"
-content_length = 0;
-content_type = "text/plain";
+content_length = 0
+content_type = "text/plain"
 root_dir = "/Users/seunghan/42_projects/webserv/working/CGI/files"
 
 # HTML 제목

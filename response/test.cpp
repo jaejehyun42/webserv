@@ -10,11 +10,68 @@
 #include <vector>
 #include <cstdlib>
 #include <unistd.h>
-#include <map>
+#include <unordered_map>
+#include <fcntl.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 using namespace std;
+enum eData{
+    __statusCode,
+    __reasonPhrase,
+    __hostName,
+    __connection,
+    __path,
+    __root,
+    __locationIdentifier,
+    __autoindex,
+    __contentLength,
+    __contentType,
+    __requestMethod,
+    __requestBody,
+    __cgiPass,
+    __cgiEnvData // requestCgiPath, requestQuery, requestContentLength, requestContentType, pathRoot
+};
 int main(){
-
+    string s= "404";
+    cout << strtol(s.c_str(), 0, 10);
 }
+// int main(){
+//     unordered_map<int,string>_data;
+//     string  _message;
+
+//     int fd = open("req",O_RDONLY);
+// 	char buf[1024];
+// 	std::string cgiMessage;
+// 	while (read(fd, buf, sizeof(buf)) > 0){
+// 		cgiMessage += buf;
+// 	}
+// 	istringstream iss(cgiMessage);
+// 	std::string line;
+// 	std::string key;
+// 	size_t i;
+// 	std::getline(iss, line, '\n');
+// 	i = line.find(' ');
+// 	if (i == std::string::npos || i == 0 || i == line.size() - 1)
+// 		throw std::runtime_error("500");
+// 	_data[__statusCode] = line.substr(0,i);
+// 	_data[__reasonPhrase] = line.substr(i+1);
+
+// 	while (std::getline(iss, line, '\n') && line != ""){ 
+// 		i = line.find(':');
+// 		if (i == std::string::npos || i == 0 || i == line.size() - 1)
+// 			throw std::runtime_error("500");
+// 		key = line.substr(0,i);
+// 		if (key == "Content-Length")
+// 			_data[__contentLength] = line.substr(i+1);
+// 		if (key == "Content-Type")
+// 			_data[__contentType] = line.substr(i+1);
+// 	}
+// 	while (std::getline(iss, line, '\n') && line != "\n"){ 
+// 		_message += line + "\r\n";
+// 	}
+//     cout<<_message;
+// }
 
     // struct stat urlStatusBuf;
 
