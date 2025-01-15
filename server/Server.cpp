@@ -149,7 +149,11 @@ void Server::sendClient(int fd, const ServConf& conf)
 		EV_SET(&evSet, fd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
 		if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
 			throw runtime_error("Error: kevent: " + string(strerror(errno)));
-		it->second.setMessage("");
+
+		if (req.chkConnection())
+			closeClient(fd);
+		else
+			it->second.setMessage("");
 	}
 }
 
