@@ -17,7 +17,7 @@ Body::Body(std::unordered_map<int, std::string>& data): _data(data){
 
 Body::~Body(){}
 
-std::string  Body::getMessage(){
+	std::string  Body::getMessage(){
 	return (_message);
 }
 void        Body::_setMessage(){
@@ -76,15 +76,25 @@ void	Body::_readCgiMessage(pid_t& cgiProc, int* pfd){
 	close(pfd[1]);
 
 	int cgiProcStatus;
-	waitpid(cgiProc, &cgiProcStatus,0);
-	if (WEXITSTATUS(cgiProcStatus))
+	if (waitpid(cgiProc, &cgiProcStatus, 0) == -1){
+		// perror("waitpid error: ");
+		// std::cout<<"1\n";
 		throw(std::runtime_error("500"));
+	}
+	if (WIFEXITED(cgiProcStatus) && WEXITSTATUS(cgiProcStatus)){
+		// std::cout<<"2\n";
+		// if ({
+		// 	std::cout<<"3\n";
+			throw(std::runtime_error("500"));
+		// }
+	}
 
 	char buf[1024];
+	memset(buf,0,sizeof(buf));
 	std::string cgiMessage;
-	while (read(pfd[0], buf, sizeof(buf)) > 0){
+	while (read(pfd[0], buf, sizeof(buf)) > 0)
 		cgiMessage += buf;
-	}
+
 	istringstream iss(cgiMessage);
 	std::string line;
 	std::string key;
@@ -96,7 +106,7 @@ void	Body::_readCgiMessage(pid_t& cgiProc, int* pfd){
 	_data[__statusCode] = line.substr(0,i);
 	_data[__reasonPhrase] = line.substr(i+1);
 
-	while (std::getline(iss, line, '\n') && line != ""){ 
+	while (std::getline(iss, line, '\n') && line.size()){ 
 		i = line.find(':');
 		if (i == std::string::npos || i == 0 || i == line.size() - 1)
 			throw std::runtime_error("500");
@@ -113,25 +123,51 @@ void	Body::_readCgiMessage(pid_t& cgiProc, int* pfd){
 
 void	Body::_execCgiProc(int* pfd){
 	close(pfd[0]);
-
+	// std::cerr<<"pipe ok\n";
+// dup
 	if (dup2(pfd[1], STDOUT_FILENO) < 0)
 		exit(EXIT_FAILURE);
-
-	char *file = const_cast<char*>(_data.at(__cgiPass).c_str());
-	char *argv[3] = {file, const_cast<char*>("my_cgi.py"), 0};
-
-	if (_data.find(__cgiEnvData) == _data.end())
+	// std::cerr<<"dup ok\n";
+//file
+	const char* file = _data.at(__cgiPass).c_str();
+//argv
+	size_t i = _data.at(__path).find(".py/");
+	std::string myCgiPath = _data.at(__path).substr(0, i+3);
+	std::vector<const char*>  argv;
+	argv.push_back(file);
+	argv.push_back(myCgiPath.c_str());
+	argv.push_back(NULL);
+	// std::cerr<<"argv ok\n";
+//envp
+	std::vector<const char*>  envp;
+	if (_data.find(__cgiRoot) != _data.end())
+		envp.push_back(const_cast<char*>(_data.at(__cgiRoot).c_str()));
+	if (_data.find(__cgiMethod) != _data.end())
+		envp.push_back(const_cast<char*>(_data.at(__cgiMethod).c_str()));
+	if (_data.find(__cgiContentType) != _data.end())
+		envp.push_back(const_cast<char*>(_data.at(__cgiContentType).c_str()));
+	if (_data.find(__cgiContentLength) != _data.end())
+		envp.push_back(const_cast<char*>(_data.at(__cgiContentLength).c_str()));
+	if (_data.find(__cgiPath) != _data.end())
+		envp.push_back(const_cast<char*>(_data.at(__cgiPath).c_str()));
+	envp.push_back(nullptr);
+	// std::cerr<<"envp ok\n";
+//prt
+	// std::cerr<<"file: "<<file<<"\n";
+	// for(int i=0;argv[i]!=0;i++){
+	// 	std::cerr<<"argv: "<<argv[i]<<"\n";
+	// }
+	// for(int i=0;envp[i]!=0;i++){
+	// 	std::cerr<<"envp: "<<envp[i]<<"\n";
+	// }
+	if (execve(file, const_cast<char* const*>(argv.data()), const_cast<char* const*>(envp.data()))){
+	//prt
+		// perror("");
+		std::cerr<<"failed execve: \n";
+		// std::cerr<<"failed execve: \n";
+		// std::cerr<<"failed execve: \n";
 		exit(EXIT_FAILURE);
-	std::istringstream  iss(_data.at(__cgiEnvData));
-	std::string         token;
-	std::vector<char*>  tmpEnvp;
-	while (std::getline(iss,token,' '))
-		tmpEnvp.push_back(const_cast<char*>(token.c_str()));
-	tmpEnvp.push_back(NULL);
-	char **envp = tmpEnvp.data();
-
-	if (execve(file, argv, envp))
-		exit(EXIT_FAILURE);
+	}
 	exit(EXIT_SUCCESS);
 }
 
@@ -172,7 +208,7 @@ void    Body::_setContentLength(){
 }
 
 void    Body::_makeGetMessage(){
-	if (_data.find(__cgiEnvData) != _data.end() && _data.at(__cgiEnvData).find("PATH_INFO") != std::string::npos)
+	if (_data.find(__cgiRoot) != _data.end())
 		_makeCgiMessage();
 	else if (_data.find(__autoindex) != _data.end())
 		_makeAutoindexMessage();
