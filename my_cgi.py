@@ -19,7 +19,7 @@ def chkError(e):
 
 # 환경 변수에서 각종 정보 읽기
 path_info = os.environ.get("PATH_INFO", "")
-query_string = os.environ.get("QUERY_STRING", "key1=value1&key2=value2")
+query_string = os.environ.get("QUERY_STRING", "")
 request_method = os.environ.get("REQUESTED_METHOD", "")
 content_type   = os.environ.get("CONTENT_TYPE", "")
 content_length = os.environ.get("CONTENT_LENGTH", 0)
