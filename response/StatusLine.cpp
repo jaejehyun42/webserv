@@ -3,8 +3,8 @@
 #include "StatusLine.hpp"
 #include "ResponseManager.hpp"
 
-StatusLine::StatusLine(const std::unordered_map<int, std::string>& data)
-: _data(data), _httpVersion("HTTP/1.1"), _statusCode(_data.at(__statusCode)), _reasonPhrase(_data.at(__reasonPhrase)){
+StatusLine::StatusLine(std::unordered_map<int, std::string>& data)
+: _data(data), _httpVersion("HTTP/1.1"){
     _setMessage();
 }
 
@@ -17,5 +17,9 @@ std::string  StatusLine::getMessage(){
 }
 
 void    StatusLine::_setMessage(){
-    _message = _httpVersion + " " + _statusCode + " " + _reasonPhrase + "\r\n";
+    if (_data.find(__statusCode) == _data.end())
+        _data[__statusCode] = "200";
+    if (_data.find(__reasonPhrase) == _data.end())
+        _data[__reasonPhrase] = "OK";
+    _message = _httpVersion + " " + _data.at(__statusCode) + " " + _data.at(__reasonPhrase) + "\r\n";
 }
