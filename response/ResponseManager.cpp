@@ -97,15 +97,14 @@ void    ResponseManager::_checkPathStatus(const std::string& path, struct stat& 
     }
 }
 
-void    ResponseManager::_checkPathIsDir(std::string& path, struct stat& pathStatus, const LocBlock* locationBlock){
+void    ResponseManager::_checkPathIsDir(std::string& path, struct stat& pathStatus, const LocBlock& locationBlock){
     std::string           savedPath = path;
     int                   savedErrno = errno;
     std::vector<string>   indexs;
     
     if (!S_ISDIR(pathStatus.st_mode))
         return ;
-    if (locationBlock)
-        indexs = locationBlock->getIndex();
+    indexs = locationBlock.getIndex();
     if (indexs.size()){
         for(size_t i=0; i<indexs.size(); i++){
             path = savedPath;
@@ -121,7 +120,7 @@ void    ResponseManager::_checkPathIsDir(std::string& path, struct stat& pathSta
         }
         errno = savedErrno;
     }
-    if (locationBlock->getAutoindex()){
+    if (locationBlock.getAutoindex()){
         _data[__autoindex] = "on";
         _data[__contentType] = "text/html";
         return ;
@@ -177,7 +176,7 @@ void    ResponseManager::_setPath(){
     }
     else{
         _checkPathStatus(path, pathStatus);
-        _checkPathIsDir(path, pathStatus, NULL);
+        _checkPathIsDir(path, pathStatus, it->second);
     }
 }
 
