@@ -42,6 +42,8 @@ void    ResponseManager::_setMessage(){
             er.setMessage(_setErrorData("413", "Request Entity Too Large"));
         }else if (std::string(e.what()) == "500"){
             er.setMessage(_setErrorData("500", "Internal Server Error"));
+        }else if (std::string(e.what()) == "501"){
+            er.setMessage(_setErrorData("501", "Not Implemented"));
         }else if (std::string(e.what()) == "505"){
             er.setMessage(_setErrorData("505", "HTTP Version Not Supported"));
         }else{
@@ -137,8 +139,11 @@ void    ResponseManager::_setPath(){
         if ((path.size() > i + 3 && path[i + 3] == '/') || path.substr(i, path.size()) == ".py") 
             it =  _sb.getPathIter(".py"); //py block
     }
-    else
+    else{
         it =  _sb.getPathIter(path); // others
+        if (_data[__requestMethod] == "POST" || _data[__requestMethod] == "DELETE")
+            throw std::runtime_error("400");
+    }
 
     if (it == _sb.getPath().end() && _sb.getRoot().size()){//매핑되는 로케이션 블록이 없을 경우. 서버 루트 사용.
         if (_sb.getRoot() != "/")
@@ -172,6 +177,7 @@ void    ResponseManager::_setPath(){
         if (it->second.getCgipass().size()) //cgi location block인 경우 
             _data[__cgiPass] = it->second.getCgipass();
         else
+            throw std::runtime_error("501");
             _data[__cgiPass] = "/usr/bin/python3";
     }
     else{

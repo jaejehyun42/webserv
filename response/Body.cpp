@@ -72,27 +72,30 @@ void    Body::_makeAutoindexMessage(){
 	closedir(dir);
 }
 
-void	Body::_readCgiMessage(pid_t& cgiProc, int* pfd){
-	close(pfd[1]);
-
+void    Body::_processCgiMessage(pid_t& cgiProc, int* cgiReadFd, int* cgiWriteFd){
 	int cgiProcStatus;
-	if (waitpid(cgiProc, &cgiProcStatus, 0) == -1){
-		// perror("waitpid error: ");
-		// std::cout<<"1\n";
+
+	close(cgiReadFd[0]);
+	close(cgiWriteFd[1]);
+	if (_data.find(__requestBody) != _data.end()){
+		if (write(cgiReadFd[1], _data.at(__requestBody).c_str(), _data.at(__requestBody).size() + 1) == -1){
+			close(cgiReadFd[1]);
+			throw(std::runtime_error("500"));
+		}
+	}
+	close(cgiReadFd[1]);
+	if (waitpid(cgiProc, &cgiProcStatus, 0) == -1)
+		throw(std::runtime_error("500"));
+	if (WEXITSTATUS(cgiProcStatus)){
+		perror("WEXIT ");
 		throw(std::runtime_error("500"));
 	}
-	if (WIFEXITED(cgiProcStatus) && WEXITSTATUS(cgiProcStatus)){
-		// std::cout<<"2\n";
-		// if ({
-		// 	std::cout<<"3\n";
-			throw(std::runtime_error("500"));
-		// }
-	}
+	close(cgiReadFd[1]);
 
 	char buf[1024];
 	memset(buf,0,sizeof(buf));
 	std::string cgiMessage;
-	while (read(pfd[0], buf, sizeof(buf)) > 0)
+	while (read(cgiWriteFd[0], buf, sizeof(buf)) > 0)
 		cgiMessage += buf;
 
 	istringstream iss(cgiMessage);
@@ -101,19 +104,14 @@ void	Body::_readCgiMessage(pid_t& cgiProc, int* pfd){
 	size_t i;
 	std::getline(iss, line, '\n');
 	i = line.find(' ');
-	// std::cout<<"first line: "<<line<<"\n";
-	// std::cout<<"line: "<<line.substr(0,i)<<"\n";
-	// std::cout<<"line: "<<line.substr	(i+1)<<"\n";
 	if (i == std::string::npos || i == 0 || i == line.size() - 1)
 		throw std::runtime_error("500");
 	_data[__statusCode] = line.substr(0,i);
 	_data[__reasonPhrase] = line.substr(i+1);
 	while (std::getline(iss, line, '\n') && line.size()){ 
-		// std::cout<<"line: "<<line<<"\n";
 		i = line.find(' ');
 		if (i == std::string::npos || i == 0 || i == line.size() - 1)
 			throw std::runtime_error("500");
-		// std::cout<<"line: "<<line.substr	(i+1)<<"\n";
 		key = line.substr(0,i);
 		if (key == "Content-Length:")
 			_data[__contentLength] = line.substr(i+1);
@@ -125,15 +123,21 @@ void	Body::_readCgiMessage(pid_t& cgiProc, int* pfd){
 	}
 }
 
-void	Body::_execCgiProc(int* pfd){
-	close(pfd[0]);
+void	Body::_execCgiProc(int* cgiReadFd, int* cgiWriteFd){
+	close(cgiReadFd[1]);
+	close(cgiWriteFd[0]);
 	// std::cerr<<"pipe ok\n";
 // dup
-	if (dup2(pfd[1], STDOUT_FILENO) < 0)
+	if (dup2(cgiReadFd[0], STDIN_FILENO) < 0)
 		exit(EXIT_FAILURE);
+	close(cgiReadFd[0]);
+	if (dup2(cgiWriteFd[1], STDOUT_FILENO) < 0)
+		exit(EXIT_FAILURE);
+	close(cgiWriteFd[1]);
 	// std::cerr<<"dup ok\n";
 //file
 	const char* file = _data.at(__cgiPass).c_str();
+	// std::cerr<<"file: "<<file<<"\n";
 //argv
 	size_t i = _data.at(__path).find(".py");
 	std::string myCgiPath;
@@ -162,7 +166,6 @@ void	Body::_execCgiProc(int* pfd){
 	envp.push_back(nullptr);
 	// std::cerr<<"envp ok\n";
 //prt
-	// std::cerr<<"file: "<<file<<"\n";
 	// for(int i=0;argv[i]!=0;i++){
 	// 	std::cerr<<"argv: "<<argv[i]<<"\n";
 	// }
@@ -170,22 +173,23 @@ void	Body::_execCgiProc(int* pfd){
 	// 	std::cerr<<"envp: "<<envp[i]<<"\n";
 	// }
 	if (execve(file, const_cast<char* const*>(argv.data()), const_cast<char* const*>(envp.data()))){
-	//prt
-		// perror("");
-		std::cerr<<"failed execve: \n";
-		// std::cerr<<"failed execve: \n";
-		// std::cerr<<"failed execve: \n";
+		perror("failed execve");
 		exit(EXIT_FAILURE);
 	}
 	exit(EXIT_SUCCESS);
 }
 
 void    Body::_makeCgiMessage(){
-	int pfd[2];
+	int cgiReadFd[2];
+	int cgiWriteFd[2];
 	int savedErrno;
 	savedErrno = errno;
 
-	if (pipe(pfd) < 0){
+	if (pipe(cgiReadFd) < 0){
+		errno = savedErrno;
+		throw(std::runtime_error("500"));
+	}
+	if (pipe(cgiWriteFd) < 0){
 		errno = savedErrno;
 		throw(std::runtime_error("500"));
 	}
@@ -194,18 +198,21 @@ void    Body::_makeCgiMessage(){
 		errno = savedErrno;
 		throw(std::runtime_error("500"));
 	}
-	cgiProc == 0 ? _execCgiProc(pfd) : _readCgiMessage(cgiProc, pfd);
+	cgiProc == 0 ? _execCgiProc(cgiReadFd, cgiWriteFd) : _processCgiMessage(cgiProc, cgiReadFd, cgiWriteFd);
 }
 
 void	Body::_makeStaticFileMessage(){
 	std::ifstream ifs(_data.at(__path), std::ios::binary);
 	if (!ifs)
 		throw(std::runtime_error("500"));
+
 	ifs.seekg(0, std::ios::end);
 	std::streampos size = ifs.tellg();
 	ifs.seekg(0, std::ios::beg);
+
 	std::string buf(size, '\0');
 	ifs.read(&buf[0], size);
+
 	_message += buf;
 	ifs.close();
 }

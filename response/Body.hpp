@@ -29,7 +29,7 @@ class Body{
         void    _makeDeleteMessage();
 
         void    _makeCgiMessage();
-        void	_execCgiProc(int* pfd);
-        void    _readCgiMessage(pid_t& cgiProc, int* pfd);
+        void	_execCgiProc(int* cgiReadFd, int* cgiWriteFd);
+        void    _processCgiMessage(pid_t& cgiProc, int* cgiReadFd, int* cgiWriteFd);
 };
 #endif
