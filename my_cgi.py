@@ -12,6 +12,8 @@ import shutil
 def chkError(e):
     if "Permission denied" in str(e):
         return "403 Forbidden"
+    elif "No such file or directory" in str(e):
+        return "404 Not Found"
     else:
         return "500 Internal Server Error"
 
@@ -23,15 +25,15 @@ content_type   = os.environ.get("CONTENT_TYPE", "")
 content_length = os.environ.get("CONTENT_LENGTH", 0)
 root_dir = os.environ.get("DOCUMENT_ROOT", "")
 
-#path_info = "/test.txt"
-#query_string = "name=John&&age=30&hobby=reading&hobby=traveling"
-#query_string = ""
-#request_method = "GET"
-#content_length = 0
-#content_type = "text/plain"
-#root_dir = "/Users/seunghan/42_projects/webserv/debug/d1/response/cgifiles"
-
 content_length = int(content_length)
+
+# path_info = "/now_files"
+# #query_string = "name=John&&age=30&hobby=reading&hobby=traveling"
+# query_string = ""
+# request_method = "DELETE"
+# content_length = 0
+# content_type = "text/plain"
+# root_dir = "/Users/seunghan/42_projects/webserv/working/CGI"
 
 # HTML 제목
 title = ""
