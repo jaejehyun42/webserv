@@ -77,16 +77,16 @@ void	Body::_readCgiMessage(pid_t& cgiProc, int* pfd){
 
 	int cgiProcStatus;
 	if (waitpid(cgiProc, &cgiProcStatus, 0) == -1){
-		perror("waitpid error: ");
-		std::cout<<"1\n";
+		// perror("waitpid error: ");
+		// std::cout<<"1\n";
 		throw(std::runtime_error("500"));
 	}
-	if (WIFEXITED(cgiProcStatus)){
-		std::cout<<"2\n";
-		if (WEXITSTATUS(cgiProcStatus)){
-			std::cout<<"3\n";
+	if (WIFEXITED(cgiProcStatus) && WEXITSTATUS(cgiProcStatus)){
+		// std::cout<<"2\n";
+		// if ({
+		// 	std::cout<<"3\n";
 			throw(std::runtime_error("500"));
-		}
+		// }
 	}
 
 	char buf[1024];
@@ -121,28 +121,6 @@ void	Body::_readCgiMessage(pid_t& cgiProc, int* pfd){
 	}
 }
 
-// void   Body::_execCgiProc(int* pfd){
-// 	close(pfd[0]);
-
-// 	if (dup2(pfd[1], STDOUT_FILENO) < 0)
-// 		exit(EXIT_FAILURE);
-
-// 	const char* python_path = "/usr/bin/python3";
-// 	const char* script_path = "/Users/jeshin/42Cursus/webserv/html/my_cgi.py";
-
-// 	std::vector<const char*> args;
-// 	args.push_back("python3");
-// 	args.push_back(script_path);
-// 	args.push_back(nullptr);
-
-// 	std::vector<const char*> env;
-// 	env.push_back("DOCUMENT_ROOT=/tmp");
-// 	env.push_back(nullptr);
-// 	if (execve(python_path, const_cast<char* const*>(args.data()), const_cast<char* const*>(env.data())) == -1)
-// 		exit(EXIT_FAILURE);
-// 	exit(EXIT_SUCCESS);
-// }
-
 void	Body::_execCgiProc(int* pfd){
 	close(pfd[0]);
 	// std::cerr<<"pipe ok\n";
@@ -176,12 +154,12 @@ void	Body::_execCgiProc(int* pfd){
 	// std::cerr<<"envp ok\n";
 //prt
 	// std::cerr<<"file: "<<file<<"\n";
-	for(int i=0;argv[i]!=0;i++){
-		std::cerr<<"argv: "<<argv[i]<<"\n";
-	}
-	for(int i=0;envp[i]!=0;i++){
-		std::cerr<<"envp: "<<envp[i]<<"\n";
-	}
+	// for(int i=0;argv[i]!=0;i++){
+	// 	std::cerr<<"argv: "<<argv[i]<<"\n";
+	// }
+	// for(int i=0;envp[i]!=0;i++){
+	// 	std::cerr<<"envp: "<<envp[i]<<"\n";
+	// }
 	if (execve(file, const_cast<char* const*>(argv.data()), const_cast<char* const*>(envp.data()))){
 	//prt
 		// perror("");
@@ -207,13 +185,7 @@ void    Body::_makeCgiMessage(){
 		errno = savedErrno;
 		throw(std::runtime_error("500"));
 	}
-	if (cgiProc == 0){
-		std::cout<<"자식 시작\n";
-		_execCgiProc(pfd);
-	}else{
-		_readCgiMessage(cgiProc, pfd);
-	}
-	// cgiProc == 0 ? _execCgiProc(pfd) : _readCgiMessage(cgiProc, pfd);
+	cgiProc == 0 ? _execCgiProc(pfd) : _readCgiMessage(cgiProc, pfd);
 }
 
 void	Body::_makeStaticFileMessage(){
