@@ -153,13 +153,13 @@ void	Body::_execCgiProc(int* pfd){
 	envp.push_back(nullptr);
 	// std::cerr<<"envp ok\n";
 //prt
-	std::cerr<<"file: "<<file<<"\n";
-	for(int i=0;argv[i]!=0;i++){
-		std::cerr<<"argv: "<<argv[i]<<"\n";
-	}
-	for(int i=0;envp[i]!=0;i++){
-		std::cerr<<"envp: "<<envp[i]<<"\n";
-	}
+	// std::cerr<<"file: "<<file<<"\n";
+	// for(int i=0;argv[i]!=0;i++){
+	// 	std::cerr<<"argv: "<<argv[i]<<"\n";
+	// }
+	// for(int i=0;envp[i]!=0;i++){
+	// 	std::cerr<<"envp: "<<envp[i]<<"\n";
+	// }
 	if (execve(file, const_cast<char* const*>(argv.data()), const_cast<char* const*>(envp.data()))){
 	//prt
 		// perror("");
