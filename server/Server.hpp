@@ -39,11 +39,11 @@ private:
 	unordered_map<int, int> _server;
 	unordered_map<int, Client> _client;
 
-	void setAddrInfo();
-	int initSocket(const char* domain, const char* port);
-	void setSocket(const vector<ServBlock>& serv);
-	void setKqueue();
-	void setNonBlock(int fd);
+	void _setAddrInfo();
+	int _initSocket(const char* domain, const char* port);
+	void _setSocket(const vector<ServBlock>& serv);
+	void _setKqueue();
+	void _setEvent(int fd, int filter, int flags);
 public:
 	Server(ServConf& servConf);
 	~Server();

@@ -4,11 +4,11 @@ Server::Server(ServConf& sc)
 {
 	const vector<ServBlock>& serv = sc.getServ();
 
-	setAddrInfo();
-	setSocket(serv);
-	setKqueue();
+	_setAddrInfo();
+	_setSocket(serv);
+	_setKqueue();
 
-	_timeout.tv_sec = 5;
+	_timeout.tv_sec = 1;
 	_timeout.tv_nsec = 0;
 }
 	
@@ -18,7 +18,7 @@ Server::~Server()
 		close(it->first);
 }
 
-void Server::setAddrInfo()
+void Server::_setAddrInfo()
 {
 	memset(&_hints, 0, sizeof(_hints));
 	_hints.ai_family = AF_INET;
@@ -26,24 +26,24 @@ void Server::setAddrInfo()
 	_hints.ai_flags = AI_PASSIVE;
 }
 
-int Server::initSocket(const char* domain, const char* port)
+int Server::_initSocket(const char* domain, const char* port)
 {
 	struct addrinfo *res, *p;
 
 	int status = getaddrinfo(domain, port, &_hints, &res);
 	if (status != 0)
-		throw std::runtime_error("Error: getaddrinfo: " + string(gai_strerror(status)));
+		throw runtime_error("Error: getaddrinfo: " + string(gai_strerror(status)));
 
 	int tmpfd;
 	for (p = res; p != NULL; p = p->ai_next)
 	{
 		tmpfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
 		if (tmpfd == -1) 
-			throw std::runtime_error("Error: socket: " + string(strerror(errno)));
+			throw runtime_error("Error: socket: " + string(strerror(errno)));
 
 		int opt = 1;
 		if (setsockopt(tmpfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) == -1)
-			throw std::runtime_error("Error: setsockopt: " + string(strerror(errno)));
+			throw runtime_error("Error: setsockopt: " + string(strerror(errno)));
 
 		if (::bind(tmpfd, p->ai_addr, p->ai_addrlen) == 0)
 			break ;
@@ -52,15 +52,15 @@ int Server::initSocket(const char* domain, const char* port)
 	}
 	freeaddrinfo(res);
 	if (p == NULL)
-		throw std::runtime_error("Error: Failed to bind with following domain: " + string(domain));
+		throw runtime_error("Error: Failed to bind with following domain: " + string(domain));
 
 	if (listen(tmpfd, 128) == -1)
-		throw std::runtime_error("Error: listen: " + string(strerror(errno)));
+		throw runtime_error("Error: listen: " + string(strerror(errno)));
 
 	return (tmpfd);
 }
 
-void Server::setSocket(const vector<ServBlock>& serv)
+void Server::_setSocket(const vector<ServBlock>& serv)
 {
 	int idx = 0;
 	for (vector<ServBlock>::const_iterator it = serv.begin(); it != serv.end(); it++)
@@ -70,19 +70,19 @@ void Server::setSocket(const vector<ServBlock>& serv)
 		if (it->getName().size() != 0)
 		{
 			for (vector<string>::const_iterator nit = it->getName().begin(); nit != it->getName().end(); nit++)
-				_server[initSocket((*nit).c_str(), port)] = idx;
+				_server[_initSocket((*nit).c_str(), port)] = idx;
 		}
 		else
-			_server[initSocket(NULL, port)] = idx;
+			_server[_initSocket(NULL, port)] = idx;
 		idx++;
 	}
 }
 
-void Server::setKqueue()
+void Server::_setKqueue()
 {
 	_kq = kqueue();
 	if (_kq == -1)
-		throw std::runtime_error("Error: kqueue: " + string(strerror(errno)));
+		throw runtime_error("Error: kqueue: " + string(strerror(errno)));
 	_evList.resize(32);
 
 	for (unordered_map<int, int>::iterator it = _server.begin(); it != _server.end(); it++)
@@ -90,15 +90,16 @@ void Server::setKqueue()
 		struct kevent evSet;
 		EV_SET(&evSet, it->first, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 		if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
-			throw std::runtime_error("Error: kevent: " + string(strerror(errno)));
+			throw runtime_error("Error: kevent: " + string(strerror(errno)));
 	}
 }
 
-void Server::setNonBlock(int fd)
+void Server::_setEvent(int fd, int filter, int flags)
 {
-	if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) {
-		throw runtime_error("Error: fcntl(F_SETFL, O_NONBLOCK)");
-	}
+	struct kevent evSet;
+	EV_SET(&evSet, fd, filter, flags, 0, 0, NULL);
+	if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
+		throw runtime_error("Error: kevent: " + string(strerror(errno)));
 }
 
 void Server::acceptClient(int fd)
@@ -109,67 +110,56 @@ void Server::acceptClient(int fd)
 	int client_fd = accept(fd, (struct sockaddr*)&addr, &addr_len);
 	if (client_fd == -1)
 		throw runtime_error("Error: accept: " + string(strerror(errno)));
-
-	setNonBlock(client_fd);
-
-	struct kevent evSet;
-	EV_SET(&evSet, client_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
-		throw runtime_error("Error: kevent: " + string(strerror(errno)));
+	if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
+		throw runtime_error("Error: fcntl(F_SETFL, O_NONBLOCK)");
 
 	char ip[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, &addr.sin_addr, ip, sizeof(ip));
 	int port = ntohs(addr.sin_port);
 
+	_setEvent(client_fd, EVFILT_READ, EV_ADD | EV_ENABLE);
 	_client[client_fd] = Client(port, getServerIdx(fd), ip);
 }
 
 void Server::readClient(int fd)
 {
-    char buffer[1024] = {0};
+	char buffer[1024] = {0};
 
-    ssize_t size = read(fd, buffer, sizeof(buffer));
-    if (size < 0) {
-        if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            return;
-        }
-        closeClient(fd);
-        return;
-    }
-    if (size == 0) {
-        closeClient(fd);
-        return;
-    }
-	_client[fd].setMessage(buffer);
-	
-	const std::string& message = _client[fd].getMessage();
-    size_t headerEnd = message.find("\r\n\r\n");
-    if (headerEnd != std::string::npos)
+	ssize_t size = read(fd, buffer, sizeof(buffer));
+	if (size <= 0)
 	{
-        // 헤더 파싱
-        std::string header = message.substr(0, headerEnd + 4);
+		closeClient(fd);
+		return ;
+	}
 
-        // 2. Content-Length 확인
-        size_t contentLengthPos = header.find("Content-Length:");
-        int contentLength = 0;
-        if (contentLengthPos != std::string::npos) {
-            size_t start = contentLengthPos + 15;
-            size_t end = header.find("\r\n", start);
-            contentLength = std::stoi(header.substr(start, end - start));
-        }
+	_client[fd].setMessage(buffer);
+	if (_client[fd].getMessage().size() > 8192)
+	{
+		closeClient(fd);
+		return ;
+	}
+	
+	const string& message = _client[fd].getMessage();
+	size_t headerEnd = message.find("\r\n\r\n");
+	if (headerEnd != string::npos)
+	{
+		headerEnd += 4;
+		string header = message.substr(0, headerEnd);
+		size_t lenPos = header.find("Content-Length:");
 
-        // 3. 바디의 시작 위치와 현재 크기 확인
-        size_t bodyStart = headerEnd + 4;
-        size_t bodySize = message.size() - bodyStart;
+		if (lenPos != string::npos)
+		{
+			size_t start = lenPos + 16;
+			size_t end = header.find("\r\n", start);
+			size_t bodySize = message.size() - headerEnd;
+			long contentLength = strtol(header.substr(start, end - start).c_str(), NULL, 10);
 
-        // 4. 바디가 완전히 수신되었는지 확인
-        if (bodySize >= static_cast<size_t>(contentLength)) {
-			struct kevent evSet;
-			EV_SET(&evSet, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
-			if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
-				throw runtime_error("Error: kevent: " + string(strerror(errno)));
-        }
-    }
+			if (bodySize >= static_cast<size_t>(contentLength))
+				_setEvent(fd, EVFILT_WRITE, EV_ADD | EV_ENABLE);
+		}
+		else
+			_setEvent(fd, EVFILT_WRITE, EV_ADD | EV_ENABLE);
+	}
 }
 
 void Server::sendClient(int fd, const ServConf& conf)
@@ -182,20 +172,17 @@ void Server::sendClient(int fd, const ServConf& conf)
 		{
 			req.initRequest(it->second.getMessage());
 		}
-		catch(const std::exception& e)
+		catch(const exception& e)
 		{
-			std::cerr << "\rreq: " << typeid(e).name() << " - " << e.what() << std::endl;
+			cerr << "\r" << typeid(e).name() << " - " << e.what() << endl;
 		}
 		Response res(req, conf, it->second.getIndex());
+
 		printLog(fd, req);
 		if (write(fd, res.getMessage().c_str(), res.getMessage().size()) == -1)
 			throw runtime_error("Error: write: ");
 
-		struct kevent evSet;
-		EV_SET(&evSet, fd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
-		if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
-			throw runtime_error("Error: kevent: " + string(strerror(errno)));
-
+		_setEvent(fd, EVFILT_WRITE, EV_DELETE);
 		if (req.chkConnection())
 			closeClient(fd);
 		else
