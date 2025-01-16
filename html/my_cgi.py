@@ -111,25 +111,25 @@ elif request_method == "POST" and content_type.startswith("multipart/form-data")
     # HTML form 확인 (file)
     if "file" in form:
         file_item = form["file"]
-    else:
-        params["status"] = ["HTML form is wrong."]
-        status = "400 Bad Request"
 
-    # 파일 이름이 존재하면 읽어서 저장
-    if file_item.filename:
-        save_path = path + file_item.filename
-        try:
-            with open(save_path, "wb") as f:
-                f.write(file_item.file.read())
-            # 업로드가 완료된 경우
-            params["status"] = [f"File '{filename}' uploaded successfully."]
-            status = "201 Created"
-        except Exception as e:
-            # 업로드에 실패한 경우
-            params["status"] = [f"Error uploading file {filename} : {str(e)}"]
-            status = chkError(e)
+        # 파일 이름이 존재하면 읽어서 저장
+        if file_item.filename:
+            save_path = os.path.join(path, file_item.filename)
+            try:
+                with open(save_path, "wb") as f:
+                    f.write(file_item.file.read())
+                # 업로드가 완료된 경우
+                params["status"] = [f"File '{file_item.filename}' uploaded successfully."]
+                status = "201 Created"
+            except Exception as e:
+                # 업로드에 실패한 경우
+                params["status"] = [f"Error uploading file {file_item.filename} : {str(e)}"]
+                status = chkError(e)
+        else:
+            params["status"] = ["No file was uploaded."]
+            status = "400 Bad Request"
     else:
-        params["status"] = ["No file was uploaded."]
+        params["status"] = ["HTML form is missing 'file' field."]
         status = "400 Bad Request"
 
 # POST 인데 multipart 가 아닌 경우
