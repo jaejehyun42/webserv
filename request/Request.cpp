@@ -21,6 +21,8 @@ void Request::_setError(int error_code)
 		_errorCode = "405";
 		_errorMessage = "Method Not Allowed";
 	}
+
+	throw runtime_error(_errorCode + _errorMessage);
 }
 
 // parse
@@ -69,20 +71,27 @@ void Request::initRequest(const string& input)
 	istringstream form(input);
 	string line;
 
-	if (!getline(form, line))
-		_setError(400);
-	_parseStatus(line); // 상태 라인 파싱
-
-	while (getline(form, line)) // 헤더 파싱 루프
+	try
 	{
-		if (line == "\r") // 헤더와 바디를 구분하는 빈 줄 체크
-			break ;
-		_parseHeader(line);
+		if (!getline(form, line))
+			_setError(400);
+		_parseStatus(line); // 상태 라인 파싱
+	
+		while (getline(form, line)) // 헤더 파싱 루프
+		{
+			if (line == "\r") // 헤더와 바디를 구분하는 빈 줄 체크
+				break ;
+			_parseHeader(line);
+		}
+		_parseMethodChkHost();
+	
+		while (getline(form, line)) // 바디 초기화
+			_body += line + "\n";
 	}
-	_parseMethodChkHost();
-
-	while (getline(form, line)) // 바디 초기화
-		_body += line + "\n";
+	catch (exception& e)
+	{
+		return;
+	}
 }
 
 void Request::_parseUrl()
@@ -150,6 +159,7 @@ void Request::_parseStatus(const string& line)
 	istringstream stream(line);
 
 	stream >> _method;
+	cout << _method << endl;
 	_parseMethod();
 
 	stream >> _url;

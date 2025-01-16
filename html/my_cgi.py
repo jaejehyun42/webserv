@@ -8,7 +8,6 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 import cgi
 import mimetypes
 import shutil
-import io
 
 def chkError(e):
     if "Permission denied" in str(e):
@@ -111,8 +110,8 @@ if request_method == "GET" and path_info:
 # POST 인데 multipart 인 경우
 elif request_method == "POST" and content_type.startswith("multipart/form-data"):
     # 폼 가져오기
-    body = sys.stdin.buffer.read()
-    form = cgi.FieldStorage(fp=io.BytesIO(body))
+    form = cgi.FieldStorage()
+
     # HTML form 확인 (file)
     if "file" not in form:
         params["status"] = ["HTML form is missing \"file\"."]
@@ -218,7 +217,7 @@ if content == "":
     <h1>{title}</h1>
     <p>Request Method: {request_method}</p>
     <p>PATH_INFO: {path_info}</p>
-    <p>params: {form}</p>
+    <p>params: {params}</p>
 </body>
 </html>
 """
