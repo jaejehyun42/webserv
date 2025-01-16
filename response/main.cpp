@@ -5,8 +5,13 @@
 
 using namespace std;
 
+// void f(){
+//     system("leaks a.out");
+// }
+
 int main(){
-    ifstream f("Request.http");
+    // atexit(f);
+    ifstream f("req");
     if (!f){
         cerr<<"Error: failed flie open\n";
         return EXIT_FAILURE;

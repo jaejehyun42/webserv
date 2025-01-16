@@ -126,7 +126,6 @@ void    Body::_processCgiMessage(pid_t& cgiProc, int* cgiReadFd, int* cgiWriteFd
 void	Body::_execCgiProc(int* cgiReadFd, int* cgiWriteFd){
 	close(cgiReadFd[1]);
 	close(cgiWriteFd[0]);
-	// std::cerr<<"pipe ok\n";
 // dup
 	if (dup2(cgiReadFd[0], STDIN_FILENO) < 0)
 		exit(EXIT_FAILURE);
@@ -134,7 +133,6 @@ void	Body::_execCgiProc(int* cgiReadFd, int* cgiWriteFd){
 	if (dup2(cgiWriteFd[1], STDOUT_FILENO) < 0)
 		exit(EXIT_FAILURE);
 	close(cgiWriteFd[1]);
-	// std::cerr<<"dup ok\n";
 //file
 	const char* file = _data.at(__cgiPass).c_str();
 	// std::cerr<<"file: "<<file<<"\n";
@@ -145,12 +143,10 @@ void	Body::_execCgiProc(int* cgiReadFd, int* cgiWriteFd){
 		myCgiPath = _data.at(__path).substr(0, i + 3);
 	else
 		exit(EXIT_FAILURE);
-	// std::cerr<<"mycgi path: "<<myCgiPath<<"\n";
 	std::vector<const char*>  argv;
 	argv.push_back(file);
 	argv.push_back(myCgiPath.c_str());
 	argv.push_back(NULL);
-	// std::cerr<<"argv ok\n";
 //envp
 	std::vector<const char*>  envp;
 	if (_data.find(__cgiRoot) != _data.end())
@@ -163,15 +159,14 @@ void	Body::_execCgiProc(int* cgiReadFd, int* cgiWriteFd){
 		envp.push_back(const_cast<char*>(_data.at(__cgiContentLength).c_str()));
 	if (_data.find(__cgiPath) != _data.end())
 		envp.push_back(const_cast<char*>(_data.at(__cgiPath).c_str()));
+	if (_data.find(__cgiQuery) != _data.end())
+		envp.push_back(const_cast<char*>(_data.at(__cgiQuery).c_str()));
 	envp.push_back(nullptr);
-	// std::cerr<<"envp ok\n";
 //prt
-	// for(int i=0;argv[i]!=0;i++){
+	// for(int i=0;argv[i]!=0;i++)
 	// 	std::cerr<<"argv: "<<argv[i]<<"\n";
-	// }
-	// for(int i=0;envp[i]!=0;i++){
+	// for(int i=0;envp[i]!=0;i++)
 	// 	std::cerr<<"envp: "<<envp[i]<<"\n";
-	// }
 	if (execve(file, const_cast<char* const*>(argv.data()), const_cast<char* const*>(envp.data()))){
 		perror("failed execve");
 		exit(EXIT_FAILURE);
