@@ -4,7 +4,7 @@
 #include "ResponseManager.hpp"
 
 StatusLine::StatusLine(const std::unordered_map<int, std::string>& data)
-: _data(data), _httpVersion("HTTP/1.1"), _statusCode("200"), _reasonPhrase("OK"){
+: _data(data), _httpVersion("HTTP/1.1"), _statusCode(_data.at(__statusCode)), _reasonPhrase(_data.at(__reasonPhrase)){
     _setMessage();
 }
 

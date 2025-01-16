@@ -101,19 +101,23 @@ void	Body::_readCgiMessage(pid_t& cgiProc, int* pfd){
 	size_t i;
 	std::getline(iss, line, '\n');
 	i = line.find(' ');
+	// std::cout<<"first line: "<<line<<"\n";
+	// std::cout<<"line: "<<line.substr(0,i)<<"\n";
+	// std::cout<<"line: "<<line.substr	(i+1)<<"\n";
 	if (i == std::string::npos || i == 0 || i == line.size() - 1)
 		throw std::runtime_error("500");
 	_data[__statusCode] = line.substr(0,i);
 	_data[__reasonPhrase] = line.substr(i+1);
-
 	while (std::getline(iss, line, '\n') && line.size()){ 
-		i = line.find(':');
+		// std::cout<<"line: "<<line<<"\n";
+		i = line.find(' ');
 		if (i == std::string::npos || i == 0 || i == line.size() - 1)
 			throw std::runtime_error("500");
+		// std::cout<<"line: "<<line.substr	(i+1)<<"\n";
 		key = line.substr(0,i);
-		if (key == "Content-Length")
+		if (key == "Content-Length:")
 			_data[__contentLength] = line.substr(i+1);
-		if (key == "Content-Type")
+		if (key == "Content-Type:")
 			_data[__contentType] = line.substr(i+1);
 	}
 	while (std::getline(iss, line, '\n') && line != "\n"){ 
