@@ -228,7 +228,7 @@ void    ResponseManager::_setConnection(){
 }
 
 void    ResponseManager::_setContentType(){
-    if (_data[__contentType].size())
+    if (_data.find(__contentType) != _data.end())
         return ;
 
     size_t i = _data[__path].find_last_of('.');
