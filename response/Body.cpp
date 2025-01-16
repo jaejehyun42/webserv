@@ -131,8 +131,13 @@ void	Body::_execCgiProc(int* pfd){
 //file
 	const char* file = _data.at(__cgiPass).c_str();
 //argv
-	size_t i = _data.at(__path).find(".py/");
-	std::string myCgiPath = _data.at(__path).substr(0, i+3);
+	size_t i = _data.at(__path).find(".py");
+	std::string myCgiPath;
+	if (_data.at(__path).size() == i + 3 || (_data.at(__path).size() > i + 3 && _data.at(__path)[i+3] == '/'))
+		myCgiPath = _data.at(__path).substr(0, i + 3);
+	else
+		exit(EXIT_FAILURE);
+	// std::cerr<<"mycgi path: "<<myCgiPath<<"\n";
 	std::vector<const char*>  argv;
 	argv.push_back(file);
 	argv.push_back(myCgiPath.c_str());
