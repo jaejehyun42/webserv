@@ -16,20 +16,20 @@ def chkError(e):
         return "500 Internal Server Error"
 
 # 환경 변수에서 각종 정보 읽기
-#path_info = os.environ.get("PATH_INFO", "")
-#query_string = os.environ.get("QUERY_STRING", "")
-#request_method = os.environ.get("REQUEST_METHOD", "")
-#content_type   = os.environ.get("CONTENT_TYPE", "")
-#content_length = os.environ.get("CONTENT_LENGTH", 0)
-#root_dir = os.environ.get("DOCUMENT_ROOT", "")
+path_info = os.environ.get("PATH_INFO", "")
+query_string = os.environ.get("QUERY_STRING", "")
+request_method = os.environ.get("REQUEST_METHOD", "")
+content_type   = os.environ.get("CONTENT_TYPE", "")
+content_length = os.environ.get("CONTENT_LENGTH", 0)
+root_dir = os.environ.get("DOCUMENT_ROOT", "")
 
-path_info = "/now_files"
-#query_string = "name=John&&age=30&hobby=reading&hobby=traveling"
-query_string = ""
-request_method = "DELETE"
-content_length = 0
-content_type = "text/plain"
-root_dir = "/Users/seunghan/42_projects/webserv/working/CGI"
+# path_info = "/now_files"
+# #query_string = "name=John&&age=30&hobby=reading&hobby=traveling"
+# query_string = ""
+# request_method = "DELETE"
+# content_length = 0
+# content_type = "text/plain"
+# root_dir = "/Users/seunghan/42_projects/webserv/working/CGI"
 
 # HTML 제목
 title = ""
