@@ -6,3 +6,11 @@ Host: localhost
 Accept-Encoding: gzip, deflate, br
 Connection: keep-alive
 Content-Type: multipart/form-data; boundary=——WebKitFormBoundaryO7rlE6UB4oLSUEfC
+
+———WebKitFormBoundaryO7rlE6UB4oLSUEfC
+Content-Disposition: form-data; name="file"; filename="test.txt"
+Content-Type: text/plain
+
+hi
+
+———WebKitFormBoundaryO7rlE6UB4oLSUEfC———
