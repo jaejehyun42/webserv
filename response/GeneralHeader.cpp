@@ -16,12 +16,12 @@ void  GeneralHeader::_setMessage(){
 }
 
 void  GeneralHeader::_setConnection(){
-    if ((_data.find(__connection) != _data.end()) && \
-    (strtol(_data.at(__connection).c_str(), 0, 10) > 0)){
-        _message += "Connection: keep-alive\r\n";
-        return ;
+    if ((_data.find(__connection) != _data.end()) && (strtol(_data.at(__connection).c_str(), 0, 10) > 0) && \
+        _data.at(__statusCode)[0] != '4' && _data.at(__statusCode)[0] != '5'){
+            _message += "Connection: keep-alive\r\n";
+    }else{
+        _message += "Connection: closed\r\n";
     }
-    _message += "Connection: closed\r\n";
 }
 
 void  GeneralHeader::_setDate(){ //e.g Date: Tue, 07 Jan 2025 05:29:17 GMT
