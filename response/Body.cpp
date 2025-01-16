@@ -17,7 +17,7 @@ Body::Body(std::unordered_map<int, std::string>& data): _data(data){
 
 Body::~Body(){}
 
-std::string  Body::getMessage(){
+	std::string  Body::getMessage(){
 	return (_message);
 }
 void        Body::_setMessage(){
@@ -76,16 +76,25 @@ void	Body::_readCgiMessage(pid_t& cgiProc, int* pfd){
 	close(pfd[1]);
 
 	int cgiProcStatus;
-	waitpid(cgiProc, &cgiProcStatus,0);
-	if (WEXITSTATUS(cgiProcStatus))
+	if (waitpid(cgiProc, &cgiProcStatus, 0) == -1){
+		perror("waitpid error: ");
+		std::cout<<"1\n";
 		throw(std::runtime_error("500"));
+	}
+	if (WIFEXITED(cgiProcStatus)){
+		std::cout<<"2\n";
+		if (WEXITSTATUS(cgiProcStatus)){
+			std::cout<<"3\n";
+			throw(std::runtime_error("500"));
+		}
+	}
 
 	char buf[1024];
 	memset(buf,0,sizeof(buf));
 	std::string cgiMessage;
-	while (read(pfd[0], buf, sizeof(buf)) > 0){
+	while (read(pfd[0], buf, sizeof(buf)) > 0)
 		cgiMessage += buf;
-	}
+
 	istringstream iss(cgiMessage);
 	std::string line;
 	std::string key;
@@ -112,75 +121,77 @@ void	Body::_readCgiMessage(pid_t& cgiProc, int* pfd){
 	}
 }
 
-void   Body::_execCgiProc(int* pfd){
-	close(pfd[0]);
-
-	if (dup2(pfd[1], STDOUT_FILENO) < 0)
-		exit(EXIT_FAILURE);
-
-	const char* python_path = "/usr/bin/python3";
-	const char* script_path = "/Users/jeshin/42Cursus/webserv/html/my_cgi.py";
-
-	std::vector<const char*> args;
-	args.push_back("python3");
-	args.push_back(script_path);
-	args.push_back(nullptr);
-
-	std::vector<const char*> env;
-	env.push_back("DOCUMENT_ROOT=/tmp");
-	env.push_back(nullptr);
-	if (execve(python_path, const_cast<char* const*>(args.data()), const_cast<char* const*>(env.data())) == -1)
-		exit(EXIT_FAILURE);
-	exit(EXIT_SUCCESS);
-}
-
-// void	Body::_execCgiProc(int* pfd){
+// void   Body::_execCgiProc(int* pfd){
 // 	close(pfd[0]);
-// //dup
+
 // 	if (dup2(pfd[1], STDOUT_FILENO) < 0)
 // 		exit(EXIT_FAILURE);
-// //file
-// 	const char *file = "usr/bin/python3";
-// 	std::vector<const char*>  argv;
-// 	// const char *file = "/usr/bin/python3";
-// //argv
-// 	argv.push_back("python3");
-// 	argv.push_back("/Users/jeshin/42Cursus/webserv/html/my_cgi.py");
-// 	argv.push_back(NULL);
-// 	// char *argv[3] = {const_cast<char*>("python3"), const_cast<char*>("/Users/jeshin/42Cursus/webserv/html/my_cgi.py"), 0}; //두번째에 mycgi가 잇는 경로 넣기
-// 	if (_data.find(__cgiEnvData) == _data.end())
+
+// 	const char* python_path = "/usr/bin/python3";
+// 	const char* script_path = "/Users/jeshin/42Cursus/webserv/html/my_cgi.py";
+
+// 	std::vector<const char*> args;
+// 	args.push_back("python3");
+// 	args.push_back(script_path);
+// 	args.push_back(nullptr);
+
+// 	std::vector<const char*> env;
+// 	env.push_back("DOCUMENT_ROOT=/tmp");
+// 	env.push_back(nullptr);
+// 	if (execve(python_path, const_cast<char* const*>(args.data()), const_cast<char* const*>(env.data())) == -1)
 // 		exit(EXIT_FAILURE);
-// //envp
-// 	std::istringstream  iss(_data.at(__cgiEnvData));
-// 	std::string         token;
-// 	std::vector<const char*>  envp;
-// 	// std::cerr<<"cgiEnvData: "<<_data.at(__cgiEnvData)<<"\n";
-// 	while (std::getline(iss,token,' ')){
-// 		// std::cerr<<"token: "<<token<<"\n";
-// 		char* copiedToken = new char[token.size() + 1];
-// 		std::strcpy(copiedToken, token.c_str());
-// 		envp.push_back(copiedToken);
-// 	}
-// 	envp.push_back(nullptr);
-// //prt
-// 	// for(int i=0;tmpEnvp[i]!=0;i++){
-// 	// 	std::cerr<<"tmpenvp: "<<tmpEnvp[i]<<"\n";
-// 	// }
-// 	std::cerr<<"file: "<<file<<"\n";
-// 	for(int i=0;argv[i]!=0;i++){
-// 		std::cerr<<"argv: "<<argv[i]<<"\n";
-// 	}
-// 	// for(int i=0;envp[i]!=0;i++){
-// 	// 	std::cerr<<"envp: "<<envp[i]<<"\n";
-// 	// }
-// 	if (execve("/usr/bin/python3", const_cast<char* const*>(argv.data()), const_cast<char* const*>(envp.data()))){
-// 		//왜 file을 변수로 주면 안되고 const char*으로 주면 되는건지?
-// 	//prt
-// 		perror("");
-// 		exit(EXIT_FAILURE);
-// 	}
 // 	exit(EXIT_SUCCESS);
 // }
+
+void	Body::_execCgiProc(int* pfd){
+	close(pfd[0]);
+	// std::cerr<<"pipe ok\n";
+// dup
+	if (dup2(pfd[1], STDOUT_FILENO) < 0)
+		exit(EXIT_FAILURE);
+	// std::cerr<<"dup ok\n";
+//file
+	const char* file = _data.at(__cgiPass).c_str();
+//argv
+	size_t i = _data.at(__path).find(".py/");
+	std::string myCgiPath = _data.at(__path).substr(0, i+3);
+	std::vector<const char*>  argv;
+	argv.push_back(file);
+	argv.push_back(myCgiPath.c_str());
+	argv.push_back(NULL);
+	// std::cerr<<"argv ok\n";
+//envp
+	std::vector<const char*>  envp;
+	if (_data.find(__cgiRoot) != _data.end())
+		envp.push_back(const_cast<char*>(_data.at(__cgiRoot).c_str()));
+	if (_data.find(__cgiMethod) != _data.end())
+		envp.push_back(const_cast<char*>(_data.at(__cgiMethod).c_str()));
+	if (_data.find(__cgiContentType) != _data.end())
+		envp.push_back(const_cast<char*>(_data.at(__cgiContentType).c_str()));
+	if (_data.find(__cgiContentLength) != _data.end())
+		envp.push_back(const_cast<char*>(_data.at(__cgiContentLength).c_str()));
+	if (_data.find(__cgiPath) != _data.end())
+		envp.push_back(const_cast<char*>(_data.at(__cgiPath).c_str()));
+	envp.push_back(nullptr);
+	// std::cerr<<"envp ok\n";
+//prt
+	// std::cerr<<"file: "<<file<<"\n";
+	for(int i=0;argv[i]!=0;i++){
+		std::cerr<<"argv: "<<argv[i]<<"\n";
+	}
+	for(int i=0;envp[i]!=0;i++){
+		std::cerr<<"envp: "<<envp[i]<<"\n";
+	}
+	if (execve(file, const_cast<char* const*>(argv.data()), const_cast<char* const*>(envp.data()))){
+	//prt
+		// perror("");
+		std::cerr<<"failed execve: \n";
+		// std::cerr<<"failed execve: \n";
+		// std::cerr<<"failed execve: \n";
+		exit(EXIT_FAILURE);
+	}
+	exit(EXIT_SUCCESS);
+}
 
 void    Body::_makeCgiMessage(){
 	int pfd[2];
@@ -196,7 +207,13 @@ void    Body::_makeCgiMessage(){
 		errno = savedErrno;
 		throw(std::runtime_error("500"));
 	}
-	cgiProc == 0 ? _execCgiProc(pfd) : _readCgiMessage(cgiProc, pfd);
+	if (cgiProc == 0){
+		std::cout<<"자식 시작\n";
+		_execCgiProc(pfd);
+	}else{
+		_readCgiMessage(cgiProc, pfd);
+	}
+	// cgiProc == 0 ? _execCgiProc(pfd) : _readCgiMessage(cgiProc, pfd);
 }
 
 void	Body::_makeStaticFileMessage(){
@@ -219,7 +236,7 @@ void    Body::_setContentLength(){
 }
 
 void    Body::_makeGetMessage(){
-	if (_data.find(__cgiEnvData) != _data.end() && _data.at(__cgiEnvData).find("PATH_INFO") != std::string::npos)
+	if (_data.find(__cgiRoot) != _data.end())
 		_makeCgiMessage();
 	else if (_data.find(__autoindex) != _data.end())
 		_makeAutoindexMessage();

@@ -19,7 +19,12 @@ enum eData{
     __requestMethod,
     __requestBody,
     __cgiPass,
-    __cgiEnvData // requestCgiPath, requestQuery, requestContentLength, requestContentType, pathRoot
+    __cgiMethod,
+    __cgiPath,
+    __cgiQuery,
+    __cgiContentLength,
+    __cgiContentType,
+    __cgiRoot
 };
 
 class ResponseManager{
@@ -32,7 +37,6 @@ class ResponseManager{
         void        _setData();
         const std::unordered_map<int, std::string>& _setErrorData(const std::string& errCode, const std::string& reasonPhrase);
         void        _setMessage();
-        void        _setHost();
         void        _setPath();
 		void        _setCgiEnv();
         void        _setBody();

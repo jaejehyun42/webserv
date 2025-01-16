@@ -1,4 +1,4 @@
-POST /my_cgi.py/Users/jeshin/goinfre/temp.txt HTTP/1.1
+GET /my_cgi.py HTTP/1.1
 User-Agent: PostmanRuntime/7.32.3
 Accept: */*
 Postman-Token: bda49f4f-8500-4559-a291-9bffaa08cd17

@@ -54,14 +54,6 @@ void    ResponseManager::_setMessage(){
 void    ResponseManager::_setData(){
     _checkRequestError();
     _setMethod();
-    if (_data[__requestMethod] == "POST" || "DELETE"){
-
-        _setBody();
-        _setConnection();
-        _setCgiEnv();
-        return ;
-    }
-    // _setHost();
     _setPath();
     _setBody();
     _setContentType();
@@ -83,20 +75,6 @@ const std::unordered_map<int, std::string>& ResponseManager::_setErrorData(const
 
     _setContentType();
     return (_data);
-}
-
-void    ResponseManager::_setHost(){
-    // unordered_map<string,string> headers = _req.getHeaders();
-    // if (headers.find("Host") == headers.end())
-    //     throw std::runtime_error("400");
-    // std::vector<string>::const_iterator it = _sb.getName().begin();
-    // for (; it!=_sb.getName().end() ; it++){
-    //     if (headers["Host"] == *it){
-    //         _data[__hostName] = *it;
-    //         return ;
-    //     }
-    // }
-    // throw std::runtime_error("400");
 }
 
 void    ResponseManager::_checkPathStatus(const std::string& path, struct stat& pathStatus){
@@ -154,41 +132,52 @@ void    ResponseManager::_checkPathIsDir(std::string& path, struct stat& pathSta
 void    ResponseManager::_setPath(){
     string      path = _req.getPath();
     struct stat pathStatus;
-    std::unordered_map<string, LocBlock>::const_iterator it;
+    std::unordered_map<string, LocBlock>::const_iterator it; // it->first : locationIdentifier, it->second : locationBlock
     size_t i = path.find(".py");
-    if (i != std::string::npos && path.size() > i + 1 && path[i + 3] == '/')
-        it =  _sb.getPathIter(".py");
+    if (i != std::string::npos){ //location 블럭 식별
+        if ((path.size() > i + 3 && path[i + 3] == '/') || path.substr(i, path.size()) == ".py") 
+            it =  _sb.getPathIter(".py"); //py block
+    }
     else
-        it =  _sb.getPathIter(path);
+        it =  _sb.getPathIter(path); // others
 
     if (it == _sb.getPath().end() && _sb.getRoot().size()){//매핑되는 로케이션 블록이 없을 경우. 서버 루트 사용.
         if (_sb.getRoot() != "/")
             path.insert(0,_sb.getRoot());
         _data[__path] = path;
         _data[__root] = _sb.getRoot();
-        _checkPathStatus(path, pathStatus);
-        _checkPathIsDir(path, pathStatus, NULL);
-    }else{
-        const std::string&  locationIdentifier = it->first;
-        const LocBlock&     locationBlock = it->second;
-        const std::string&  locationRoot = locationBlock.getRoot();
-        
-        if (locationRoot.empty() && (_sb.getRoot() != "/")){//매핑되는 로케이션블록이 있지만 로케이션블록의 루트가 없는경우. 서버 루트 이용.
-            path.insert(0,_sb.getRoot());
+    }
+    else{
+        if (it->second.getRoot().empty()){//매핑되는 로케이션블록이 있지만 로케이션블록의 루트가 없는경우. 서버 루트 이용.
+            if (_sb.getRoot() != "/")
+                path.insert(0,_sb.getRoot());
+            _data[__path] = path;
             _data[__root] = _sb.getRoot();
         }
-        else if (locationRoot != "/"){
-            path.replace(0, locationIdentifier.size(), locationRoot);//매핑되는 로케이션 블록이 있고 루트도 있는 경우. 로케이션 블록의 루트 사용
-            _data[__root] = locationRoot;
-            _data[__locationIdentifier] = locationIdentifier;
+        else{//매핑되는 로케이션 블록이 있고 루트도 있는 경우. 로케이션 블록의 루트 사용
+            if (it->second.getRoot() != "/")
+                path.replace(0, it->first.size(), it->second.getRoot());
+            _data[__path] = path;
+            _data[__root] = it->second.getRoot();
+            _data[__locationIdentifier] = it->first;
         }
-        _data[__path] = path;
-        if (locationBlock.getCgipass().size()) //cgi location block인 경우 
-            _data[__cgiPass] += locationBlock.getCgipass() + " ";
-        else{
-            _checkPathStatus(path, pathStatus);
-            _checkPathIsDir(path, pathStatus, &locationBlock);
-        }
+    }
+
+    if (it != _sb.getPath().end() && it->first == ".py"){//location block이 py블럭인 경우 cgi 사용.
+        if (it->second.getCgipass().size()) //cgi location block인 경우 
+            _data[__cgiPass] = it->second.getCgipass();
+        else
+            _data[__cgiPass] = "/usr/bin/python3";
+    }
+    else if (_data[__requestMethod] == "POST" || _data[__requestMethod] == "DELETE"){//method가 POST또는 DELETE인 경우 cgi 사용.
+        if (it->second.getCgipass().size()) //cgi location block인 경우 
+            _data[__cgiPass] = it->second.getCgipass();
+        else
+            _data[__cgiPass] = "/usr/bin/python3";
+    }
+    else{
+        _checkPathStatus(path, pathStatus);
+        _checkPathIsDir(path, pathStatus, NULL);
     }
 }
 
@@ -201,28 +190,30 @@ void    ResponseManager::_setBody(){
     std::string requestBody = _req.getBody(); //body
     if (requestBody.empty())
         return ;
-    if (requestBody.size() < (unsigned long)_sb.getMaxSize())
+    if (requestBody.size() > (unsigned long)_sb.getMaxSize())
         throw (std::runtime_error("413"));
     _data[__requestBody] = requestBody;
 }
 
 void ResponseManager::_setCgiEnv(){
-    if (_req.getCgiPath().empty())
+    if (_data.find(__cgiPass) == _data.end())
         return ;
 
-    _data[__cgiEnvData] += "REQUESTED_METHOD=" + _data[__requestMethod] + " ";
+    if (_data.find(__requestMethod) != _data.end())
+        _data[__cgiMethod] = "REQUESTED_METHOD=" + _data[__requestMethod];
+    if (_data.find(__root) != _data.end())
+        _data[__cgiRoot] += "DOCUMENT_ROOT=" + _data[__root];
+
     if (_req.getCgiPath().size())
-        _data[__cgiEnvData] += "PATH_INFO=" + _req.getCgiPath() + " ";
+        _data[__cgiPath] += "PATH_INFO=" + _req.getCgiPath();
     if (_req.getQuery().size())
-        _data[__cgiEnvData] += "QUERY_STRING=" + _req.getQuery() + " ";
+        _data[__cgiQuery] += "QUERY_STRING=" + _req.getQuery();
 
     std::unordered_map<std::string, std::string> requestHeaderMap = _req.getHeaders();
     if (requestHeaderMap.find("Content-Length") != requestHeaderMap.end())
-        _data[__cgiEnvData] += "CONTENT_LENGTH=" + requestHeaderMap["Content-Length"] + " ";
+        _data[__cgiContentLength] += "CONTENT_LENGTH=" + requestHeaderMap["Content-Length"];
     if (requestHeaderMap.find("Content-Type") != requestHeaderMap.end())
-        _data[__cgiEnvData] += "CONTENT_TYPE=" + requestHeaderMap["Content-Type"] + " ";
-    _data[__cgiEnvData] += "DOCUMENT_ROOT=" + _data[__root] + " ";
-    // cout<<_data[__cgiEnvData];
+        _data[__cgiContentType] += "CONTENT_TYPE=" + requestHeaderMap["Content-Type"];
 }
 
 void    ResponseManager::_setConnection(){
@@ -232,6 +223,9 @@ void    ResponseManager::_setConnection(){
 }
 
 void    ResponseManager::_setContentType(){
+    if (_data[__contentType].size())
+        return ;
+
     size_t i = _data[__path].find_last_of('.');
     if (i == std::string::npos || (i + 1 == _data[__path].size()))
         _data[__contentType] = _conf.getMime("default");
