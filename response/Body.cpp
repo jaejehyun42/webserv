@@ -77,36 +77,30 @@ void	Body::_readCgiMessage(pid_t& cgiProc, int* pfd){
 
 	int cgiProcStatus;
 	waitpid(cgiProc, &cgiProcStatus,0);
-	if (WEXITSTATUS(cgiProcStatus)){
-		std::cout<<"******cgiProcStatus**********";
-		throw(std::runtime_error("501"));//500
-	}
+	if (WEXITSTATUS(cgiProcStatus))
+		throw(std::runtime_error("500"));
 
 	char buf[1024];
+	memset(buf,0,sizeof(buf));
 	std::string cgiMessage;
-	std::cout<<"********start********";
 	while (read(pfd[0], buf, sizeof(buf)) > 0){
 		cgiMessage += buf;
-		std::cout<<buf;
 	}
-	std::cout<<"********end8********";
 	istringstream iss(cgiMessage);
 	std::string line;
 	std::string key;
 	size_t i;
 	std::getline(iss, line, '\n');
 	i = line.find(' ');
-	if (i == std::string::npos || i == 0 || i == line.size() - 1){
-		std::cout<<"******iiiiiiiiiiiiii**********";
-		throw std::runtime_error("502"); //500
-	}
+	if (i == std::string::npos || i == 0 || i == line.size() - 1)
+		throw std::runtime_error("500");
 	_data[__statusCode] = line.substr(0,i);
 	_data[__reasonPhrase] = line.substr(i+1);
 
-	while (std::getline(iss, line, '\n') && line != ""){ 
+	while (std::getline(iss, line, '\n') && line.size()){ 
 		i = line.find(':');
 		if (i == std::string::npos || i == 0 || i == line.size() - 1)
-			throw std::runtime_error("503"); //500
+			throw std::runtime_error("500");
 		key = line.substr(0,i);
 		if (key == "Content-Length")
 			_data[__contentLength] = line.substr(i+1);
@@ -118,62 +112,75 @@ void	Body::_readCgiMessage(pid_t& cgiProc, int* pfd){
 	}
 }
 
-void	Body::_execCgiProc(int* pfd){
+void   Body::_execCgiProc(int* pfd){
 	close(pfd[0]);
 
-	if (dup2(pfd[1], STDOUT_FILENO) < 0){
-
-		std::cerr<<"******dup**********";
+	if (dup2(pfd[1], STDOUT_FILENO) < 0)
 		exit(EXIT_FAILURE);
-	}
 
-	char *file = const_cast<char*>(_data.at(__cgiPass).c_str());
-	char *argv[3] = {file, const_cast<char*>("/Users/jeshin/goinfre/my_cgi.py"), 0};
+	const char* python_path = "/usr/bin/python3";
+	const char* script_path = "/Users/jeshin/42Cursus/webserv/html/my_cgi.py";
 
-	// if (_data.find(__cgiEnvData) == _data.end()){
-	// 	std::cerr<<"******cgiEndData**********";
-	// 	exit(EXIT_FAILURE);
-	// }
-	const char* env_array[] = {
-        "PATH_INFO=/seung.txt",
-        "QUERY_STRING=",
-        "REQUESTED_METHOD=GET",
-        "CONTENT_LENGTH=0",
-        "CONTENT_TYPE=text/plain",
-        "DOCUMENT_ROOT=/Users/jeshin/goinfre/seunghan",
-        nullptr // 마지막에 nullptr 추가
-    };
+	std::vector<const char*> args;
+	args.push_back("python3");
+	args.push_back(script_path);
+	args.push_back(nullptr);
 
-    // char** envp에 할당
-    char** envp = new char*[sizeof(env_array) / sizeof(env_array[0])];
-    for (size_t i = 0; env_array[i] != nullptr; ++i) {
-        envp[i] = new char[std::strlen(env_array[i]) + 1];
-        std::strcpy(envp[i], env_array[i]);
-    }
-    envp[sizeof(env_array) / sizeof(env_array[0]) - 1] = nullptr;
-	std::cerr<<"*******file: "<<file<<"\n";
-	for(int i=0; argv[i]!=0;i++){
-		std::cerr<<"*******argv: "<<argv[i]<<"\n";
-	}
-	for(int i=0; envp[i]!=0;i++){
-		std::cerr<<"*******envp: "<<envp[i]<<"\n";
-	}
-	// vector<char*> temp;
-	// temp.push_back("PATH_INFO = /seung.txt");
-	// temp.push_back("QUERY_STRING=");
-	// temp.push_back("REQUESTED_METHOD=GET");
-	// temp.push_back("CONTENT_LENGTH = 0");
-	// temp.push_back("CONTENT_TYPE = text/plain");
-	// temp.push_back("DOCUMENT_ROOT = /Users/jeshin/goinfre/seunghan");
-	char *args[] = {"/bin/ls", NULL};
-	// char **envp = temp.data();
-	if (execve(*args, args, envp) == -1){
-		perror("");
-		std::cerr<<")))))))))))))))))))))))))))))00";
+	std::vector<const char*> env;
+	env.push_back("DOCUMENT_ROOT=/tmp");
+	env.push_back(nullptr);
+	if (execve(python_path, const_cast<char* const*>(args.data()), const_cast<char* const*>(env.data())) == -1)
 		exit(EXIT_FAILURE);
-	}
 	exit(EXIT_SUCCESS);
 }
+
+// void	Body::_execCgiProc(int* pfd){
+// 	close(pfd[0]);
+// //dup
+// 	if (dup2(pfd[1], STDOUT_FILENO) < 0)
+// 		exit(EXIT_FAILURE);
+// //file
+// 	const char *file = "usr/bin/python3";
+// 	std::vector<const char*>  argv;
+// 	// const char *file = "/usr/bin/python3";
+// //argv
+// 	argv.push_back("python3");
+// 	argv.push_back("/Users/jeshin/42Cursus/webserv/html/my_cgi.py");
+// 	argv.push_back(NULL);
+// 	// char *argv[3] = {const_cast<char*>("python3"), const_cast<char*>("/Users/jeshin/42Cursus/webserv/html/my_cgi.py"), 0}; //두번째에 mycgi가 잇는 경로 넣기
+// 	if (_data.find(__cgiEnvData) == _data.end())
+// 		exit(EXIT_FAILURE);
+// //envp
+// 	std::istringstream  iss(_data.at(__cgiEnvData));
+// 	std::string         token;
+// 	std::vector<const char*>  envp;
+// 	// std::cerr<<"cgiEnvData: "<<_data.at(__cgiEnvData)<<"\n";
+// 	while (std::getline(iss,token,' ')){
+// 		// std::cerr<<"token: "<<token<<"\n";
+// 		char* copiedToken = new char[token.size() + 1];
+// 		std::strcpy(copiedToken, token.c_str());
+// 		envp.push_back(copiedToken);
+// 	}
+// 	envp.push_back(nullptr);
+// //prt
+// 	// for(int i=0;tmpEnvp[i]!=0;i++){
+// 	// 	std::cerr<<"tmpenvp: "<<tmpEnvp[i]<<"\n";
+// 	// }
+// 	std::cerr<<"file: "<<file<<"\n";
+// 	for(int i=0;argv[i]!=0;i++){
+// 		std::cerr<<"argv: "<<argv[i]<<"\n";
+// 	}
+// 	// for(int i=0;envp[i]!=0;i++){
+// 	// 	std::cerr<<"envp: "<<envp[i]<<"\n";
+// 	// }
+// 	if (execve("/usr/bin/python3", const_cast<char* const*>(argv.data()), const_cast<char* const*>(envp.data()))){
+// 		//왜 file을 변수로 주면 안되고 const char*으로 주면 되는건지?
+// 	//prt
+// 		perror("");
+// 		exit(EXIT_FAILURE);
+// 	}
+// 	exit(EXIT_SUCCESS);
+// }
 
 void    Body::_makeCgiMessage(){
 	int pfd[2];

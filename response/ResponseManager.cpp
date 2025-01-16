@@ -53,9 +53,16 @@ void    ResponseManager::_setMessage(){
 
 void    ResponseManager::_setData(){
     _checkRequestError();
-    _setHost();
-    _setPath();
     _setMethod();
+    if (_data[__requestMethod] == "POST" || "DELETE"){
+
+        _setBody();
+        _setConnection();
+        _setCgiEnv();
+        return ;
+    }
+    // _setHost();
+    _setPath();
     _setBody();
     _setContentType();
     _setConnection();
@@ -162,7 +169,6 @@ void    ResponseManager::_setPath(){
         _checkPathStatus(path, pathStatus);
         _checkPathIsDir(path, pathStatus, NULL);
     }else{
-        // const std::string&  serverRoot = _sb.getRoot();
         const std::string&  locationIdentifier = it->first;
         const LocBlock&     locationBlock = it->second;
         const std::string&  locationRoot = locationBlock.getRoot();
@@ -177,10 +183,12 @@ void    ResponseManager::_setPath(){
             _data[__locationIdentifier] = locationIdentifier;
         }
         _data[__path] = path;
-        // _checkPathStatus(path, pathStatus);
-        // _checkPathIsDir(path, pathStatus, &locationBlock);
-        if (locationBlock.getCgipass().size())
+        if (locationBlock.getCgipass().size()) //cgi location block인 경우 
             _data[__cgiPass] += locationBlock.getCgipass() + " ";
+        else{
+            _checkPathStatus(path, pathStatus);
+            _checkPathIsDir(path, pathStatus, &locationBlock);
+        }
     }
 }
 
@@ -214,6 +222,7 @@ void ResponseManager::_setCgiEnv(){
     if (requestHeaderMap.find("Content-Type") != requestHeaderMap.end())
         _data[__cgiEnvData] += "CONTENT_TYPE=" + requestHeaderMap["Content-Type"] + " ";
     _data[__cgiEnvData] += "DOCUMENT_ROOT=" + _data[__root] + " ";
+    // cout<<_data[__cgiEnvData];
 }
 
 void    ResponseManager::_setConnection(){
