@@ -19,7 +19,7 @@ def chkError(e):
 
 # 환경 변수에서 각종 정보 읽기
 path_info = os.environ.get("PATH_INFO", "")
-query_string = os.environ.get("QUERY_STRING", "")
+query_string = os.environ.get("QUERY_STRING", "key1=value1&key2=value2")
 request_method = os.environ.get("REQUESTED_METHOD", "")
 content_type   = os.environ.get("CONTENT_TYPE", "")
 content_length = os.environ.get("CONTENT_LENGTH", 0)
@@ -74,8 +74,8 @@ binary_types = [
         "image/",
         "audio/",
         "video/",
-    ]
-
+        ]
+    
 # 딕셔너리에 쿼리문 파싱 후 담기
 params = urllib.parse.parse_qs(query_string)
 
@@ -113,28 +113,27 @@ elif request_method == "POST" and content_type.startswith("multipart/form-data")
     form = cgi.FieldStorage()
 
     # HTML form 확인 (file)
-    if "file" in form:
+    if "file" not in form:
+        params["status"] = ["HTML form is missing \"file\"."]
+        status = "400 Bad Request"
+    else:
         file_item = form["file"]
-    else:
-        params["status"] = ["HTML form is wrong."]
-        status = "400 Bad Request"
-
-    # 파일 이름이 존재하면 읽어서 저장
-    if file_item.filename:
-        save_path = path + file_item.filename
-        try:
-            with open(save_path, "wb") as f:
-                f.write(file_item.file.read())
-            # 업로드가 완료된 경우
-            params["status"] = [f"File '{filename}' uploaded successfully."]
-            status = "201 Created"
-        except Exception as e:
-            # 업로드에 실패한 경우
-            params["status"] = [f"Error uploading file {filename} : {str(e)}"]
-            status = chkError(e)
-    else:
-        params["status"] = ["No file was uploaded."]
-        status = "400 Bad Request"
+        # 파일 이름이 존재하면 읽어서 저장
+        if file_item.filename:
+            save_path = path + file_item.filename
+            try:
+                with open(save_path, "wb") as f:
+                    f.write(file_item.file.read())
+                # 업로드가 완료된 경우
+                params["status"] = [f"File '{filename}' uploaded successfully."]
+                status = "201 Created"
+            except Exception as e:
+                # 업로드에 실패한 경우
+                params["status"] = [f"Error uploading file {filename} : {str(e)}"]
+                status = chkError(e)
+        else:
+            params["status"] = ["Error uploading file : File has no name."]
+            status = "400 Bad Request"
 
 # POST 인데 multipart 가 아닌 경우
 elif request_method == "POST":
