@@ -6,11 +6,13 @@
 #include <cstring>
 #include <iostream>
 #include <time.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/event.h>
+#include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -41,6 +43,7 @@ private:
 	int initSocket(const char* domain, const char* port);
 	void setSocket(const vector<ServBlock>& serv);
 	void setKqueue();
+	void setNonBlock(int fd);
 public:
 	Server(ServConf& servConf);
 	~Server();

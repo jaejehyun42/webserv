@@ -94,6 +94,13 @@ void Server::setKqueue()
 	}
 }
 
+void Server::setNonBlock(int fd)
+{
+	if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) {
+		throw runtime_error("Error: fcntl(F_SETFL, O_NONBLOCK)");
+	}
+}
+
 void Server::acceptClient(int fd)
 {
 	struct sockaddr_in addr;
@@ -102,6 +109,8 @@ void Server::acceptClient(int fd)
 	int client_fd = accept(fd, (struct sockaddr*)&addr, &addr_len);
 	if (client_fd == -1)
 		throw runtime_error("Error: accept: " + string(strerror(errno)));
+
+	setNonBlock(client_fd);
 
 	struct kevent evSet;
 	EV_SET(&evSet, client_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
@@ -117,19 +126,50 @@ void Server::acceptClient(int fd)
 
 void Server::readClient(int fd)
 {
-	char buffer[1024] = {0};
-	ssize_t size = read(fd, buffer, sizeof(buffer));
-	if (size <= 0)
-	{
-		closeClient(fd);
-		return ;
-	}
+    char buffer[1024] = {0};
+
+    ssize_t size = read(fd, buffer, sizeof(buffer));
+    if (size < 0) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            return;
+        }
+        closeClient(fd);
+        return;
+    }
+    if (size == 0) {
+        closeClient(fd);
+        return;
+    }
 	_client[fd].setMessage(buffer);
 	
-	struct kevent evSet;
-	EV_SET(&evSet, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
-		throw runtime_error("Error: kevent: " + string(strerror(errno)));
+	const std::string& message = _client[fd].getMessage();
+    size_t headerEnd = message.find("\r\n\r\n");
+    if (headerEnd != std::string::npos)
+	{
+        // 헤더 파싱
+        std::string header = message.substr(0, headerEnd + 4);
+
+        // 2. Content-Length 확인
+        size_t contentLengthPos = header.find("Content-Length:");
+        int contentLength = 0;
+        if (contentLengthPos != std::string::npos) {
+            size_t start = contentLengthPos + 15;
+            size_t end = header.find("\r\n", start);
+            contentLength = std::stoi(header.substr(start, end - start));
+        }
+
+        // 3. 바디의 시작 위치와 현재 크기 확인
+        size_t bodyStart = headerEnd + 4;
+        size_t bodySize = message.size() - bodyStart;
+
+        // 4. 바디가 완전히 수신되었는지 확인
+        if (bodySize >= static_cast<size_t>(contentLength)) {
+			struct kevent evSet;
+			EV_SET(&evSet, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+			if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
+				throw runtime_error("Error: kevent: " + string(strerror(errno)));
+        }
+    }
 }
 
 void Server::sendClient(int fd, const ServConf& conf)
@@ -138,9 +178,15 @@ void Server::sendClient(int fd, const ServConf& conf)
 	if (it != _client.end() && it->second.getMessage() != "")
 	{
 		Request req;
-		req.initRequest(it->second.getMessage());
+		try
+		{
+			req.initRequest(it->second.getMessage());
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << "\rreq: " << typeid(e).name() << " - " << e.what() << std::endl;
+		}
 		Response res(req, conf, it->second.getIndex());
-
 		printLog(fd, req);
 		if (write(fd, res.getMessage().c_str(), res.getMessage().size()) == -1)
 			throw runtime_error("Error: write: ");
