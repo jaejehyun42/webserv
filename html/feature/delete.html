@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Delete</title>
+    <title>Delete File</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -40,45 +40,13 @@
             gap: 20px;
         }
 
-        .file-input-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        .file-name {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            color: #555;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+        input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            font-size: 16px;
             border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 5px;
-            background-color: #f9f9f9;
-        }
-
-        input[type="file"] {
-            display: none; /* 실제 파일 선택 필드는 숨김 */
-        }
-
-        label {
-            font-size: 13px;
-            color: #eee;
-            background-color: #808080;
-            padding: 7px 15px;
             border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        label:hover {
-            background-color: #696969;
+            background-color: #f9f9f9;
         }
 
         button {
@@ -86,39 +54,63 @@
             padding: 10px 20px;
             font-size: 16px;
             color: #fff;
-            background-color: #cc0000;
+            background-color: #DC3545;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease;
-			box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);
         }
 
         button:hover {
-            background-color: #b22222;
+            background-color: #A71D2A;
+        }
+
+        .message {
+            font-size: 14px;
+            color: #555;
+            text-align: center;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
     <div class="delete-container">
         <h1>Delete a File</h1>
-        <form action="http://localhost:4242/my_cgi.py" method="POST" enctype="multipart/form-data">
-            <div class="file-input-container">
-                <span class="file-name">No file chosen</span>
-                <label for="file">Choose File</label>
-                <input type="file" id="file" name="file" required>
-            </div>
+        <form id="deleteForm">
+            <input type="text" id="filePath" name="filePath" placeholder="Enter file name to delete" required>
             <button type="submit">Delete</button>
         </form>
+        <div class="message" id="message"></div>
     </div>
 
     <script>
-        const fileInput = document.getElementById('file');
-        const fileNameDisplay = document.querySelector('.file-name');
+        const deleteForm = document.getElementById('deleteForm');
+        const messageDisplay = document.getElementById('message');
 
-        fileInput.addEventListener('change', (event) => {
-            const fileName = event.target.files[0] ? event.target.files[0].name : 'No file chosen';
-            fileNameDisplay.textContent = fileName;
+        deleteForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const fileName = document.getElementById('filePath').value.trim();
+
+            if (!fileName) {
+                messageDisplay.textContent = 'Please enter a valid file name.';
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:4242/my_cgi.py/temp/${encodeURIComponent(fileName)}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    const resultHtml = await response.text();
+                    messageDisplay.innerHTML = resultHtml; // Display HTML response
+                } else {
+                    const errorHtml = await response.text();
+                    messageDisplay.innerHTML = errorHtml; // Display error HTML response
+                }
+            } catch (err) {
+                messageDisplay.textContent = 'An error occurred: ' + err.message;
+            }
         });
     </script>
 </body>

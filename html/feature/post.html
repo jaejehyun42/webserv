@@ -96,12 +96,19 @@
         button:hover {
             background-color: #0056b3;
         }
+
+        .message {
+            font-size: 14px;
+            color: #555;
+            text-align: center;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="upload-container">
         <h1>Upload a File</h1>
-        <form action="http://localhost:4242/my_cgi.py" method="POST" enctype="multipart/form-data">
+        <form id="uploadForm" action="http://localhost:4242/my_cgi.py/temp" method="POST" enctype="multipart/form-data">
             <div class="file-input-container">
                 <span class="file-name">No file chosen</span>
                 <label for="file">Choose File</label>
@@ -109,15 +116,41 @@
             </div>
             <button type="submit">Upload</button>
         </form>
+        <div class="message" id="message"></div>
     </div>
 
     <script>
         const fileInput = document.getElementById('file');
         const fileNameDisplay = document.querySelector('.file-name');
+        const uploadForm = document.getElementById('uploadForm');
+        const messageDisplay = document.getElementById('message');
 
         fileInput.addEventListener('change', (event) => {
             const fileName = event.target.files[0] ? event.target.files[0].name : 'No file chosen';
             fileNameDisplay.textContent = fileName;
+        });
+
+        uploadForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const formData = new FormData(uploadForm);
+
+            try {
+                const response = await fetch(uploadForm.action, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const resultHtml = await response.text();
+                    messageDisplay.innerHTML = resultHtml; // Display HTML response
+                } else {
+                    const errorHtml = await response.text();
+                    messageDisplay.innerHTML = errorHtml; // Display error HTML response
+                }
+            } catch (err) {
+                messageDisplay.textContent = 'An error occurred: ' + err.message;
+            }
         });
     </script>
 </body>
