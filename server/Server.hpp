@@ -28,6 +28,8 @@
 #define YELLOW	"\033[33m"
 #define BLUE	"\033[34m"
 
+#define MAX_EVENTS 128
+
 class Server
 {
 private:

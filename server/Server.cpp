@@ -54,7 +54,7 @@ int Server::_initSocket(const char* domain, const char* port)
 	if (p == NULL)
 		throw runtime_error("Error: Failed to bind with following domain: " + string(domain));
 
-	if (listen(tmpfd, 128) == -1)
+	if (listen(tmpfd, MAX_EVENTS) == -1)
 		throw runtime_error("Error: listen: " + string(strerror(errno)));
 
 	return (tmpfd);
@@ -83,7 +83,7 @@ void Server::_setKqueue()
 	_kq = kqueue();
 	if (_kq == -1)
 		throw runtime_error("Error: kqueue: " + string(strerror(errno)));
-	_evList.resize(32);
+	_evList.resize(MAX_EVENTS);
 
 	for (unordered_map<int, int>::iterator it = _server.begin(); it != _server.end(); it++)
 	{
@@ -100,6 +100,7 @@ void Server::_setEvent(int fd, int filter, int flags)
 	EV_SET(&evSet, fd, filter, flags, 0, 0, NULL);
 	if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
 		throw runtime_error("Error: kevent: " + string(strerror(errno)));
+	_client[fd].updateTime();
 }
 
 void Server::acceptClient(int fd)
@@ -117,8 +118,8 @@ void Server::acceptClient(int fd)
 	inet_ntop(AF_INET, &addr.sin_addr, ip, sizeof(ip));
 	int port = ntohs(addr.sin_port);
 
-	_setEvent(client_fd, EVFILT_READ, EV_ADD | EV_ENABLE);
 	_client[client_fd] = Client(port, getServerIdx(fd), ip);
+	_setEvent(client_fd, EVFILT_READ, EV_ADD | EV_ENABLE);
 }
 
 void Server::readClient(int fd)
@@ -216,7 +217,8 @@ void Server::checkTimeout(long timeout)
 	time_t now = time(NULL); 
 	for (unordered_map<int, Client>::iterator it = _client.begin(); it != _client.end(); it++)
 	{
-		if (now - it->second.getLastTime() > timeout)
+		time_t last = it->second.getLastTime();
+		if (now - last > timeout)
 			closeClient(it->first);
 	}
 }
@@ -245,7 +247,7 @@ int Server::getKq() const
 
 int Server::getKevent()
 {
-	int nev = kevent(_kq, NULL, 0, _evList.data(), 32, &_timeout);
+	int nev = kevent(_kq, NULL, 0, _evList.data(), MAX_EVENTS, &_timeout);
 	if (nev == -1)
 		throw runtime_error("kevent: " + string(strerror(errno)));
 	return (nev);
