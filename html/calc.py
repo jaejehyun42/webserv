@@ -93,8 +93,7 @@ def render_form(result=""):
 		<div class=\"result\">Result: {result if result else "NULL"}</div>
 	</div>
 </body>
-</html>
-"""
+</html>"""
     return content
 
 
@@ -126,10 +125,14 @@ def main():
         result = calculate()
         content = render_form(result)
     else:
+        result = ""
         content = render_form()
+
+    content_length = 1804 + len(result)
 
     print("Status: 200 OK")
     print("Content-Type: text/html")
+    print(f"Content-Length: {content_length}")
     print()
     print(content)
 
