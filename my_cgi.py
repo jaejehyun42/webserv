@@ -225,7 +225,7 @@ if content == "":
     <h1>{title}</h1>
     <p>Request Method: {request_method}</p>
     <p>PATH_INFO: {path_info}</p>
-    <p>params: {params}</p>
+    <p>{params}</p>
 </body>
 </html>
 """
