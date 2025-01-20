@@ -96,6 +96,10 @@
                 return;
             }
 
+            const baseURL = window.location.origin;
+            const deletePath = `/my_cgi.py/${encodeURIComponent(fileName)}`;
+            const requestURL = baseURL + deletePath;
+
             try {
                 const response = await fetch(`http://localhost:4242/my_cgi.py/${encodeURIComponent(fileName)}`, {
                     method: 'DELETE'
@@ -103,10 +107,10 @@
 
                 if (response.ok) {
                     const resultHtml = await response.text();
-                    messageDisplay.innerHTML = resultHtml; // Display HTML response
+                    messageDisplay.innerHTML = resultHtml;
                 } else {
                     const errorHtml = await response.text();
-                    messageDisplay.innerHTML = errorHtml; // Display error HTML response
+                    messageDisplay.innerHTML = errorHtml;
                 }
             } catch (err) {
                 messageDisplay.textContent = 'An error occurred: ' + err.message;

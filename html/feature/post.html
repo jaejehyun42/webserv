@@ -133,6 +133,10 @@
         uploadForm.addEventListener('submit', async (event) => {
             event.preventDefault();
 
+            const baseURL = window.location.origin;
+            const uploadPath = "/my_cgi.py";
+            uploadForm.action = baseURL + uploadPath;
+
             const formData = new FormData(uploadForm);
 
             try {
@@ -143,10 +147,10 @@
 
                 if (response.ok) {
                     const resultHtml = await response.text();
-                    messageDisplay.innerHTML = resultHtml; // Display HTML response
+                    messageDisplay.innerHTML = resultHtml;
                 } else {
                     const errorHtml = await response.text();
-                    messageDisplay.innerHTML = errorHtml; // Display error HTML response
+                    messageDisplay.innerHTML = errorHtml;
                 }
             } catch (err) {
                 messageDisplay.textContent = 'An error occurred: ' + err.message;
