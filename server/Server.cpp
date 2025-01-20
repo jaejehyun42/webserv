@@ -103,6 +103,29 @@ void Server::_setEvent(int fd, int filter, int flags)
 	_client[fd].updateTime();
 }
 
+void Server::_sendError(int fd)
+{
+	string error = "<!DOCTYPE html>\n"
+					"<head>\n"
+					"	<title>Error</title>\n"
+					"</head>\n"
+					"<body>\n"
+					"	<h1>400</h1>\n"
+					"	<p>400 Bad Request</p>\n"
+					"</body>\n"
+					"</html>";
+
+	string response = "HTTP/1.1 404 Not Found\r\n"
+					"Content-Type: text/html\r\n"
+					"Content-Length: " + std::to_string(error.size()) + "\r\n"
+					"\r\n" +
+					error;
+
+	if (write(fd, response.c_str(), response.size()) != -1)
+		throw runtime_error("Error: write: ");
+	closeClient(fd);
+}
+
 void Server::acceptClient(int fd)
 {
 	struct sockaddr_in addr;
@@ -122,7 +145,7 @@ void Server::acceptClient(int fd)
 	_setEvent(client_fd, EVFILT_READ, EV_ADD | EV_ENABLE);
 }
 
-void Server::readClient(int fd)
+void Server::readClient(int fd, const ServConf& conf)
 {
 	char buffer[1024] = {0};
 
@@ -132,31 +155,56 @@ void Server::readClient(int fd)
 		closeClient(fd);
 		return ;
 	}
-
 	_client[fd].setMessage(buffer);
-	if (_client[fd].getMessage().size() > 8192)
-	{
-		closeClient(fd);
-		return ;
-	}
 	
 	const string& message = _client[fd].getMessage();
 	size_t headerEnd = message.find("\r\n\r\n");
+	size_t maxSize = conf.getServBlock(_client[fd].getIndex()).getMaxSize();
 	if (headerEnd != string::npos)
 	{
 		headerEnd += 4;
+		if (headerEnd > 8192)
+			return _sendError(fd);
 		string header = message.substr(0, headerEnd);
 		size_t lenPos = header.find("Content-Length:");
+		size_t chunkPos = header.find("Transfer-Encoding: chunked");
 
 		if (lenPos != string::npos)
 		{
 			size_t start = lenPos + 16;
 			size_t end = header.find("\r\n", start);
+			if (end == string::npos)
+				return _sendError(fd);
+
 			size_t bodySize = message.size() - headerEnd;
 			long contentLength = strtol(header.substr(start, end - start).c_str(), NULL, 10);
 
+			if (static_cast<size_t>(contentLength) > maxSize)
+				return _sendError(fd);
 			if (bodySize >= static_cast<size_t>(contentLength))
 				_setEvent(fd, EVFILT_WRITE, EV_ADD | EV_ENABLE);
+		}
+		else if (chunkPos != string::npos)
+		{
+			string body = message.substr(headerEnd);
+			size_t pos = 0;
+
+			while (pos < body.size())
+			{
+				size_t end = body.find("\r\n", pos);
+				if (end == string::npos)
+					break ;
+
+				long chunkSize = strtol(body.substr(pos, end - pos).c_str(), NULL, 16);
+				pos = end;
+
+				if (chunkSize == 0 && body.substr(pos, 4) == "\r\n\r\n")
+					_setEvent(fd, EVFILT_WRITE, EV_ADD | EV_ENABLE);
+
+				pos += chunkSize + 2;
+				if (pos > maxSize)
+					return _sendError(fd);
+			}
 		}
 		else
 			_setEvent(fd, EVFILT_WRITE, EV_ADD | EV_ENABLE);
@@ -173,7 +221,7 @@ void Server::sendClient(int fd, const ServConf& conf)
 		Response res(req, conf, it->second.getIndex());
 
 		printLog(fd, req);
-		cout << res.getMessage() << "(END)\n";
+		cout << it->second.getMessage() << "(END)\n";
 		if (write(fd, res.getMessage().c_str(), res.getMessage().size()) == -1)
 			throw runtime_error("Error: write: ");
 

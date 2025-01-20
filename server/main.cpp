@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 					if (event.flags & EV_EOF)
 						serv.closeClient(event.ident);
 					else if (event.filter == EVFILT_READ)
-						serv.readClient(event.ident);
+						serv.readClient(event.ident, conf);
 					else if (event.filter == EVFILT_WRITE)
 						serv.sendClient(event.ident, conf);
 				}

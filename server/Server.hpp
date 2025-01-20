@@ -46,12 +46,13 @@ private:
 	void _setSocket(const vector<ServBlock>& serv);
 	void _setKqueue();
 	void _setEvent(int fd, int filter, int flags);
+	void _sendError(int fd);
 public:
 	Server(ServConf& servConf);
 	~Server();
 
 	void acceptClient(int fd);
-	void readClient(int fd);
+	void readClient(int fd, const ServConf& conf);
 	void sendClient(int fd, const ServConf& conf);
 	void closeClient(int fd);
 
