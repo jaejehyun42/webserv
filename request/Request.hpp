@@ -36,6 +36,7 @@ class Request
 		void _parseHost(const string& value);
 		void _parseMethod();
 		void _parseMethodChkHost();
+		void _unchunk(istringstream& form);
 		void _setError(int error_code);
 
 	public :
