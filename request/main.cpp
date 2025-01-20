@@ -6,6 +6,7 @@ void printRequest(Request re)
 	cout << "URL = " << re.getUrl() << "\n";
 	cout << "Path = " << re.getPath() << "\n";
 	cout << "Query = " << re.getQuery() << "\n";
+	cout << "ScriptPath = " << re.getScriptPath() << "\n";
 	cout << "CgiPath = " << re.getCgiPath() << "\n";
 	cout << "Version = " << re.getVersion() << "\n";
 	unordered_map<string, string> headers = re.getHeaders();

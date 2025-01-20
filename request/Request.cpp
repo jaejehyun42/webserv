@@ -123,6 +123,9 @@ void Request::_parseUrl()
 	size_t cgi_pos = _path.find(".py"); // cgi 경로 체크
 	if (cgi_pos != string::npos)
 		_cgiPath = _path.substr(cgi_pos + 3, _path.size() - cgi_pos - 2);
+
+	if (!_cgiPath.empty()) // 스크립트 경로 체크
+		_scriptPath = _path.substr(0, cgi_pos + 3);
 }
 
 void Request::_parseVersion()
@@ -235,6 +238,11 @@ string Request::getPath() const
 string Request::getQuery() const
 {
 	return (_query);
+}
+
+string Request::getScriptPath() const
+{
+	return (_scriptPath);
 }
 
 string Request::getCgiPath() const
