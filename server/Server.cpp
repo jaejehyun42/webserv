@@ -121,9 +121,8 @@ void Server::_sendError(int fd)
 					"\r\n" +
 					error;
 
-	if (write(fd, response.c_str(), response.size()) != -1)
-		throw runtime_error("Error: write: ");
-	closeClient(fd);
+	if (write(fd, response.c_str(), response.size()) <= 0)
+		closeClient(fd);
 }
 
 void Server::acceptClient(int fd)
@@ -222,8 +221,8 @@ void Server::sendClient(int fd, const ServConf& conf)
 
 		printLog(fd, req);
 		cout << it->second.getMessage() << "(END)\n";
-		if (write(fd, res.getMessage().c_str(), res.getMessage().size()) == -1)
-			throw runtime_error("Error: write: ");
+		if (write(fd, res.getMessage().c_str(), res.getMessage().size()) <= 0)
+			closeClient(fd);
 
 		_setEvent(fd, EVFILT_WRITE, EV_DELETE);
 		if (req.chkConnection())

@@ -3,6 +3,8 @@
 .vscode
 Webserv
 client
+tester
+cgi_tester
 
 # Prerequisites
 *.d
