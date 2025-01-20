@@ -178,8 +178,8 @@ void Server::readClient(int fd, const ServConf& conf)
 			size_t bodySize = message.size() - headerEnd;
 			long contentLength = strtol(header.substr(start, end - start).c_str(), NULL, 10);
 
-			if (static_cast<size_t>(contentLength) > maxSize)
-				return _sendError(fd);
+			// if (static_cast<size_t>(contentLength) > maxSize)
+			// 	return _sendError(fd);
 			if (bodySize >= static_cast<size_t>(contentLength))
 				_setEvent(fd, EVFILT_WRITE, EV_ADD | EV_ENABLE);
 		}
@@ -255,11 +255,17 @@ void Server::checkTimeout(long timeout)
 		return ;
 		
 	time_t now = time(NULL); 
-	for (unordered_map<int, Client>::iterator it = _client.begin(); it != _client.end(); it++)
+	unordered_map<int, Client>::iterator it = _client.begin();
+	while (it != _client.end())
 	{
 		time_t last = it->second.getLastTime();
 		if (now - last > timeout)
-			closeClient(it->first);
+		{
+			close(it->first);
+			it = _client.erase(it);
+		}
+		else
+			++it;
 	}
 }
 
