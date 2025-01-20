@@ -55,20 +55,20 @@ void LocBlock::_parseLine(vector<string>& tokens)
 			for (vector<string>::iterator it = tokens.begin() + 1; it != tokens.end(); it++)
 			{
 				if (*it == "GET")
-					check[GET] = 1;
+					check[GET] = true;
 				else if (*it == "POST")
-					check[POST] = 1;
+					check[POST] = true;
 				else if (*it == "DELETE")
-					check[DELETE] = 1;
+					check[DELETE] = true;
 				else
 					throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
 			}
 			if (check[GET] == 0)
-				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+				_method[GET] = false;
 			if (check[POST] == 0)
-				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+				_method[POST] = false;
 			if (check[DELETE] == 0)
-				_method[DELETE] = 0;
+				_method[DELETE] = false;
 		}
 		else
 			throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");

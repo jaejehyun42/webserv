@@ -3,7 +3,7 @@
 
 ServBlock::ServBlock()
 {
-	_maxSize = 0;
+	_maxSize = 1024;
 }
 
 ServBlock::~ServBlock() {}
@@ -107,7 +107,7 @@ void ServBlock::parseServBlock(ifstream& file)
 	}
 	if (line.find("}") == string::npos)
 		throw runtime_error("Error: server 블록 포멧이 잘못 되었습니다.");
-	if (_port == "" || _maxSize == 0)
+	if (_port == "" || _maxSize <= 0)
 		throw runtime_error("Error: 설정 파일의 필수 구성 요소가 없습니다.");
 	if (_path.size() == 0)
 		throw runtime_error("Error: 설정 파일의 필수 구성 요소가 없습니다.");
