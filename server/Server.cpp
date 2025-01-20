@@ -220,7 +220,6 @@ void Server::sendClient(int fd, const ServConf& conf)
 		Response res(req, conf, it->second.getIndex());
 
 		printLog(fd, req);
-		cout << it->second.getMessage() << "(END)\n";
 		if (write(fd, res.getMessage().c_str(), res.getMessage().size()) <= 0)
 			closeClient(fd);
 
