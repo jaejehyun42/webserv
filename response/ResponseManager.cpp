@@ -136,14 +136,14 @@ void    ResponseManager::_setPath(){
     struct stat pathStatus;
     std::unordered_map<string, LocBlock>::const_iterator it; // it->first : locationIdentifier, it->second : locationBlock
     size_t i = path.find(".py");
-
-    if (i != std::string::npos){ //location 블럭 식별
-        if ((path.size() > i + 3 && path[i + 3] == '/') || path.substr(i, path.size()) == ".py") 
-            it =  _sb.getPathIter(".py"); //py block
+//location 블럭 식별
+    if (i != std::string::npos && \
+        ((path.size() > i + 3 && path[i + 3] == '/') || path.substr(i, path.size()) == ".py")){
+        it =  _sb.getPathIter(".py"); //py block
     }
     else{
         it =  _sb.getPathIter(path); // others
-        if (_data[__requestMethod] == "POST" || _data[__requestMethod] == "DELETE")
+        if (_data[__requestMethod] == "POST" || _data[__requestMethod] == "DELETE") //post나 delete인데 py블럭이 아니면 400 error
             throw std::runtime_error("400");
     }
 
@@ -171,8 +171,7 @@ void    ResponseManager::_setPath(){
         }
     }
  //location block이 py블럭인 경우 또는 method가 POST또는 DELETE인 경우
-    if ((it != _sb.getPath().end() && it->first == ".py") || \
-    (_data[__requestMethod] == "POST" || _data[__requestMethod] == "DELETE")){
+    if (it != _sb.getPath().end() && it->first == ".py"){
         size_t i = path.find(".py");
         // std::cout<<path.substr(0, i + 3);
         _checkPathStatus(path.substr(0, i + 3), pathStatus); //.py까지 경로체크
