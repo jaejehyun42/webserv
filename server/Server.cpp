@@ -103,19 +103,19 @@ void Server::_setEvent(int fd, int filter, int flags)
 	_client[fd].updateTime();
 }
 
-void Server::_sendError(int fd)
+void Server::_sendError(int fd, const string& status, const string& phrase)
 {
 	string error = "<!DOCTYPE html>\n"
 					"<head>\n"
 					"	<title>Error</title>\n"
 					"</head>\n"
 					"<body>\n"
-					"	<h1>400</h1>\n"
-					"	<p>400 Bad Request</p>\n"
+					"	<h1>" + status + "</h1>\n"
+					"	<p>" + status + phrase + "</p>\n"
 					"</body>\n"
 					"</html>";
 
-	string response = "HTTP/1.1 404 Not Found\r\n"
+	string response = "HTTP/1.1" + status + phrase + "\r\n"
 					"Content-Type: text/html\r\n"
 					"Content-Length: " + std::to_string(error.size()) + "\r\n"
 					"\r\n" +
@@ -142,6 +142,8 @@ void Server::acceptClient(int fd)
 
 	_client[client_fd] = Client(port, getServerIdx(fd), ip);
 	_setEvent(client_fd, EVFILT_READ, EV_ADD | EV_ENABLE);
+
+	_printLog(client_fd, "Connected", "", YELLOW);
 }
 
 void Server::readClient(int fd, const ServConf& conf)
@@ -163,7 +165,7 @@ void Server::readClient(int fd, const ServConf& conf)
 	{
 		headerEnd += 4;
 		if (headerEnd > 8192)
-			return _sendError(fd);
+			return _sendError(fd, "431", "Request Header Fields Too Large");
 		string header = message.substr(0, headerEnd);
 		size_t lenPos = header.find("Content-Length:");
 		size_t chunkPos = header.find("Transfer-Encoding: chunked");
@@ -172,14 +174,11 @@ void Server::readClient(int fd, const ServConf& conf)
 		{
 			size_t start = lenPos + 16;
 			size_t end = header.find("\r\n", start);
-			if (end == string::npos)
-				return _sendError(fd);
-
 			size_t bodySize = message.size() - headerEnd;
 			long contentLength = strtol(header.substr(start, end - start).c_str(), NULL, 10);
 
-			// if (static_cast<size_t>(contentLength) > maxSize)
-			// 	return _sendError(fd);
+			if (static_cast<size_t>(contentLength) > maxSize)
+				return _sendError(fd, "413", "Request Entity Too Large");
 			if (bodySize >= static_cast<size_t>(contentLength))
 				_setEvent(fd, EVFILT_WRITE, EV_ADD | EV_ENABLE);
 		}
@@ -202,7 +201,7 @@ void Server::readClient(int fd, const ServConf& conf)
 
 				pos += chunkSize + 2;
 				if (pos > maxSize)
-					return _sendError(fd);
+					return _sendError(fd, "413", "Request Entity Too Large");
 			}
 		}
 		else
@@ -219,7 +218,7 @@ void Server::sendClient(int fd, const ServConf& conf)
 		req.initRequest(it->second.getMessage());
 		Response res(req, conf, it->second.getIndex());
 
-		printLog(fd, req);
+		_printLog(fd, req.getMethod(), req.getUrl(), BLUE);
 		if (write(fd, res.getMessage().c_str(), res.getMessage().size()) <= 0)
 			closeClient(fd);
 
@@ -233,20 +232,21 @@ void Server::sendClient(int fd, const ServConf& conf)
 
 void Server::closeClient(int fd)
 {
+	_printLog(fd, "Disconnected", "", RED);
 	close(fd);
 	_client.erase(fd);
 }
 
-void Server::printLog(int fd, Request& req)
+void Server::_printLog(int fd, const string& one, const string& two, const string& color)
 {
 	time_t now = time(NULL);
 	char* timeInfo = ctime(&now);
 	unordered_map<int, Client>::iterator it = _client.find(fd);
 
 	timeInfo[strlen(timeInfo) - 1] = '\0';
-	cout << BLUE << "\r[" << timeInfo << "] " << RESET;
+	cout << color << "\r[" << timeInfo << "] " << RESET;
 	cout << it->second.getIP() << ":" << it->second.getPort() << " > ";
-	cout << req.getMethod() << " " << req.getUrl() << RESET << endl;
+	cout << one << " " << two << endl;
 }
 
 void Server::checkTimeout(long timeout)
@@ -261,6 +261,7 @@ void Server::checkTimeout(long timeout)
 		time_t last = it->second.getLastTime();
 		if (now - last > timeout)
 		{
+			_printLog(it->first, "Disconnected", "", RED);
 			close(it->first);
 			it = _client.erase(it);
 		}
