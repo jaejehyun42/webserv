@@ -205,7 +205,7 @@ void ResponseManager::_setCgiEnv(){
         return ;
 
     if (_data.find(__requestMethod) != _data.end())
-        _data[__cgiMethod] = "REQUESTED_METHOD=" + _data[__requestMethod];
+        _data[__cgiMethod] = "REQUEST_METHOD=" + _data[__requestMethod];
     if (_data.find(__root) != _data.end())
         _data[__cgiRoot] += "DOCUMENT_ROOT=" + _data[__root];
 
@@ -228,7 +228,7 @@ void    ResponseManager::_setConnection(){
 }
 
 void    ResponseManager::_setContentType(){
-    if (_data[__contentType].size())
+    if (_data.find(__contentType) != _data.end())
         return ;
 
     size_t i = _data[__path].find_last_of('.');

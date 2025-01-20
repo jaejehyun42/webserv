@@ -73,8 +73,6 @@ void    Body::_makeAutoindexMessage(){
 }
 
 void    Body::_processCgiMessage(pid_t& cgiProc, int* cgiReadFd, int* cgiWriteFd){
-	int cgiProcStatus;
-
 	close(cgiReadFd[0]);
 	close(cgiWriteFd[1]);
 	if (_data.find(__requestBody) != _data.end()){
@@ -84,19 +82,19 @@ void    Body::_processCgiMessage(pid_t& cgiProc, int* cgiReadFd, int* cgiWriteFd
 		}
 	}
 	close(cgiReadFd[1]);
+
+	int cgiProcStatus;
 	if (waitpid(cgiProc, &cgiProcStatus, 0) == -1)
 		throw(std::runtime_error("500"));
-	if (WEXITSTATUS(cgiProcStatus)){
-		perror("WEXIT ");
+	if (WEXITSTATUS(cgiProcStatus))
 		throw(std::runtime_error("500"));
-	}
-	close(cgiReadFd[1]);
 
 	char buf[1024];
-	memset(buf,0,sizeof(buf));
+	ssize_t bufReadSize;
 	std::string cgiMessage;
-	while (read(cgiWriteFd[0], buf, sizeof(buf)) > 0)
-		cgiMessage += buf;
+	while ((bufReadSize = read(cgiWriteFd[0], buf, sizeof(buf))) > 0)
+		cgiMessage.assign(buf, bufReadSize);
+	close(cgiWriteFd[0]);
 
 	istringstream iss(cgiMessage);
 	std::string line;
@@ -108,6 +106,13 @@ void    Body::_processCgiMessage(pid_t& cgiProc, int* cgiReadFd, int* cgiWriteFd
 		throw std::runtime_error("500");
 	_data[__statusCode] = line.substr(0,i);
 	_data[__reasonPhrase] = line.substr(i+1);
+
+//코드값이 세자리수가아니거나 앞자리가 4또는 5인경우
+	if (_data[__statusCode].size() != 3 || \
+	(_data[__statusCode][0] == '4' || _data[__statusCode][0] == '5')){
+		throw(std::runtime_error(_data[__statusCode]));
+	}
+	
 	while (std::getline(iss, line, '\n') && line.size()){ 
 		i = line.find(' ');
 		if (i == std::string::npos || i == 0 || i == line.size() - 1)
@@ -126,7 +131,6 @@ void    Body::_processCgiMessage(pid_t& cgiProc, int* cgiReadFd, int* cgiWriteFd
 void	Body::_execCgiProc(int* cgiReadFd, int* cgiWriteFd){
 	close(cgiReadFd[1]);
 	close(cgiWriteFd[0]);
-	// std::cerr<<"pipe ok\n";
 // dup
 	if (dup2(cgiReadFd[0], STDIN_FILENO) < 0)
 		exit(EXIT_FAILURE);
@@ -134,7 +138,6 @@ void	Body::_execCgiProc(int* cgiReadFd, int* cgiWriteFd){
 	if (dup2(cgiWriteFd[1], STDOUT_FILENO) < 0)
 		exit(EXIT_FAILURE);
 	close(cgiWriteFd[1]);
-	// std::cerr<<"dup ok\n";
 //file
 	const char* file = _data.at(__cgiPass).c_str();
 	// std::cerr<<"file: "<<file<<"\n";
@@ -145,12 +148,10 @@ void	Body::_execCgiProc(int* cgiReadFd, int* cgiWriteFd){
 		myCgiPath = _data.at(__path).substr(0, i + 3);
 	else
 		exit(EXIT_FAILURE);
-	// std::cerr<<"mycgi path: "<<myCgiPath<<"\n";
 	std::vector<const char*>  argv;
 	argv.push_back(file);
 	argv.push_back(myCgiPath.c_str());
 	argv.push_back(NULL);
-	// std::cerr<<"argv ok\n";
 //envp
 	std::vector<const char*>  envp;
 	if (_data.find(__cgiRoot) != _data.end())
@@ -163,20 +164,18 @@ void	Body::_execCgiProc(int* cgiReadFd, int* cgiWriteFd){
 		envp.push_back(const_cast<char*>(_data.at(__cgiContentLength).c_str()));
 	if (_data.find(__cgiPath) != _data.end())
 		envp.push_back(const_cast<char*>(_data.at(__cgiPath).c_str()));
+	if (_data.find(__cgiQuery) != _data.end())
+		envp.push_back(const_cast<char*>(_data.at(__cgiQuery).c_str()));
 	envp.push_back(nullptr);
-	// std::cerr<<"envp ok\n";
 //prt
-	// for(int i=0;argv[i]!=0;i++){
+	// for(int i=0;argv[i]!=0;i++)
 	// 	std::cerr<<"argv: "<<argv[i]<<"\n";
-	// }
-	// for(int i=0;envp[i]!=0;i++){
+	// for(int i=0;envp[i]!=0;i++)
 	// 	std::cerr<<"envp: "<<envp[i]<<"\n";
-	// }
 	if (execve(file, const_cast<char* const*>(argv.data()), const_cast<char* const*>(envp.data()))){
 		perror("failed execve");
 		exit(EXIT_FAILURE);
 	}
-	exit(EXIT_SUCCESS);
 }
 
 void    Body::_makeCgiMessage(){

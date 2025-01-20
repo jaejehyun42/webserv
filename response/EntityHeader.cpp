@@ -41,8 +41,9 @@ void    EntityHeader::_setContentLength(struct stat& fileStatus){
 }
 
 void    EntityHeader::_setContentType(){ //e.g Content-Type: text/html
-
-    _message += "Content-Type: " + _data.at(__contentType) + "\r\n";
+    if (_data.find(__contentType) != _data.end()){
+        _message += "Content-Type: " + _data.at(__contentType) + "\r\n";
+    }
 }
 
 void    EntityHeader::_setLastModified(struct stat& fileStatus){//e.g. Last-Modified: Thu, 01 Jan 2025 12:00:00 GMT
