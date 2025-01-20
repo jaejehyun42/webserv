@@ -154,6 +154,8 @@ void    ResponseManager::_setPath(){
         _data[__root] = _sb.getRoot();
     }
     else{
+        // if (it->second.getMethod(std::strtol(_data[__requestMethod].c_str(),0,10))) //허용 메서드 체크 
+            // throw std::runtime_error("405"); //not allowed
         if (it->second.getRoot().empty()){//매핑되는 로케이션블록이 있지만 로케이션블록의 루트가 없는경우. 서버 루트 이용.
             if (_sb.getRoot() != "/")
                 path.insert(0,_sb.getRoot());
@@ -171,7 +173,9 @@ void    ResponseManager::_setPath(){
  //location block이 py블럭인 경우 또는 method가 POST또는 DELETE인 경우
     if ((it != _sb.getPath().end() && it->first == ".py") || \
     (_data[__requestMethod] == "POST" || _data[__requestMethod] == "DELETE")){
-        _checkPathStatus(_req.getScriptPath(), pathStatus); //.py까지 경로체크
+        size_t i = path.find(".py");
+        // std::cout<<path.substr(0, i + 3);
+        _checkPathStatus(path.substr(0, i + 3), pathStatus); //.py까지 경로체크
         if (it->second.getCgipass().size())
             _data[__cgiPass] = it->second.getCgipass();
         else

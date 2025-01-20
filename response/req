@@ -1,5 +1,4 @@
-GET /my_cgi.py HTTP/1.1
-
+GET /sdlkjfskdl/asldkjsldkj/ohters.py/adlkfjlaksd HTTP/1.1
 User-Agent: PostmanRuntime/7.32.3
 Accept: */*
 Postman-Token: bda49f4f-8500-4559-a291-9bffaa08cd17
@@ -7,11 +6,3 @@ Host: localhost
 Accept-Encoding: gzip, deflate, br
 Connection: keep-alive
 Content-Type: multipart/form-data; boundary=——WebKitFormBoundaryO7rlE6UB4oLSUEfC
-
-———WebKitFormBoundaryO7rlE6UB4oLSUEfC
-Content-Disposition: form-data; name="file"; filename="test.txt"
-Content-Type: text/plain
-
-hi
-
-———WebKitFormBoundaryO7rlE6UB4oLSUEfC———
