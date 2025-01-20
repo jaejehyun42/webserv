@@ -85,12 +85,44 @@ void Request::initRequest(const string& input)
 		}
 		_parseMethodChkHost();
 	
-		while (getline(form, line)) // 바디 초기화
-			_body += line + "\n";
+		if (_headers["Transfer-Encoding"] == "chunked") // chunked 면 unchunk
+			_unchunk(form);
+		else
+		{
+			while (getline(form, line)) // 아니라면 그대로 읽기
+				_body += line + "\n";
+		}
 	}
 	catch (exception& e)
 	{
 		return;
+	}
+}
+
+void Request::_unchunk(istringstream& form)
+{
+	stringstream converse;
+	string line;
+	size_t size;
+	int i = 0;
+
+	while (getline(form, line))
+	{
+		if (i % 2 == 0)
+		{
+			converse << hex << line; // 16 진수로 변환
+			converse >> size; 
+			if (size == 0)
+				break;
+		}
+		else
+		{
+			if (line.size() != size + 1) // size 가 맞지 않으면 오류
+				_setError(400);
+			line.erase(line.size() - 1); // \r 삭제
+			_body += line;
+		}
+		i++;
 	}
 }
 
