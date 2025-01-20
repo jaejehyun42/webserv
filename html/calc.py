@@ -130,7 +130,7 @@ def main():
 
     content_length = 1804 + len(result)
 
-    print("Status: 200 OK")
+    print("200 OK")
     print("Content-Type: text/html")
     print(f"Content-Length: {content_length}")
     print()
