@@ -21,6 +21,8 @@ void Request::_setError(int error_code)
 		_errorCode = "405";
 		_errorMessage = "Method Not Allowed";
 	}
+
+	throw runtime_error(_errorCode + _errorMessage);
 }
 
 // parse
@@ -69,20 +71,27 @@ void Request::initRequest(const string& input)
 	istringstream form(input);
 	string line;
 
-	if (!getline(form, line))
-		_setError(400);
-	_parseStatus(line); // 상태 라인 파싱
-
-	while (getline(form, line)) // 헤더 파싱 루프
+	try
 	{
-		if (line == "\r") // 헤더와 바디를 구분하는 빈 줄 체크
-			break ;
-		_parseHeader(line);
+		if (!getline(form, line))
+			_setError(400);
+		_parseStatus(line); // 상태 라인 파싱
+	
+		while (getline(form, line)) // 헤더 파싱 루프
+		{
+			if (line == "\r") // 헤더와 바디를 구분하는 빈 줄 체크
+				break ;
+			_parseHeader(line);
+		}
+		_parseMethodChkHost();
+	
+		while (getline(form, line)) // 바디 초기화
+			_body += line + "\n";
 	}
-	_parseMethodChkHost();
-
-	while (getline(form, line)) // 바디 초기화
-		_body += line + "\n";
+	catch (exception& e)
+	{
+		return;
+	}
 }
 
 void Request::_parseUrl()
@@ -114,6 +123,9 @@ void Request::_parseUrl()
 	size_t cgi_pos = _path.find(".py"); // cgi 경로 체크
 	if (cgi_pos != string::npos)
 		_cgiPath = _path.substr(cgi_pos + 3, _path.size() - cgi_pos - 2);
+
+	if (!_cgiPath.empty()) // 스크립트 경로 체크
+		_scriptPath = _path.substr(0, cgi_pos + 3);
 }
 
 void Request::_parseVersion()
@@ -225,6 +237,11 @@ string Request::getPath() const
 string Request::getQuery() const
 {
 	return (_query);
+}
+
+string Request::getScriptPath() const
+{
+	return (_scriptPath);
 }
 
 string Request::getCgiPath() const
