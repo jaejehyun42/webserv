@@ -90,12 +90,10 @@ void    Body::_processCgiMessage(pid_t& cgiProc, int* cgiReadFd, int* cgiWriteFd
 		throw(std::runtime_error("500"));
 
 	char buf[1024];
-	memset(buf,0,sizeof(buf));
+	ssize_t bufReadSize;
 	std::string cgiMessage;
-	while (read(cgiWriteFd[0], buf, sizeof(buf)) > 0){
-
-		cgiMessage += buf;
-	}
+	while ((bufReadSize = read(cgiWriteFd[0], buf, sizeof(buf))) > 0)
+		cgiMessage.assign(buf, bufReadSize);
 	close(cgiWriteFd[0]);
 
 	istringstream iss(cgiMessage);
@@ -108,6 +106,13 @@ void    Body::_processCgiMessage(pid_t& cgiProc, int* cgiReadFd, int* cgiWriteFd
 		throw std::runtime_error("500");
 	_data[__statusCode] = line.substr(0,i);
 	_data[__reasonPhrase] = line.substr(i+1);
+
+//코드값이 세자리수가아니거나 앞자리가 4또는 5인경우
+	if (_data[__statusCode].size() != 3 || \
+	(_data[__statusCode][0] == '4' || _data[__statusCode][0] == '5')){
+		throw(std::runtime_error(_data[__statusCode]));
+	}
+	
 	while (std::getline(iss, line, '\n') && line.size()){ 
 		i = line.find(' ');
 		if (i == std::string::npos || i == 0 || i == line.size() - 1)

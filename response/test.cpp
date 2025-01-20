@@ -33,8 +33,16 @@ enum eData{
     __cgiEnvData // requestCgiPath, requestQuery, requestContentLength, requestContentType, pathRoot
 };
 int main(){
-    string s= "404";
-    cout << strtol(s.c_str(), 0, 10);
+	char buf[1024];
+    int fd = open("../test/test_2.txt", O_RDONLY);
+	ssize_t bufReadSize;
+	std::string cgiMessage;
+	while ((bufReadSize = read(fd, buf, sizeof(buf))) > 0){
+		cgiMessage.assign(buf, bufReadSize);
+        cout<<cgiMessage;
+    }
+
+
 }
 // int main(){
 //     unordered_map<int,string>_data;
