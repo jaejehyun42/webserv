@@ -162,7 +162,6 @@ void Request::_parseStatus(const string& line)
 	istringstream stream(line);
 
 	stream >> _method;
-	cout << _method << endl;
 	_parseMethod();
 
 	stream >> _url;
