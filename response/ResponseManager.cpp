@@ -8,6 +8,7 @@
 #include "Header.hpp"
 #include "Body.hpp"
 #include "ErrorResponse.hpp"
+#include "../request/Request.hpp"
 
 ResponseManager::ResponseManager(const Request& req, const ServConf& conf, const int& servBlockIdx)
 :_req(req), _conf(conf), _sb(conf.getServBlock(servBlockIdx)){
@@ -135,6 +136,7 @@ void    ResponseManager::_setPath(){
     struct stat pathStatus;
     std::unordered_map<string, LocBlock>::const_iterator it; // it->first : locationIdentifier, it->second : locationBlock
     size_t i = path.find(".py");
+
     if (i != std::string::npos){ //location 블럭 식별
         if ((path.size() > i + 3 && path[i + 3] == '/') || path.substr(i, path.size()) == ".py") 
             it =  _sb.getPathIter(".py"); //py block
@@ -166,19 +168,14 @@ void    ResponseManager::_setPath(){
             _data[__locationIdentifier] = it->first;
         }
     }
-
-    if (it != _sb.getPath().end() && it->first == ".py"){//location block이 py블럭인 경우 cgi 사용.
-        if (it->second.getCgipass().size()) //cgi location block인 경우 
-            _data[__cgiPass] = it->second.getCgipass();
-        else
-            _data[__cgiPass] = "/usr/bin/python3";
-    }
-    else if (_data[__requestMethod] == "POST" || _data[__requestMethod] == "DELETE"){//method가 POST또는 DELETE인 경우 cgi 사용.
-        if (it->second.getCgipass().size()) //cgi location block인 경우 
+ //location block이 py블럭인 경우 또는 method가 POST또는 DELETE인 경우
+    if ((it != _sb.getPath().end() && it->first == ".py") || \
+    (_data[__requestMethod] == "POST" || _data[__requestMethod] == "DELETE")){
+        // _checkPathStatus(_req.getScriptPath(), pathStatus); //.py까지 경로체크
+        if (it->second.getCgipass().size())
             _data[__cgiPass] = it->second.getCgipass();
         else
             throw std::runtime_error("501");
-            _data[__cgiPass] = "/usr/bin/python3";
     }
     else{
         _checkPathStatus(path, pathStatus);

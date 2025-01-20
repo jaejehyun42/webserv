@@ -126,6 +126,7 @@ void    Body::_processCgiMessage(pid_t& cgiProc, int* cgiReadFd, int* cgiWriteFd
 	while (std::getline(iss, line, '\n') && line != "\n"){ 
 		_message += line + "\r\n";
 	}
+	cout << _message << "(END)\n";
 }
 
 void	Body::_execCgiProc(int* cgiReadFd, int* cgiWriteFd){
