@@ -73,8 +73,6 @@ void    Body::_makeAutoindexMessage(){
 }
 
 void    Body::_processCgiMessage(pid_t& cgiProc, int* cgiReadFd, int* cgiWriteFd){
-	int cgiProcStatus;
-
 	close(cgiReadFd[0]);
 	close(cgiWriteFd[1]);
 	if (_data.find(__requestBody) != _data.end()){
@@ -84,19 +82,21 @@ void    Body::_processCgiMessage(pid_t& cgiProc, int* cgiReadFd, int* cgiWriteFd
 		}
 	}
 	close(cgiReadFd[1]);
+
+	int cgiProcStatus;
 	if (waitpid(cgiProc, &cgiProcStatus, 0) == -1)
 		throw(std::runtime_error("500"));
-	if (WEXITSTATUS(cgiProcStatus)){
-		perror("WEXIT ");
+	if (WEXITSTATUS(cgiProcStatus))
 		throw(std::runtime_error("500"));
-	}
-	close(cgiReadFd[1]);
 
 	char buf[1024];
 	memset(buf,0,sizeof(buf));
 	std::string cgiMessage;
-	while (read(cgiWriteFd[0], buf, sizeof(buf)) > 0)
+	while (read(cgiWriteFd[0], buf, sizeof(buf)) > 0){
+
 		cgiMessage += buf;
+	}
+	close(cgiWriteFd[0]);
 
 	istringstream iss(cgiMessage);
 	std::string line;
@@ -171,7 +171,6 @@ void	Body::_execCgiProc(int* cgiReadFd, int* cgiWriteFd){
 		perror("failed execve");
 		exit(EXIT_FAILURE);
 	}
-	exit(EXIT_SUCCESS);
 }
 
 void    Body::_makeCgiMessage(){

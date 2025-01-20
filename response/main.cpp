@@ -25,9 +25,8 @@ int main(){
 
         Request re;
         re.initRequest(content);
-        // cout<<content;
 
-        string c = "nginx.conf";
+        string c = "../file/nginx.conf";
         ServConf conf(c);
 
         Response resp(re,conf,0);
