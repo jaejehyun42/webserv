@@ -146,14 +146,12 @@
                 });
 
                 if (response.ok) {
-                    const resultHtml = await response.text();
-                    messageDisplay.innerHTML = resultHtml;
+                    messageDisplay.textContent = "Upload Success!";
                 } else {
-                    const errorHtml = await response.text();
-                    messageDisplay.innerHTML = errorHtml;
+                    messageDisplay.textContent = `Error ${response.status}: ${response.statusText}`;
                 }
             } catch (err) {
-                messageDisplay.textContent = 'An error occurred: ' + err.message;
+                messageDisplay.textContent = 'Error occurred: ' + err.message;
             }
         });
     </script>
