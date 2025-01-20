@@ -92,8 +92,11 @@ void    Body::_processCgiMessage(pid_t& cgiProc, int* cgiReadFd, int* cgiWriteFd
 	char buf[1024];
 	ssize_t bufReadSize;
 	std::string cgiMessage;
-	while ((bufReadSize = read(cgiWriteFd[0], buf, sizeof(buf))) > 0)
-		cgiMessage.assign(buf, bufReadSize);
+	while ((bufReadSize = read(cgiWriteFd[0], buf, sizeof(buf))) > 0){
+		if (bufReadSize < 1024)
+			buf[bufReadSize] = 0;
+		cgiMessage.append(buf);
+	}
 	close(cgiWriteFd[0]);
 
 	istringstream iss(cgiMessage);

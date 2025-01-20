@@ -1,7 +1,14 @@
 FROM ubuntu:latest
 
 RUN apt-get update && \
-apt-get upgrade -y && \
-apt-get install -y sudo iputils-ping curl telnet vim wget
+    apt-get upgrade -y && \
+    apt-get install -y sudo iputils-ping curl telnet vim wget git gcc build-essential siege
+
+RUN wget http://download.joedog.org/siege/siege-latest.tar.gz && \
+    tar -zxvf siege-latest.tar.gz && \
+    cd siege-* &&\
+    ./configure --prefix=/usr/local && \
+    make && \
+    make install
 
 ENTRYPOINT ["/bin/bash"]
