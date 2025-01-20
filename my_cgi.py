@@ -20,7 +20,7 @@ def chkError(e):
 # 환경 변수에서 각종 정보 읽기
 path_info = os.environ.get("PATH_INFO", "")
 query_string = os.environ.get("QUERY_STRING", "")
-request_method = os.environ.get("REQUESTED_METHOD", "")
+request_method = os.environ.get("REQUEST_METHOD", "")
 content_type   = os.environ.get("CONTENT_TYPE", "")
 content_length = os.environ.get("CONTENT_LENGTH", 0)
 root_dir = os.environ.get("DOCUMENT_ROOT", "")
@@ -40,6 +40,9 @@ title = ""
 
 # 상태 라인
 status = ""
+
+# CGI 가 접근 가능한 루트 디렉토리 경로 설정
+root_dir = os.path.join(root_dir, "cgi_storage")
 
 # 루트 디렉토리가 없으면 생성
 if not os.path.exists(root_dir):
@@ -82,8 +85,13 @@ params = urllib.parse.parse_qs(query_string)
 # 반환할 바디
 content = ""
 
+# 최종 경로를 접근 할 수 있는지 체크
+absolute_path = os.path.abspath(path)
+if not absolute_path.startswith(root_dir):
+    status = _chkError("Permission denied")
+
 # GET 인데 PATH_INFO 가 존재할 경우
-if request_method == "GET" and path_info:
+elif request_method == "GET" and path_info:
 
     # MIME 타입 확인
     isbinary = any(mime_type.startswith(bt) for bt in binary_types)
@@ -120,16 +128,16 @@ elif request_method == "POST" and content_type.startswith("multipart/form-data")
         file_item = form["file"]
         # 파일 이름이 존재하면 읽어서 저장
         if file_item.filename:
-            save_path = path + file_item.filename
+            save_path = os.path.join(path, file_item.filename)
             try:
                 with open(save_path, "wb") as f:
                     f.write(file_item.file.read())
                 # 업로드가 완료된 경우
-                params["status"] = [f"File '{filename}' uploaded successfully."]
+                params["status"] = [f"File '{file_item.filename}' uploaded successfully."]
                 status = "201 Created"
             except Exception as e:
                 # 업로드에 실패한 경우
-                params["status"] = [f"Error uploading file {filename} : {str(e)}"]
+                params["status"] = [f"Error uploading file {file_item.filename} : {str(e)}"]
                 status = chkError(e)
         else:
             params["status"] = ["Error uploading file : File has no name."]
@@ -186,7 +194,7 @@ elif request_method == "DELETE" and path_info:
             os.remove(path)  # 파일 삭제
             params["status"] = [f"'{filename}' deleted successfully."]
         else:
-            params["status"] = [f"Error: '{filename}' doesnt exist"] # 파일이 존재하지 않음
+            params["status"] = [f"Error: '{filename}' does not exist"] # 파일이 존재하지 않음
             status = "404 Not Found"
     except Exception as e:
         params["status"] = [f"Error deleting '{filename}' : {str(e)}"]
