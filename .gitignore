@@ -2,7 +2,7 @@
 *.DS_*
 .vscode
 Webserv
-config
+Conf
 
 # Prerequisites
 *.d

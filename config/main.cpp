@@ -4,7 +4,7 @@ int main(int argc, char** argv)
 {
 	std::string fileName; 
 	if (argc == 1)
-		fileName = "../file/nginx.conf";
+		fileName = "file/nginx.conf";
 	else if (argc == 2)
 		fileName = argv[1];
 	else
@@ -13,14 +13,15 @@ int main(int argc, char** argv)
 	try
 	{
 		ServConf sc(fileName);
-		for (const auto& pair : sc.getServBlock(0).getPath()) {
-			std::cout << "Key: " << pair.first << std::endl;
-		}
-		unordered_map<string, LocBlock>::const_iterator it = sc.getServBlock(0).getPathIter(".py");
+
+		unordered_map<string, LocBlock>::const_iterator it = sc.getServBlock(0).getPathIter("/return");
 		if (it != sc.getServBlock(0).getPath().end())
-            cout << "Path found: \"" << it->first << "\"" << endl;
+		{
+			cout << "Path found: \"" << it->first << "\"" << endl;
+			cout << it->second.getReturn().first << ", " << it->second.getReturn().second << endl;
+		}
 		else
-            cout << "Path not found." << endl;
+			cout << "Path not found." << endl;
 	}
 	catch(const std::exception& e)
 	{

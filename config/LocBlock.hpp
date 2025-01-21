@@ -23,6 +23,7 @@ private:
 	string _root;
 	string _cgiPass;
 	vector<string> _index;
+	pair<string, string> _return;
 
 	void _parseLine(vector<string>& tokens);
 public:
@@ -36,6 +37,7 @@ public:
 	const string& getRoot() const;
 	const string& getCgipass() const;
 	const vector<string>& getIndex() const;
+	const pair<string, string>& getReturn() const;
 };
 
 #endif
