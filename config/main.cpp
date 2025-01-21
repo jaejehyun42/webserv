@@ -14,6 +14,9 @@ int main(int argc, char** argv)
 	{
 		ServConf sc(fileName);
 
+		const ServBlock& sb = sc.getServBlock(0);
+		cout << sb.getReturn().first << ", " << sb.getReturn().second << endl;
+
 		unordered_map<string, LocBlock>::const_iterator it = sc.getServBlock(0).getPathIter("/return");
 		if (it != sc.getServBlock(0).getPath().end())
 		{

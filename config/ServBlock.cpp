@@ -33,6 +33,16 @@ void ServBlock::_parseLine(vector<string>& tokens)
 		}
 		else if (key == "server_name")
 			_name.push_back(value);
+		else if (key == "return")
+		{
+			_return.first = tokens[1];
+
+			char& temp = _return.first.front();
+			if (_return.first.size() != 3)
+				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+			if (temp != '2' && temp != '3' && temp != '4' && temp != '5')
+				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+		}
 		else
 			throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
 	}
@@ -48,6 +58,19 @@ void ServBlock::_parseLine(vector<string>& tokens)
 			for (vector<string>::iterator it = tokens.begin() + 1; it != tokens.end() - 1; it++)
 				_name.push_back(*it);
 			_name.push_back(value);
+		}
+		else if (key == "return")
+		{
+			_return.first = tokens[1];
+			_return.second = tokens[2];
+			if (_return.first.front() == '4' || _return.first.front() == '5')
+				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+
+			char& temp = _return.first.front();
+			if (tokens.size() > 3 || _return.first.size() != 3)
+				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+			if (temp != '2' && temp != '3' && temp != '4' && temp != '5')
+				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
 		}
 		else
 			throw runtime_error("Error: server 블록 포멧이 잘못 되었습니다");
@@ -132,6 +155,11 @@ const string& ServBlock::getRoot() const
 const vector<string>& ServBlock::getName() const
 {
 	return (_name);
+}
+
+const pair<string, string>& ServBlock::getReturn() const
+{
+	return (_return);
 }
 
 const unordered_map<long, string>& ServBlock::getErrorPage() const
