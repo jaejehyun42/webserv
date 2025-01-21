@@ -3,6 +3,7 @@
 #include <exception>
 #include <unordered_map>
 #include <vector>
+#include <fstream>
 #include "ResponseManager.hpp"
 #include "StatusLine.hpp"
 #include "Header.hpp"
@@ -30,6 +31,10 @@ void    ResponseManager::_setMessage(){
         Header          header(_data);
         _message = statusLine.getMessage() + header.getMessage() + body.getMessage();
     }catch(std::exception& e){
+        if (_data.find(__redirectionCode) != _data.end()){
+            _makeRedirectionMessage();
+            return ;
+        }
         ErrorResponse er;
         if (std::string(e.what()) == "400"){
             er.setMessage(_setErrorData("400", "Bad Request"));
@@ -58,7 +63,7 @@ void    ResponseManager::_setData(){
     _checkRequestError();
     _setMethod();
     _setPath();
-    _setBody();
+    _setRequestBody();
     _setContentType();
     _setConnection();
     _setCgiEnv();
@@ -146,25 +151,45 @@ void    ResponseManager::_setPath(){
         if (_data[__requestMethod] == "POST" || _data[__requestMethod] == "DELETE") //post나 delete인데 py블럭이 아니면 400 error
             throw std::runtime_error("400");
     }
-
+    //root 매핑
     if (it == _sb.getPath().end() && _sb.getRoot().size()){//매핑되는 로케이션 블록이 없을 경우. 서버 루트 사용.
+        if (_sb.getReturn().first.size()){ //Redirection
+            _data[__redirectionCode] = _sb.getReturn().first;
+            _data[__redirectionBody] = _sb.getReturn().second;
+            throw std::runtime_error(_data[__redirectionCode]);
+        }
         if (_sb.getRoot() != "/")
             path.insert(0,_sb.getRoot());
         _data[__path] = path;
         _data[__root] = _sb.getRoot();
     }
     else{
-        // if (it->second.getMethod(std::strtol(_data[__requestMethod].c_str(),0,10))) //허용 메서드 체크 
-            // throw std::runtime_error("405"); //not allowed
+        if (it->second.getReturn().first.size()){ //Redirection
+            _data[__redirectionCode] = it->second.getReturn().first;
+            _data[__redirectionBody] = it->second.getReturn().second;
+            throw std::runtime_error(_data[__redirectionCode]);
+        }
+        //허용 메서드 체크
+        if (_data[__requestMethod] == "GET" && (it->second.getMethod(0) == false))
+            throw std::runtime_error("405"); //not allowed
+        else if (_data[__requestMethod] == "POST" && (it->second.getMethod(1) == false))
+            throw std::runtime_error("405"); //not allowed
+        else if (_data[__requestMethod] == "DELETE" && (it->second.getMethod(2) == false))
+            throw std::runtime_error("405"); //not allowed
+        //root 매핑
         if (it->second.getRoot().empty()){//매핑되는 로케이션블록이 있지만 로케이션블록의 루트가 없는경우. 서버 루트 이용.
             if (_sb.getRoot() != "/")
                 path.insert(0,_sb.getRoot());
+            
             _data[__path] = path;
             _data[__root] = _sb.getRoot();
         }
         else{//매핑되는 로케이션 블록이 있고 루트도 있는 경우. 로케이션 블록의 루트 사용
-            if (it->second.getRoot() != "/")
+            if (it->first != "/")
                 path.replace(0, it->first.size(), it->second.getRoot());
+            else
+                path.insert(0,_sb.getRoot());
+            // std::cout<<"path: "<<path<<"\n";
             _data[__path] = path;
             _data[__root] = it->second.getRoot();
             _data[__locationIdentifier] = it->first;
@@ -191,7 +216,7 @@ void    ResponseManager::_setMethod(){
         _data[__requestMethod] = _req.getMethod();
 }
 
-void    ResponseManager::_setBody(){
+void    ResponseManager::_setRequestBody(){
     std::string requestBody = _req.getBody(); //body
     if (requestBody.empty())
         return ;
@@ -241,6 +266,58 @@ void    ResponseManager::_setContentType(){
 void    ResponseManager::_checkRequestError(){
     if (_req.getErrorCode().size())
         throw(std::runtime_error(_req.getErrorCode()));
+}
+
+void    ResponseManager::_makeRedirectionMessage(){
+    const int size = 19;
+    pair<string, string> table[size];
+    table[0] = pair<string, string>("200", "OK");
+    table[1] = pair<string, string>("201", "Created");
+    table[2] = pair<string, string>("202", "Accepted");
+    table[3] = pair<string, string>("203", "Non-Authoritative Information");
+    table[4] = pair<string, string>("204", "No Content");
+    table[5] = pair<string, string>("205", "Reset Content");
+    table[6] = pair<string, string>("206", "Partial Content");
+    table[7] = pair<string, string>("207", "Multi-Status");
+    table[8] = pair<string, string>("208", "Already Reported");
+    table[9] = pair<string, string>("226", "IM Used");
+    table[10] = pair<string, string>("300", "Multiple Choices");
+    table[11] = pair<string, string>("301", "Moved Permanently");
+    table[12] = pair<string, string>("302", "Found");
+    table[13] = pair<string, string>("303", "See Other");
+    table[14] = pair<string, string>("304", "Not Modified");
+    table[15] = pair<string, string>("305", "Use Proxy");
+    table[16] = pair<string, string>("306", "Switch Proxy");
+    table[17] = pair<string, string>("307", "Temporary Redirect");
+    table[18] = pair<string, string>("308", "Permanent Redirect");
+
+    int i = 0;
+    for (; i!=size; i++){
+        if (_data[__redirectionCode] == table[i].first){
+            _data[__reasonPhrase] = table[i].second;
+            break;
+        }
+    }
+    if (i == size)
+        _data[__reasonPhrase] = "Notknwon Status";
+    _message = "HTTP/1.1 " + _data.at(__redirectionCode) + " " + _data.at(__reasonPhrase) + "\r\n";
+
+    if (_data[__redirectionCode][0] == '2' && _data.find(__redirectionBody) != _data.end()){
+        _message += "Content-Type: text/html\r\n";
+        std::ostringstream oss;
+        oss<<_data[__redirectionBody].size();
+        _message += "Content-Length: " + oss.str() + "\r\n\r\n";
+        _message += _data[__redirectionBody];
+    }
+    if (_data[__redirectionCode][0] == '3'){
+        if (_data.find(__redirectionBody) == _data.end()){
+            _data[__contentType] = "text/html";
+            ErrorResponse er;
+            er.setMessage(_setErrorData("400", "Bad Request"));
+            return ;
+        }
+        _message += "Location: "+ _data[__redirectionBody] + "\r\n\r\n";
+    }
 }
 
 void    ResponseManager::printAllData(){
