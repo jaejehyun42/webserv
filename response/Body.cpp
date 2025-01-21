@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <vector>
 #include <time.h>
+#include <signal.h>
 #include "Body.hpp"
 #include "ResponseManager.hpp"
 
@@ -92,6 +93,7 @@ void    Body::_processCgiMessage(pid_t& cgiProc, int* cgiReadFd, int* cgiWriteFd
 			break;
         } else if (result == 0) { // 자식 프로세스가 아직 종료되지 않음
             if (time(NULL) - start >= 5) { // 시간 초과
+				kill(cgiProc, SIGKILL);
 				throw std::runtime_error("500");
             }
             usleep(100); // 100ms 대기
