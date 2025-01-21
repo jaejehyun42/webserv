@@ -21,7 +21,7 @@ void ServBlock::_parseLine(vector<string>& tokens)
 			char* end;
 			long port = strtol(value.c_str(), &end, 10);
 			if (port < 0 || *end != '\0')
-				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+				throw runtime_error("Error: Server: 구성 요소의 값이 잘못 되었습니다.");
 			_port = value;
 		}
 		else if (key == "client_max_body_size")
@@ -29,7 +29,7 @@ void ServBlock::_parseLine(vector<string>& tokens)
 			char* end;
 			_maxSize = strtol(value.c_str(), &end, 10);
 			if (_maxSize < 0 || *end != '\0')
-				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+				throw runtime_error("Error: Server: 구성 요소의 값이 잘못 되었습니다.");
 		}
 		else if (key == "root")
 		{
@@ -44,17 +44,17 @@ void ServBlock::_parseLine(vector<string>& tokens)
 			char* end;
 			long code = strtol(value.c_str(), &end, 10);
 			if (code < 0 || *end != '\0')
-				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+				throw runtime_error("Error: Server: 구성 요소의 값이 잘못 되었습니다.");
 			_return.first = value;
 
 			char& temp = _return.first.front();
 			if (_return.first.size() != 3)
-				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+				throw runtime_error("Error: Server: 지원하는 서버 옵션이 아닙니다.");
 			if (temp != '2' && temp != '3' && temp != '4' && temp != '5')
-				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+				throw runtime_error("Error: Server: 지원하는 서버 옵션이 아닙니다.");
 		}
 		else
-			throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+			throw runtime_error("Error: Server: 지원하는 서버 옵션이 아닙니다.");
 	}
 	else if (tokens.size() > 2)
 	{
@@ -65,7 +65,7 @@ void ServBlock::_parseLine(vector<string>& tokens)
 				char* end;
 				long code = strtol((*it).c_str(), &end, 10);
 				if (code < 0 || *end != '\0')
-					throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+					throw runtime_error("Error: Server: 구성 요소의 값이 잘못 되었습니다.");
 				_error[code] = value;
 			}
 		}
@@ -80,24 +80,24 @@ void ServBlock::_parseLine(vector<string>& tokens)
 			char* end;
 			long code = strtol(tokens[1].c_str(), &end, 10);
 			if (code < 0 || *end != '\0')
-				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+				throw runtime_error("Error: Server: 구성 요소의 값이 잘못 되었습니다.");
 
 			_return.first = tokens[1];
 			_return.second = tokens[2];
 			if (_return.first.front() == '4' || _return.first.front() == '5')
-				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+				throw runtime_error("Error: Server: 지원하는 서버 옵션이 아닙니다.");
 
 			char& temp = _return.first.front();
 			if (tokens.size() > 3 || _return.first.size() != 3)
-				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+				throw runtime_error("Error: Server: 지원하는 서버 옵션이 아닙니다.");
 			if (temp != '2' && temp != '3' && temp != '4' && temp != '5')
-				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+				throw runtime_error("Error: Server: 지원하는 서버 옵션이 아닙니다.");
 		}
 		else
-			throw runtime_error("Error: server 블록 포멧이 잘못 되었습니다");
+			throw runtime_error("Error: Server: 블록 포멧이 잘못 되었습니다");
 	}
 	else
-		throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+		throw runtime_error("Error: Server: 지원하는 서버 옵션이 아닙니다.");
 }
 
 void ServBlock::_parseBlock(vector<string>& tokens, ifstream& file)
@@ -107,7 +107,7 @@ void ServBlock::_parseBlock(vector<string>& tokens, ifstream& file)
 	if (key == "location")
 	{
 		if (tokens.size() == 2)
-			throw runtime_error("Error: location 블록 포멧이 잘못 되었습니다");
+			throw runtime_error("Error: Server: location 블록 포멧이 잘못 되었습니다");
 
 		LocBlock lb;
 		string& path = *(tokens.begin() + 1);
@@ -118,13 +118,13 @@ void ServBlock::_parseBlock(vector<string>& tokens, ifstream& file)
 		else if (path.front() == '.' && path.back() == '$')
 		{
 			if (path.find("py") == std::string::npos)
-				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+				throw runtime_error("Error: Server: 구성 요소의 값이 잘못 되었습니다.");
 			path.pop_back();
 		}
 		_path[path] = lb;
 	}
 	else
-		throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+		throw runtime_error("Error: Server: 지원하는 서버 옵션이 아닙니다.");
 }
 
 void ServBlock::parseServBlock(ifstream& file)
@@ -147,14 +147,14 @@ void ServBlock::parseServBlock(ifstream& file)
 		else if (delim.back() == ';')
 			_parseLine(tokens);
 		else
-			throw runtime_error("Error: server 블록 포멧이 잘못 되었습니다");
+			throw runtime_error("Error: Server: 블록 포멧이 잘못 되었습니다");
 	}
 	if (line.find("}") == string::npos)
-		throw runtime_error("Error: server 블록 포멧이 잘못 되었습니다.");
+		throw runtime_error("Error: Server: 블록 포멧이 잘못 되었습니다.");
 	if (_port == "" || _maxSize <= 0)
-		throw runtime_error("Error: 설정 파일의 필수 구성 요소가 없습니다.");
+		throw runtime_error("Error: Server: 설정 파일의 필수 구성 요소가 없습니다.");
 	if (_path.size() == 0)
-		throw runtime_error("Error: 설정 파일의 필수 구성 요소가 없습니다.");
+		throw runtime_error("Error: Server: 설정 파일의 필수 구성 요소가 없습니다.");
 }
 
 // getter 함수
