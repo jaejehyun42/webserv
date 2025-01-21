@@ -98,18 +98,8 @@ void Server::_setEvent(int fd, int filter, int flags)
 {
 	struct kevent evSet;
 	EV_SET(&evSet, fd, filter, flags, 0, 0, NULL);
-	try
-	{
-		if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
-		{
-			cerr << '\r' << fd << ": " << filter << ", " << flags << endl;
-			throw runtime_error("Error: HERE: " + string(strerror(errno)));
-		}
-	}
-	catch(const std::exception& e)
-	{
-		std::cerr << e.what() << '\n';
-	}
+	if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
+		throw runtime_error("Error: HERE: " + string(strerror(errno)));
 	
 	_client[fd].updateTime();
 }
@@ -265,9 +255,7 @@ void Server::sendClient(int fd, const ServConf& conf)
 			if (req.chkConnection())
 				closeClient(fd);
 			else
-			{
 				it->second.setMessage("");
-			}
 		}
 	}
 }

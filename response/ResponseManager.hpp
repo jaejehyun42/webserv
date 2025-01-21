@@ -41,14 +41,14 @@ class ResponseManager{
         void        _setMessage();
         void        _setPath();
 		void        _setCgiEnv();
-        void        _setRequestBody();
-        void        _setMethod();
-        void        _setConnection();
         void        _setContentType();
 
         void    _checkPathIsDir(std::string& path, struct stat& pathStatus, const LocBlock& locationBlock);
         void    _checkPathStatus(const std::string& path, struct stat& pathStatus);
-        void    _checkRequestError();
+        void    _checkRequest();
+        void    _checkRequestBody();
+        void    _checkRequestMethod();
+        void    _checkRequestConnection();
         void    _makeRedirectionMessage();
 
 

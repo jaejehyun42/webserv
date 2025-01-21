@@ -19,7 +19,6 @@ ResponseManager::ResponseManager(const Request& req, const ServConf& conf, const
 ResponseManager::~ResponseManager(){}
 
 string    ResponseManager::getMessage(){
-    // printAllData();
     return (_message);
 }
 
@@ -60,19 +59,17 @@ void    ResponseManager::_setMessage(){
 }
 
 void    ResponseManager::_setData(){
-    _checkRequestError();
-    _setMethod();
+    _checkRequest();
     _setPath();
-    _setRequestBody();
     _setContentType();
-    _setConnection();
     _setCgiEnv();
 }
 
 const std::unordered_map<int, std::string>& ResponseManager::_setErrorData(const std::string& errCode, const std::string& reasonPhrase){
     _data[__statusCode] = errCode;
     _data[__reasonPhrase] = reasonPhrase;
-    _data[__connection] = "closed";
+    if (_data.find(__connection) == _data.end())
+        _checkRequestConnection();
 
     const std::unordered_map<long, string>& errPageMap = _sb.getErrorPage();
 	std::unordered_map<long, string>::const_iterator it = errPageMap.find(strtol(_data[__statusCode].c_str(), 0, 10));
@@ -145,6 +142,8 @@ void    ResponseManager::_setPath(){
     if (i != std::string::npos && \
         ((path.size() > i + 3 && path[i + 3] == '/') || path.substr(i, path.size()) == ".py")){
         it =  _sb.getPathIter(".py"); //py block
+        if (it == _sb.getPath().end())
+            throw std::runtime_error("400");
     }
     else{
         it =  _sb.getPathIter(path); // others
@@ -178,19 +177,22 @@ void    ResponseManager::_setPath(){
             throw std::runtime_error("405"); //not allowed
         //root 매핑
         if (it->second.getRoot().empty()){//매핑되는 로케이션블록이 있지만 로케이션블록의 루트가 없는경우. 서버 루트 이용.
+            // std::cout<<"1path: "<<path<<"\n";
             if (_sb.getRoot() != "/")
                 path.insert(0,_sb.getRoot());
-            
+            // std::cout<<"1path: "<<path<<"\n";
             _data[__path] = path;
             _data[__root] = _sb.getRoot();
         }
         else{//매핑되는 로케이션 블록이 있고 루트도 있는 경우. 로케이션 블록의 루트 사용
-            // std::cout<<"path: "<<path<<"\n";
-            if (it->first != "/")
-                path.replace(0, it->first.size(), it->second.getRoot());
-            else
+            std::cout<<"path: "<<path<<"\n";
+            if (it->first == path)
+                ;
+            else if (it->first == "/" || it->first == ".py")
                 path.insert(0,it->second.getRoot());
-            // std::cout<<"path: "<<path<<"\n";
+            else
+                path.replace(0, it->first.size(), it->second.getRoot());
+            std::cout<<"path: "<<path<<"\n";
             _data[__path] = path;
             _data[__root] = it->second.getRoot();
             _data[__locationIdentifier] = it->first;
@@ -212,12 +214,12 @@ void    ResponseManager::_setPath(){
     }
 }
 
-void    ResponseManager::_setMethod(){
+void    ResponseManager::_checkRequestMethod(){
     if (_req.getMethod().size()) //method
         _data[__requestMethod] = _req.getMethod();
 }
 
-void    ResponseManager::_setRequestBody(){
+void    ResponseManager::_checkRequestBody(){
     std::string requestBody = _req.getBody(); //body
     if (requestBody.empty())
         return ;
@@ -245,12 +247,16 @@ void ResponseManager::_setCgiEnv(){
         _data[__cgiContentLength] += "CONTENT_LENGTH=" + requestHeaderMap["Content-Length"];
     if (requestHeaderMap.find("Content-Type") != requestHeaderMap.end())
         _data[__cgiContentType] += "CONTENT_TYPE=" + requestHeaderMap["Content-Type"];
+    if (requestHeaderMap.find("Connection") != requestHeaderMap.end())
+        _data[__connection] = requestHeaderMap["Connection"];
 }
 
-void    ResponseManager::_setConnection(){
-    ostringstream oss;
-    if (oss <<_conf.getAliveTime())
-        _data[__connection] = oss.str();
+void    ResponseManager::_checkRequestConnection(){
+    std::unordered_map<std::string, std::string> requestHeaderMap = _req.getHeaders();
+    if (requestHeaderMap.find("Connection") != requestHeaderMap.end())
+        _data[__connection] = requestHeaderMap["Connection"];
+    else
+        _data[__connection] = "closed";
 }
 
 void    ResponseManager::_setContentType(){
@@ -264,9 +270,12 @@ void    ResponseManager::_setContentType(){
         _data[__contentType] = _conf.getMime(_data[__path].substr(i + 1));
 }
 
-void    ResponseManager::_checkRequestError(){
+void    ResponseManager::_checkRequest(){
     if (_req.getErrorCode().size())
         throw(std::runtime_error(_req.getErrorCode()));
+    _checkRequestMethod();
+    _checkRequestConnection();
+    _checkRequestBody();
 }
 
 void    ResponseManager::_makeRedirectionMessage(){
