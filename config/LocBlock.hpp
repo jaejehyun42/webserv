@@ -18,11 +18,12 @@ using namespace std;
 class LocBlock
 {
 private:
-	bool _autoindex;
-	bool _method[3]; // 인덱스 순서는 GET, POST, DELETE 순서
-	string _root;
-	string _cgiPass;
-	vector<string> _index;
+	bool _autoindex;				// autoindex on/off
+	bool _method[3]; 				// 인덱스 순서는 GET, POST, DELETE 순서
+	string _root;					// root 정보
+	string _cgiPass;				// cgi_pass 정보
+	vector<string> _index;			// index 정보
+	pair<string, string> _return;	// 리다이렉션 정보
 
 	void _parseLine(vector<string>& tokens);
 public:
@@ -36,6 +37,7 @@ public:
 	const string& getRoot() const;
 	const string& getCgipass() const;
 	const vector<string>& getIndex() const;
+	const pair<string, string>& getReturn() const;
 };
 
 #endif

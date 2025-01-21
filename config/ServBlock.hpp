@@ -19,6 +19,7 @@ private:
 	string _port;							// 서버 포트 넘버
 	string _root;							// root 위치 정보
 	vector<string> _name;					// 서버 이름 정보
+	pair<string, string> _return;			// 리다이렉션 정보
 	unordered_map<long, string> _error;		// key: status, value: page
 	unordered_map<string, LocBlock>_path;	// path에 따른 location 정보
 
@@ -34,6 +35,7 @@ public:
 	const string& getPort() const;
 	const string& getRoot() const;
 	const vector<string>& getName() const;
+	const pair<string, string>& getReturn() const;
 
 	const unordered_map<long, string>& getErrorPage() const;
 	const unordered_map<string, LocBlock>& getPath() const;
