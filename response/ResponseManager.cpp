@@ -167,7 +167,6 @@ void    ResponseManager::_setPath(){
         if (it->second.getReturn().first.size()){ //Redirection
             _data[__redirectionCode] = it->second.getReturn().first;
             _data[__redirectionBody] = it->second.getReturn().second;
-            std::cout<<"redirection here!\n";
             throw std::runtime_error(_data[__redirectionCode]);
         }
         //허용 메서드 체크
@@ -181,13 +180,16 @@ void    ResponseManager::_setPath(){
         if (it->second.getRoot().empty()){//매핑되는 로케이션블록이 있지만 로케이션블록의 루트가 없는경우. 서버 루트 이용.
             if (_sb.getRoot() != "/")
                 path.insert(0,_sb.getRoot());
+            
             _data[__path] = path;
             _data[__root] = _sb.getRoot();
         }
         else{//매핑되는 로케이션 블록이 있고 루트도 있는 경우. 로케이션 블록의 루트 사용
-            if (it->second.getRoot() != "/")
+            if (it->first != "/")
+                path.replace(0, it->first.size(), it->second.getRoot());
+            else
                 path.insert(0,_sb.getRoot());
-                // path.replace(0, it->first.size(), it->second.getRoot());
+            std::cout<<"path: "<<path<<"\n";
             _data[__path] = path;
             _data[__root] = it->second.getRoot();
             _data[__locationIdentifier] = it->first;

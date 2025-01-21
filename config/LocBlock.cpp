@@ -38,6 +38,26 @@ void LocBlock::_parseLine(vector<string>& tokens)
 		{
 			_index.push_back(value);
 		}
+		else if (key == "limit_except")
+		{
+			int check[3] = {0};
+
+			if (value == "GET")
+				check[GET] = 1;
+			else if (value == "POST")
+				check[POST] = 1;
+			else if (value == "DELETE")
+				check[DELETE] = 1;
+			else
+				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+
+			if (check[GET] == 0)
+				_method[GET] = false;
+			if (check[POST] == 0)
+				_method[POST] = false;
+			if (check[DELETE] == 0)
+				_method[DELETE] = false;
+		}
 		else if (key == "return")
 		{
 			char* end;
