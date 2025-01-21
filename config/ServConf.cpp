@@ -38,10 +38,10 @@ void ServConf::_parseMime(ifstream& file)
 			if (tokens.back() == "}")
 				break ;
 			else
-				throw runtime_error("Error: http 블록 포멧이 잘못 되었습니다.");
+				throw runtime_error("Error: http: 블록 포멧이 잘못 되었습니다.");
 		}
 		if (tokens.back().back() != ';')
-			throw runtime_error("Error: http 블록 포멧이 잘못 되었습니다1");
+			throw runtime_error("Error: http: 블록 포멧이 잘못 되었습니다1");
 
 		string& value = tokens.front();
 		for (vector<string>::iterator it = tokens.begin() + 1; it != tokens.end(); it++)
@@ -53,7 +53,7 @@ void ServConf::_parseMime(ifstream& file)
 		}
 	}
 	if (line.find("}") == string::npos)
-		throw runtime_error("Error: http 블록 포멧이 잘못 되었습니다.");
+		throw runtime_error("Error: http: 블록 포멧이 잘못 되었습니다.");
 }
 
 void ServConf::_parseHTTP(ifstream& file, bool inc)
@@ -71,7 +71,7 @@ void ServConf::_parseHTTP(ifstream& file, bool inc)
 			if (tokens.back() == "}")
 				break ;
 			else
-				throw runtime_error("Error: http 블록 포멧이 잘못 되었습니다");
+				throw runtime_error("Error: http: 블록 포멧이 잘못 되었습니다");
 		}
 
 		string& key = tokens.front();
@@ -109,10 +109,10 @@ void ServConf::_parseHTTP(ifstream& file, bool inc)
 				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
 		}
 		else
-			throw runtime_error("Error: http 블록 포멧이 잘못 되었습니다.");
+			throw runtime_error("Error: http: 블록 포멧이 잘못 되었습니다.");
 	}
 	if (!inc && line.find("}") == string::npos)
-		throw runtime_error("Error: http 블록 포멧이 잘못 되었습니다.");
+		throw runtime_error("Error: http: 블록 포멧이 잘못 되었습니다.");
 }
 
 void ServConf::_parse(ifstream& file)

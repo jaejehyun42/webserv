@@ -32,7 +32,7 @@ void LocBlock::_parseLine(vector<string>& tokens)
 				_autoindex = true;
 			else if (value == "off");
 			else
-				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+				throw runtime_error("Error: location: 구성 요소의 값이 잘못 되었습니다.");
 		}
 		else if (key == "index")
 		{
@@ -49,7 +49,7 @@ void LocBlock::_parseLine(vector<string>& tokens)
 			else if (value == "DELETE")
 				check[DELETE] = 1;
 			else
-				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+				throw runtime_error("Error: location: 지원하는 서버 옵션이 아닙니다.");
 
 			if (check[GET] == 0)
 				_method[GET] = false;
@@ -63,17 +63,17 @@ void LocBlock::_parseLine(vector<string>& tokens)
 			char* end;
 			long code = strtol(value.c_str(), &end, 10);
 			if (code < 0 || *end != '\0')
-				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+				throw runtime_error("Error: location: 구성 요소의 값이 잘못 되었습니다.");
 			_return.first = value;
 
 			char& temp = _return.first.front();
 			if (_return.first.size() != 3)
-				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+				throw runtime_error("Error: location: 지원하는 서버 옵션이 아닙니다.");
 			if (temp != '2' && temp != '3' && temp != '4' && temp != '5')
-				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+				throw runtime_error("Error: location: 지원하는 서버 옵션이 아닙니다.");
 		}
 		else
-			throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+			throw runtime_error("Error: location: 지원하는 서버 옵션이 아닙니다.");
 	}
 	else if (tokens.size() > 2)
 	{
@@ -94,7 +94,7 @@ void LocBlock::_parseLine(vector<string>& tokens)
 				else if (*it == "DELETE")
 					check[DELETE] = true;
 				else
-					throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+					throw runtime_error("Error: location: 지원하는 서버 옵션이 아닙니다.");
 			}
 			if (check[GET] == 0)
 				_method[GET] = false;
@@ -108,24 +108,24 @@ void LocBlock::_parseLine(vector<string>& tokens)
 			char* end;
 			long code = strtol(tokens[1].c_str(), &end, 10);
 			if (code < 0 || *end != '\0')
-				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+				throw runtime_error("Error: location: 구성 요소의 값이 잘못 되었습니다.");
 
 			_return.first = tokens[1];
 			_return.second = tokens[2];
 			if (_return.first.front() == '4' || _return.first.front() == '5')
-				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+				throw runtime_error("Error: location: 지원하는 서버 옵션이 아닙니다.");
 
 			char& temp = _return.first.front();
 			if (tokens.size() > 3 || _return.first.size() != 3)
-				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+				throw runtime_error("Error: location: 지원하는 서버 옵션이 아닙니다.");
 			if (temp != '2' && temp != '3' && temp != '4' && temp != '5')
-				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+				throw runtime_error("Error: location: 지원하는 서버 옵션이 아닙니다.");
 		}
 		else
-			throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+			throw runtime_error("Error: location: 지원하는 서버 옵션이 아닙니다.");
 	}
 	else
-		throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+		throw runtime_error("Error: location: 지원하는 서버 옵션이 아닙니다.");
 }
 
 void LocBlock::parseLocBlock(ifstream& file, const string& path)
@@ -146,14 +146,14 @@ void LocBlock::parseLocBlock(ifstream& file, const string& path)
 		else if (delim.back() == ';')
 			_parseLine(tokens);
 		else
-			throw runtime_error("Error: location 블록 포멧이 잘못 되었습니다");
+			throw runtime_error("Error: location: 블록 포멧이 잘못 되었습니다");
 	}
 	if (line.find("}") == string::npos)
-		throw runtime_error("Error: location 블록 포멧이 잘못 되었습니다.");
+		throw runtime_error("Error: location: 블록 포멧이 잘못 되었습니다.");
 	if (path.front() == '.' && _index.size() > 0)
-		throw runtime_error("Error: location 블록 요소가 잘못 되었습니다.");
+		throw runtime_error("Error: location: 블록 요소가 잘못 되었습니다.");
 	if (path.front() == '/' && _cgiPass != "")
-		throw runtime_error("Error: location 블록 요소가 잘못 되었습니다.");
+		throw runtime_error("Error: location: 블록 요소가 잘못 되었습니다.");
 }
 
 // getter 함수
