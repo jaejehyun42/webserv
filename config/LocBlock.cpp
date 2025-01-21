@@ -38,9 +38,33 @@ void LocBlock::_parseLine(vector<string>& tokens)
 		{
 			_index.push_back(value);
 		}
+		else if (key == "limit_except")
+		{
+			int check[3] = {0};
+
+			if (value == "GET")
+				check[GET] = 1;
+			else if (value == "POST")
+				check[POST] = 1;
+			else if (value == "DELETE")
+				check[DELETE] = 1;
+			else
+				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+
+			if (check[GET] == 0)
+				_method[GET] = false;
+			if (check[POST] == 0)
+				_method[POST] = false;
+			if (check[DELETE] == 0)
+				_method[DELETE] = false;
+		}
 		else if (key == "return")
 		{
-			_return.first = tokens[1];
+			char* end;
+			long code = strtol(value.c_str(), &end, 10);
+			if (code < 0 || *end != '\0')
+				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+			_return.first = value;
 
 			char& temp = _return.first.front();
 			if (_return.first.size() != 3)
@@ -81,6 +105,11 @@ void LocBlock::_parseLine(vector<string>& tokens)
 		}
 		else if (key == "return")
 		{
+			char* end;
+			long code = strtol(tokens[1].c_str(), &end, 10);
+			if (code < 0 || *end != '\0')
+				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+
 			_return.first = tokens[1];
 			_return.second = tokens[2];
 			if (_return.first.front() == '4' || _return.first.front() == '5')

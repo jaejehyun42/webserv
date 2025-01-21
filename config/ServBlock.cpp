@@ -17,7 +17,13 @@ void ServBlock::_parseLine(vector<string>& tokens)
 	if (tokens.size() == 2)
 	{
 		if (key == "listen")
+		{
+			char* end;
+			long port = strtol(value.c_str(), &end, 10);
+			if (port < 0 || *end != '\0')
+				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
 			_port = value;
+		}
 		else if (key == "client_max_body_size")
 		{
 			char* end;
@@ -35,7 +41,11 @@ void ServBlock::_parseLine(vector<string>& tokens)
 			_name.push_back(value);
 		else if (key == "return")
 		{
-			_return.first = tokens[1];
+			char* end;
+			long code = strtol(value.c_str(), &end, 10);
+			if (code < 0 || *end != '\0')
+				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+			_return.first = value;
 
 			char& temp = _return.first.front();
 			if (_return.first.size() != 3)
@@ -51,7 +61,13 @@ void ServBlock::_parseLine(vector<string>& tokens)
 		if (key == "error_page")
 		{
 			for (vector<string>::iterator it = tokens.begin() + 1; it != tokens.end() - 1; it++)
-				_error[strtol((*it).c_str(), NULL, 10)] = value;
+			{
+				char* end;
+				long code = strtol((*it).c_str(), &end, 10);
+				if (code < 0 || *end != '\0')
+					throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+				_error[code] = value;
+			}
 		}
 		else if (key == "server_name")
 		{
@@ -61,6 +77,11 @@ void ServBlock::_parseLine(vector<string>& tokens)
 		}
 		else if (key == "return")
 		{
+			char* end;
+			long code = strtol(tokens[1].c_str(), &end, 10);
+			if (code < 0 || *end != '\0')
+				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+
 			_return.first = tokens[1];
 			_return.second = tokens[2];
 			if (_return.first.front() == '4' || _return.first.front() == '5')
