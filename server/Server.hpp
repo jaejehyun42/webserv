@@ -5,6 +5,9 @@
 #include <unordered_map>
 #include <cstring>
 #include <iostream>
+#include <string>
+#include <fstream>
+#include <sstream>
 #include <time.h>
 #include <fcntl.h>
 #include <netdb.h>

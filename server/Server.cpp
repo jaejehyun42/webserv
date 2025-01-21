@@ -103,6 +103,20 @@ void Server::_setEvent(int fd, int filter, int flags)
 	_client[fd].updateTime();
 }
 
+string getErrorPage(const std::string& status, const std::string& phrase)
+{
+	string error = "<!DOCTYPE html>\n"
+					"<head>\n"
+					"	<title>Error</title>\n"
+					"</head>\n"
+					"<body>\n"
+					"	<h1>" + status + "</h1>\n"
+					"	<p>" + status + phrase + "</p>\n"
+					"</body>\n"
+					"</html>";
+	return (error);
+}
+
 void Server::_sendError(int fd, const string& status, const string& phrase, const ServConf& conf)
 {
 	string error;
@@ -114,34 +128,16 @@ void Server::_sendError(int fd, const string& status, const string& phrase, cons
 	{
 		ifstream ifs(root + it->second);
 		if (!ifs)
-		{
-			error = "<!DOCTYPE html>\n"
-					"<head>\n"
-					"	<title>Error</title>\n"
-					"</head>\n"
-					"<body>\n"
-					"	<h1>" + status + "</h1>\n"
-					"	<p>" + status + phrase + "</p>\n"
-					"</body>\n"
-					"</html>";
-		}
+			error = getErrorPage(status, phrase);
 		else
 		{
-			;
+			stringstream buf;
+			buf << ifs.rdbuf();
+			error = buf.str();
 		}
 	}
 	else
-	{
-		error = "<!DOCTYPE html>\n"
-				"<head>\n"
-				"	<title>Error</title>\n"
-				"</head>\n"
-				"<body>\n"
-				"	<h1>" + status + "</h1>\n"
-				"	<p>" + status + phrase + "</p>\n"
-				"</body>\n"
-				"</html>";
-	}
+		error = getErrorPage(status, phrase);
 
 
 	string response = "HTTP/1.1" + status + phrase + "\r\n"
