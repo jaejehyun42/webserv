@@ -185,14 +185,14 @@ void    ResponseManager::_setPath(){
             _data[__root] = _sb.getRoot();
         }
         else{//매핑되는 로케이션 블록이 있고 루트도 있는 경우. 로케이션 블록의 루트 사용
-            std::cout<<"path: "<<path<<"\n";
+            // std::cout<<"path: "<<path<<"\n";
             if (it->first == path)
                 ;
             else if (it->first == "/" || it->first == ".py")
                 path.insert(0,it->second.getRoot());
             else
                 path.replace(0, it->first.size(), it->second.getRoot());
-            std::cout<<"path: "<<path<<"\n";
+            // std::cout<<"path: "<<path<<"\n";
             _data[__path] = path;
             _data[__root] = it->second.getRoot();
             _data[__locationIdentifier] = it->first;
