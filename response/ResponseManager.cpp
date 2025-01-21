@@ -189,7 +189,7 @@ void    ResponseManager::_setPath(){
                 path.replace(0, it->first.size(), it->second.getRoot());
             else
                 path.insert(0,_sb.getRoot());
-            std::cout<<"path: "<<path<<"\n";
+            // std::cout<<"path: "<<path<<"\n";
             _data[__path] = path;
             _data[__root] = it->second.getRoot();
             _data[__locationIdentifier] = it->first;
