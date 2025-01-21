@@ -36,8 +36,17 @@ void LocBlock::_parseLine(vector<string>& tokens)
 		}
 		else if (key == "index")
 		{
-			for (vector<string>::iterator it = tokens.begin() + 1; it != tokens.end(); it++)
-				_index.push_back(*it);
+			_index.push_back(value);
+		}
+		else if (key == "return")
+		{
+			_return.first = tokens[1];
+
+			char& temp = _return.first.front();
+			if (_return.first.size() != 3)
+				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+			if (temp != '2' && temp != '3' && temp != '4' && temp != '5')
+				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
 		}
 		else
 			throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
@@ -55,20 +64,41 @@ void LocBlock::_parseLine(vector<string>& tokens)
 			for (vector<string>::iterator it = tokens.begin() + 1; it != tokens.end(); it++)
 			{
 				if (*it == "GET")
-					check[GET] = 1;
+					check[GET] = true;
 				else if (*it == "POST")
-					check[POST] = 1;
+					check[POST] = true;
 				else if (*it == "DELETE")
-					check[DELETE] = 1;
+					check[DELETE] = true;
 				else
 					throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
 			}
 			if (check[GET] == 0)
-				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+				_method[GET] = false;
 			if (check[POST] == 0)
-				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+				_method[POST] = false;
 			if (check[DELETE] == 0)
-				_method[DELETE] = 0;
+				_method[DELETE] = false;
+		}
+		else if (key == "return")
+		{
+<<<<<<< Updated upstream
+			char* end;
+			long code = strtol(tokens[1].c_str(), &end, 10);
+			if (code < 0 || *end != '\0')
+				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
+
+=======
+>>>>>>> Stashed changes
+			_return.first = tokens[1];
+			_return.second = tokens[2];
+			if (_return.first.front() == '4' || _return.first.front() == '5')
+				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+
+			char& temp = _return.first.front();
+			if (tokens.size() > 3 || _return.first.size() != 3)
+				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
+			if (temp != '2' && temp != '3' && temp != '4' && temp != '5')
+				throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
 		}
 		else
 			throw runtime_error("Error: 지원하는 서버 옵션이 아닙니다.");
@@ -129,4 +159,9 @@ const string& LocBlock::getCgipass() const
 const vector<string>& LocBlock::getIndex() const
 {
 	return (_index);
+}
+
+const pair<string, string>& LocBlock::getReturn() const
+{
+	return (_return);
 }

@@ -12,6 +12,8 @@ enum eData{
     __connection,
     __path,
     __root,
+    __redirectionCode,
+    __redirectionBody,
     __locationIdentifier,
     __autoindex,
     __contentLength,
@@ -39,7 +41,7 @@ class ResponseManager{
         void        _setMessage();
         void        _setPath();
 		void        _setCgiEnv();
-        void        _setBody();
+        void        _setRequestBody();
         void        _setMethod();
         void        _setConnection();
         void        _setContentType();
@@ -47,6 +49,7 @@ class ResponseManager{
         void    _checkPathIsDir(std::string& path, struct stat& pathStatus, const LocBlock& locationBlock);
         void    _checkPathStatus(const std::string& path, struct stat& pathStatus);
         void    _checkRequestError();
+        void    _makeRedirectionMessage();
 
 
         const Request&      _req;

@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <vector>
 #include <cstdlib>
+#include <utility>
 #include <unistd.h>
 #include <unordered_map>
 #include <fcntl.h>
@@ -33,16 +34,33 @@ enum eData{
     __cgiEnvData // requestCgiPath, requestQuery, requestContentLength, requestContentType, pathRoot
 };
 int main(){
-	char buf[1024];
-    int fd = open("../test/test_2.txt", O_RDONLY);
-	ssize_t bufReadSize;
-	std::string cgiMessage;
-	while ((bufReadSize = read(fd, buf, sizeof(buf))) > 0){
-		cgiMessage.assign(buf, bufReadSize);
-        cout<<cgiMessage;
+   pair<string, string> table[19];
+    cout<<sizeof(table);
+    // 각 pair 객체를 생성자 사용하여 초기화
+    table[0] = pair<string, string>("200", "OK");
+    table[1] = pair<string, string>("201", "Created");
+    table[2] = pair<string, string>("202", "Accepted");
+    table[3] = pair<string, string>("203", "Non-Authoritative Information");
+    table[4] = pair<string, string>("204", "No Content");
+    table[5] = pair<string, string>("205", "Reset Content");
+    table[6] = pair<string, string>("206", "Partial Content");
+    table[7] = pair<string, string>("207", "Multi-Status");
+    table[8] = pair<string, string>("208", "Already Reported");
+    table[9] = pair<string, string>("226", "IM Used");
+    table[10] = pair<string, string>("300", "Multiple Choices");
+    table[11] = pair<string, string>("301", "Moved Permanently");
+    table[12] = pair<string, string>("302", "Found");
+    table[13] = pair<string, string>("303", "See Other");
+    table[14] = pair<string, string>("304", "Not Modified");
+    table[15] = pair<string, string>("305", "Use Proxy");
+    table[16] = pair<string, string>("306", "Switch Proxy");
+    table[17] = pair<string, string>("307", "Temporary Redirect");
+    table[18] = pair<string, string>("308", "Permanent Redirect");
+
+    // 출력
+    for (int i = 0; i < 19; ++i) {
+        cout << table[i].first << ": " << table[i].second << endl;
     }
-
-
 }
 // int main(){
 //     unordered_map<int,string>_data;
