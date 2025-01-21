@@ -18,7 +18,7 @@ class ErrorResponse{
 
 		void	_setContentTypeHeader(std::string& header);
         void	_setContentTypeHeader(std::string& header, const std::string& type);
-		void    _setConnectionHeader(std::string& header);
+		void    _setConnectionHeader(std::string& header, const std::string& connectionVal);
         void	_setContentLengthHeader(std::string& header, const size_t& size);
         void	_setContentLengthHeader(std::string& header, const std::streampos& size);
 };

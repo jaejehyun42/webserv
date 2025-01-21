@@ -33,35 +33,62 @@ enum eData{
     __cgiPass,
     __cgiEnvData // requestCgiPath, requestQuery, requestContentLength, requestContentType, pathRoot
 };
-int main(){
-   pair<string, string> table[19];
-    cout<<sizeof(table);
-    // 각 pair 객체를 생성자 사용하여 초기화
-    table[0] = pair<string, string>("200", "OK");
-    table[1] = pair<string, string>("201", "Created");
-    table[2] = pair<string, string>("202", "Accepted");
-    table[3] = pair<string, string>("203", "Non-Authoritative Information");
-    table[4] = pair<string, string>("204", "No Content");
-    table[5] = pair<string, string>("205", "Reset Content");
-    table[6] = pair<string, string>("206", "Partial Content");
-    table[7] = pair<string, string>("207", "Multi-Status");
-    table[8] = pair<string, string>("208", "Already Reported");
-    table[9] = pair<string, string>("226", "IM Used");
-    table[10] = pair<string, string>("300", "Multiple Choices");
-    table[11] = pair<string, string>("301", "Moved Permanently");
-    table[12] = pair<string, string>("302", "Found");
-    table[13] = pair<string, string>("303", "See Other");
-    table[14] = pair<string, string>("304", "Not Modified");
-    table[15] = pair<string, string>("305", "Use Proxy");
-    table[16] = pair<string, string>("306", "Switch Proxy");
-    table[17] = pair<string, string>("307", "Temporary Redirect");
-    table[18] = pair<string, string>("308", "Permanent Redirect");
+#include <sys/types.h>
+#include <sys/event.h>
+#include <sys/time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
 
-    // 출력
-    for (int i = 0; i < 19; ++i) {
-        cout << table[i].first << ": " << table[i].second << endl;
+int main() {
+    // kqueue 생성
+    int kq = kqueue();
+    if (kq == -1) {
+        perror("kqueue");
+        exit(EXIT_FAILURE);
     }
+
+    // 감시할 파일 열기
+    int fd = open("test.cpp", O_RDONLY);
+    if (fd == -1) {
+        perror("open");
+        exit(EXIT_FAILURE);
+    }
+
+    // kevent 구조체 설정
+    struct kevent change;
+    EV_SET(&change, fd, EVFILT_VNODE, EV_ADD | EV_ENABLE, NOTE_WRITE, 0, NULL);
+
+    // 이벤트 등록
+    if (kevent(kq, &change, 1, NULL, 0, NULL) == -1) {
+        perror("kevent");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Watching for changes in 'example.txt'...\n");
+    try{
+        while (1) {
+            struct kevent event;
+            int nev = kevent(10, NULL, 0, &event, 1, NULL);
+            if (nev == -1) {
+                throw runtime_error("Error: kevent ");
+            } else if (nev > 0) {
+                if (event.filter == EVFILT_VNODE) {
+                    if (event.fflags & NOTE_WRITE) {
+                        printf("File 'example.txt' was modified!\n");
+                    }
+                }
+            }
+        }
+    }catch(const exception& e){
+        cout<<e.what();
+    }
+    close(fd);
+    close(kq);
+    return 0;
 }
+
 // int main(){
 //     unordered_map<int,string>_data;
 //     string  _message;
