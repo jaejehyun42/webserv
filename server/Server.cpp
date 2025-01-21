@@ -103,9 +103,19 @@ void Server::_setEvent(int fd, int filter, int flags)
 	_client[fd].updateTime();
 }
 
-void Server::_sendError(int fd, const string& status, const string& phrase)
+void Server::_sendError(int fd, const string& status, const string& phrase, const ServConf& conf)
 {
-	string error = "<!DOCTYPE html>\n"
+	string error;
+	const string& root = conf.getServBlock(_client[fd].getIndex()).getRoot();
+	const unordered_map<long, string>& temp = conf.getServBlock(_client[fd].getIndex()).getErrorPage();
+	unordered_map<long, string>::const_iterator it = temp.find(strtol(status.c_str(), NULL, 10));
+
+	if (it != temp.end())
+	{
+		ifstream ifs(root + it->second);
+		if (!ifs)
+		{
+			error = "<!DOCTYPE html>\n"
 					"<head>\n"
 					"	<title>Error</title>\n"
 					"</head>\n"
@@ -114,6 +124,25 @@ void Server::_sendError(int fd, const string& status, const string& phrase)
 					"	<p>" + status + phrase + "</p>\n"
 					"</body>\n"
 					"</html>";
+		}
+		else
+		{
+			;
+		}
+	}
+	else
+	{
+		error = "<!DOCTYPE html>\n"
+				"<head>\n"
+				"	<title>Error</title>\n"
+				"</head>\n"
+				"<body>\n"
+				"	<h1>" + status + "</h1>\n"
+				"	<p>" + status + phrase + "</p>\n"
+				"</body>\n"
+				"</html>";
+	}
+
 
 	string response = "HTTP/1.1" + status + phrase + "\r\n"
 					"Content-Type: text/html\r\n"
@@ -165,7 +194,7 @@ void Server::readClient(int fd, const ServConf& conf)
 	{
 		headerEnd += 4;
 		if (headerEnd > 8192)
-			return _sendError(fd, "431", "Request Header Fields Too Large");
+			return _sendError(fd, "431", "Request Header Fields Too Large", conf);
 		string header = message.substr(0, headerEnd);
 		size_t lenPos = header.find("Content-Length:");
 		size_t chunkPos = header.find("Transfer-Encoding: chunked");
@@ -178,7 +207,7 @@ void Server::readClient(int fd, const ServConf& conf)
 			long contentLength = strtol(header.substr(start, end - start).c_str(), NULL, 10);
 
 			if (static_cast<size_t>(contentLength) > maxSize)
-				return _sendError(fd, "413", "Request Entity Too Large");
+				return _sendError(fd, "413", "Request Entity Too Large", conf);
 			if (bodySize >= static_cast<size_t>(contentLength))
 				_setEvent(fd, EVFILT_WRITE, EV_ADD | EV_ENABLE);
 		}
@@ -201,7 +230,7 @@ void Server::readClient(int fd, const ServConf& conf)
 
 				pos += chunkSize + 2;
 				if (pos > maxSize)
-					return _sendError(fd, "413", "Request Entity Too Large");
+					return _sendError(fd, "413", "Request Entity Too Large", conf);
 			}
 		}
 		else

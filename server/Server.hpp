@@ -46,7 +46,7 @@ private:
 	void _setSocket(const vector<ServBlock>& serv);
 	void _setKqueue();
 	void _setEvent(int fd, int filter, int flags);
-	void _sendError(int fd, const string& status, const string& phrase);
+	void _sendError(int fd, const string& status, const string& phrase, const ServConf& conf);
 	void _printLog(int fd, const string& one, const string& two, const string& color);
 public:
 	Server(ServConf& servConf);
