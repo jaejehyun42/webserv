@@ -47,15 +47,18 @@ void Request::_parseKey(const string& key)
 
 void Request::_parseHost(const string& value)
 {
-		if (_headers.find("Host") != _headers.end()) // Host 헤더는 2개 이상일 수 없음
-			_setError(400);
+	if (value.empty() || value[0] == '\t') // Host 헤더의 value 체크
+		_setError(400);
 
-		istringstream stream(value);
+	if (_headers.find("Host") != _headers.end()) // Host 헤더는 2개 이상일 수 없음
+		_setError(400);
 
-		string str;
-		stream >> str;
-		if (stream >> str) // Host 헤더에는 value가 2개 이상일 수 없음
-			_setError(400);
+	istringstream stream(value);
+
+	string str;
+	stream >> str;
+	if (stream >> str) // Host 헤더에는 value가 2개 이상일 수 없음
+		_setError(400);
 }
 
 void Request::_parseMethodChkHost()

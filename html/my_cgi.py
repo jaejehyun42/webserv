@@ -222,10 +222,7 @@ if content == "":
     <title>{title}</title>
 </head>
 <body>
-    <h1>{title}</h1>
-    <p>Request Method: {request_method}</p>
-    <p>PATH_INFO: {path_info}</p>
-    <p>{params}</p>
+    <h1>{params}</h1>
 </body>
 </html>
 """
