@@ -81,14 +81,6 @@ void LocBlock::_parseLine(vector<string>& tokens)
 		}
 		else if (key == "return")
 		{
-<<<<<<< Updated upstream
-			char* end;
-			long code = strtol(tokens[1].c_str(), &end, 10);
-			if (code < 0 || *end != '\0')
-				throw runtime_error("Error: 구성 요소의 값이 잘못 되었습니다.");
-
-=======
->>>>>>> Stashed changes
 			_return.first = tokens[1];
 			_return.second = tokens[2];
 			if (_return.first.front() == '4' || _return.first.front() == '5')
