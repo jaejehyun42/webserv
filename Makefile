@@ -2,7 +2,7 @@
 NAME = Webserv
 
 CC =		c++
-CFLAG =		-Wall -Wextra -Werror -std=c++98 -g -fsanitize=address
+CFLAG =		-Wall -Wextra -Werror -std=c++98
 
 #------COLORS------#
 RED =		\033[0;31m
