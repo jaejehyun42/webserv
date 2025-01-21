@@ -32,18 +32,18 @@ int Server::_initSocket(const char* domain, const char* port)
 
 	int status = getaddrinfo(domain, port, &_hints, &res);
 	if (status != 0)
-		throw runtime_error("Error: getaddrinfo: " + string(gai_strerror(status)));
+		throw runtime_error("\rError: getaddrinfo: " + string(gai_strerror(status)));
 
 	int tmpfd;
 	for (p = res; p != NULL; p = p->ai_next)
 	{
 		tmpfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
 		if (tmpfd == -1) 
-			throw runtime_error("Error: socket: " + string(strerror(errno)));
+			throw runtime_error("\rError: socket: " + string(strerror(errno)));
 
 		int opt = 1;
 		if (setsockopt(tmpfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) == -1)
-			throw runtime_error("Error: setsockopt: " + string(strerror(errno)));
+			throw runtime_error("\rError: setsockopt: " + string(strerror(errno)));
 
 		if (::bind(tmpfd, p->ai_addr, p->ai_addrlen) == 0)
 			break ;
@@ -52,10 +52,10 @@ int Server::_initSocket(const char* domain, const char* port)
 	}
 	freeaddrinfo(res);
 	if (p == NULL)
-		throw runtime_error("Error: Failed to bind with following domain: " + string(domain));
+		throw runtime_error("\rError: Failed to bind with following domain: " + string(domain));
 
 	if (listen(tmpfd, MAX_EVENTS) == -1)
-		throw runtime_error("Error: listen: " + string(strerror(errno)));
+		throw runtime_error("\rError: listen: " + string(strerror(errno)));
 
 	return (tmpfd);
 }
@@ -82,7 +82,7 @@ void Server::_setKqueue()
 {
 	_kq = kqueue();
 	if (_kq == -1)
-		throw runtime_error("Error: kqueue: " + string(strerror(errno)));
+		throw runtime_error("\rError: kqueue: " + string(strerror(errno)));
 	_evList.resize(MAX_EVENTS);
 
 	for (unordered_map<int, int>::iterator it = _server.begin(); it != _server.end(); it++)
@@ -90,7 +90,7 @@ void Server::_setKqueue()
 		struct kevent evSet;
 		EV_SET(&evSet, it->first, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 		if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
-			throw runtime_error("Error: kevent: " + string(strerror(errno)));
+			throw runtime_error("\rError: kevent: " + string(strerror(errno)));
 	}
 }
 
@@ -98,8 +98,19 @@ void Server::_setEvent(int fd, int filter, int flags)
 {
 	struct kevent evSet;
 	EV_SET(&evSet, fd, filter, flags, 0, 0, NULL);
-	if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
-		throw runtime_error("Error: kevent: " + string(strerror(errno)));
+	try
+	{
+		if (kevent(_kq, &evSet, 1, NULL, 0, NULL) == -1)
+		{
+			cerr << '\r' << fd << ": " << filter << ", " << flags << endl;
+			throw runtime_error("Error: HERE: " + string(strerror(errno)));
+		}
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
+	
 	_client[fd].updateTime();
 }
 
@@ -111,7 +122,7 @@ string getErrorPage(const std::string& status, const std::string& phrase)
 					"</head>\n"
 					"<body>\n"
 					"	<h1>" + status + "</h1>\n"
-					"	<p>" + status + phrase + "</p>\n"
+					"	<p>" + status + " " + phrase + "</p>\n"
 					"</body>\n"
 					"</html>";
 	return (error);
@@ -140,7 +151,7 @@ void Server::_sendError(int fd, const string& status, const string& phrase, cons
 		error = getErrorPage(status, phrase);
 
 
-	string response = "HTTP/1.1" + status + phrase + "\r\n"
+	string response = "HTTP/1.1 " + status + " " + phrase + "\r\n"
 					"Content-Type: text/html\r\n"
 					"Content-Length: " + std::to_string(error.size()) + "\r\n"
 					"\r\n" +
@@ -157,9 +168,9 @@ void Server::acceptClient(int fd)
 
 	int client_fd = accept(fd, (struct sockaddr*)&addr, &addr_len);
 	if (client_fd == -1)
-		throw runtime_error("Error: accept: " + string(strerror(errno)));
+		throw runtime_error("\rError: accept: " + string(strerror(errno)));
 	if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
-		throw runtime_error("Error: fcntl(F_SETFL, O_NONBLOCK)");
+		throw runtime_error("\rError: fcntl(F_SETFL, O_NONBLOCK)");
 
 	char ip[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, &addr.sin_addr, ip, sizeof(ip));
@@ -167,6 +178,7 @@ void Server::acceptClient(int fd)
 
 	_client[client_fd] = Client(port, getServerIdx(fd), ip);
 	_setEvent(client_fd, EVFILT_READ, EV_ADD | EV_ENABLE);
+	_setEvent(client_fd, EVFILT_WRITE, EV_ADD | EV_DISABLE);
 
 	_printLog(client_fd, "Connected", "", YELLOW);
 }
@@ -175,12 +187,13 @@ void Server::readClient(int fd, const ServConf& conf)
 {
 	char buffer[1024] = {0};
 
-	ssize_t size = read(fd, buffer, sizeof(buffer));
+	ssize_t size = read(fd, buffer, sizeof(buffer) - 1);
 	if (size <= 0)
 	{
 		closeClient(fd);
 		return ;
 	}
+	buffer[size] = '\0';
 	_client[fd].setMessage(buffer);
 	
 	const string& message = _client[fd].getMessage();
@@ -205,7 +218,7 @@ void Server::readClient(int fd, const ServConf& conf)
 			if (static_cast<size_t>(contentLength) > maxSize)
 				return _sendError(fd, "413", "Request Entity Too Large", conf);
 			if (bodySize >= static_cast<size_t>(contentLength))
-				_setEvent(fd, EVFILT_WRITE, EV_ADD | EV_ENABLE);
+				return _setEvent(fd, EVFILT_WRITE, EV_ENABLE);
 		}
 		else if (chunkPos != string::npos)
 		{
@@ -222,7 +235,7 @@ void Server::readClient(int fd, const ServConf& conf)
 				pos = end;
 
 				if (chunkSize == 0 && body.substr(pos, 4) == "\r\n\r\n")
-					_setEvent(fd, EVFILT_WRITE, EV_ADD | EV_ENABLE);
+					return _setEvent(fd, EVFILT_WRITE, EV_ENABLE);
 
 				pos += chunkSize + 2;
 				if (pos > maxSize)
@@ -230,7 +243,7 @@ void Server::readClient(int fd, const ServConf& conf)
 			}
 		}
 		else
-			_setEvent(fd, EVFILT_WRITE, EV_ADD | EV_ENABLE);
+			return _setEvent(fd, EVFILT_WRITE, EV_ENABLE);
 	}
 }
 
@@ -246,12 +259,16 @@ void Server::sendClient(int fd, const ServConf& conf)
 		_printLog(fd, req.getMethod(), req.getUrl(), BLUE);
 		if (write(fd, res.getMessage().c_str(), res.getMessage().size()) <= 0)
 			closeClient(fd);
-
-		_setEvent(fd, EVFILT_WRITE, EV_DELETE);
-		if (req.chkConnection())
-			closeClient(fd);
 		else
-			it->second.setMessage("");
+		{
+			_setEvent(fd, EVFILT_WRITE, EV_DISABLE);
+			if (req.chkConnection())
+				closeClient(fd);
+			else
+			{
+				it->second.setMessage("");
+			}
+		}
 	}
 }
 
@@ -321,7 +338,7 @@ int Server::getKevent()
 {
 	int nev = kevent(_kq, NULL, 0, _evList.data(), MAX_EVENTS, &_timeout);
 	if (nev == -1)
-		throw runtime_error("kevent: " + string(strerror(errno)));
+		throw runtime_error("\rError: kevent: " + string(strerror(errno)));
 	return (nev);
 }
 
