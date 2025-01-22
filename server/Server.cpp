@@ -208,10 +208,11 @@ void Server::readClient(int fd, const ServConf& conf)
 			size_t bodySize = msgSize - headerEnd;
 			long contentLength = strtol(header.substr(start, end - start).c_str(), NULL, 10);
 
+			cout << "\r" << contentLength << ", " << bodySize << endl;
 			if (static_cast<size_t>(contentLength) > maxSize)
-				return _sendError(fd, "413", "Request Entity Too Large", conf);
-			if (bodySize >= static_cast<size_t>(contentLength))
-				return _setEvent(fd, EVFILT_WRITE, EV_ENABLE);
+				_sendError(fd, "413", "Request Entity Too Large", conf);
+			else if (bodySize >= static_cast<size_t>(contentLength))
+				_setEvent(fd, EVFILT_WRITE, EV_ENABLE);
 		}
 		else if (chunkPos != string::npos)
 		{
@@ -228,15 +229,17 @@ void Server::readClient(int fd, const ServConf& conf)
 				pos = end;
 
 				if (chunkSize == 0 && body.substr(pos, 4) == "\r\n\r\n")
-					return _setEvent(fd, EVFILT_WRITE, EV_ENABLE);
-
-				pos += chunkSize + 2;
-				if (pos > maxSize)
-					return _sendError(fd, "413", "Request Entity Too Large", conf);
+					_setEvent(fd, EVFILT_WRITE, EV_ENABLE);
+				else
+				{
+					pos += chunkSize + 2;
+					if (pos > maxSize)
+						_sendError(fd, "413", "Request Entity Too Large", conf);
+				}
 			}
 		}
 		else
-			return _setEvent(fd, EVFILT_WRITE, EV_ENABLE);
+			_setEvent(fd, EVFILT_WRITE, EV_ENABLE);
 	}
 }
 

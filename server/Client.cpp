@@ -12,7 +12,10 @@ Client::Client(int port, int index, const string& ip) : _port(port), _index(inde
 	_size = 0;
 }
 
-Client::~Client() {}
+Client::~Client()
+{
+	_message.clear();
+}
 
 void Client::updateTime()
 {
@@ -23,6 +26,7 @@ void Client::setMessage(const string& message, size_t size)
 {
 	if (message == "")
 	{
+		_message.clear();
 		_message = "";
 		_size = 0;
 	}
