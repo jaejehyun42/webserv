@@ -183,7 +183,7 @@ void	Body::_execCgiProc(int* cgiReadFd, int* cgiWriteFd){
 		envp.push_back(const_cast<char*>(_data.at(__cgiPath).c_str()));
 	if (_data.find(__cgiQuery) != _data.end())
 		envp.push_back(const_cast<char*>(_data.at(__cgiQuery).c_str()));
-	envp.push_back(nullptr);
+	envp.push_back(NULL);
 //prt
 	// for(int i=0;argv[i]!=0;i++)
 	// 	std::cerr<<"argv: "<<argv[i]<<"\n";

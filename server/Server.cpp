@@ -141,9 +141,11 @@ void Server::_sendError(int fd, const string& status, const string& phrase, cons
 		error = getErrorPage(status, phrase);
 
 
+	ostringstream oss;
+	oss << error.size();
 	string response = "HTTP/1.1 " + status + " " + phrase + "\r\n"
 					"Content-Type: text/html\r\n"
-					"Content-Length: " + std::to_string(error.size()) + "\r\n"
+					"Content-Length: " + oss.str() + "\r\n"
 					"\r\n" +
 					error;
 
