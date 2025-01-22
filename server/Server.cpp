@@ -186,9 +186,10 @@ void Server::readClient(int fd, const ServConf& conf)
 		return ;
 	}
 	buffer[size] = '\0';
-	_client[fd].setMessage(buffer);
+	_client[fd].setMessage(buffer, size);
 	
 	const string& message = _client[fd].getMessage();
+	size_t msgSize = _client[fd].getSize();
 	size_t headerEnd = message.find("\r\n\r\n");
 	size_t maxSize = conf.getServBlock(_client[fd].getIndex()).getMaxSize();
 	if (headerEnd != string::npos)
@@ -204,7 +205,7 @@ void Server::readClient(int fd, const ServConf& conf)
 		{
 			size_t start = lenPos + 16;
 			size_t end = header.find("\r\n", start);
-			size_t bodySize = message.size() - headerEnd;
+			size_t bodySize = msgSize - headerEnd;
 			long contentLength = strtol(header.substr(start, end - start).c_str(), NULL, 10);
 
 			if (static_cast<size_t>(contentLength) > maxSize)
@@ -257,7 +258,7 @@ void Server::sendClient(int fd, const ServConf& conf)
 			if (req.chkConnection())
 				closeClient(fd);
 			else
-				it->second.setMessage("");
+				it->second.setMessage("", 0);
 		}
 	}
 }
