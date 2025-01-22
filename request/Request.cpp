@@ -134,14 +134,14 @@ void Request::_parseUrl()
 	if (!_url.empty() && _url[0] != '/') // Url이 존재하는데 / 로 시작하지 않는다면 오류
 		_setError(400);
 
+	size_t end_pos = _url.size() - 1;
+	if (end_pos && _url[end_pos] == '/') // 마지막 '/' 삭제
+		_url.erase(end_pos, 1);
+
 	int start = 0;
 	for (int i = 0; _url[i] == '/'; ++i) // Url 시작이 '/'이 연속되면 하나 빼고 무시
 		start++;
 	start--;
-	
-	size_t end_pos = _url.size() - 1;
-	if (end_pos && _url[end_pos] == '/') // 마지막 '/' 삭제
-		_url.erase(end_pos, 1);
 
 	size_t delim_pos = _url.find('?'); // 쿼리 구분자 체크
 

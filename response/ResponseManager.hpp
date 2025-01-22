@@ -43,7 +43,7 @@ class ResponseManager{
 		void        _setCgiEnv();
         void        _setContentType();
 
-        void    _checkPathIsDir(std::string& path, struct stat& pathStatus, const LocBlock& locationBlock);
+        void    _checkPathIsDir(std::string& path, struct stat& pathStatus, const LocBlock* locationBlock);
         void    _checkPathStatus(const std::string& path, struct stat& pathStatus);
         void    _checkRequest();
         void    _checkRequestBody();

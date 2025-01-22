@@ -102,14 +102,16 @@ void    ResponseManager::_checkPathStatus(const std::string& path, struct stat& 
     }
 }
 
-void    ResponseManager::_checkPathIsDir(std::string& path, struct stat& pathStatus, const LocBlock& locationBlock){
+void    ResponseManager::_checkPathIsDir(std::string& path, struct stat& pathStatus, const LocBlock* locationBlock){
     std::string           savedPath = path;
     int                   savedErrno = errno;
     std::vector<string>   indexs;
     
     if (!S_ISDIR(pathStatus.st_mode))
         return ;
-    indexs = locationBlock.getIndex();
+    if (!locationBlock)
+        throw std::runtime_error("404");
+    indexs = locationBlock->getIndex();
     if (indexs.size()){
         for(size_t i=0; i<indexs.size(); i++){
             path = savedPath;
@@ -125,7 +127,7 @@ void    ResponseManager::_checkPathIsDir(std::string& path, struct stat& pathSta
         }
         errno = savedErrno;
     }
-    if (locationBlock.getAutoindex()){
+    if (locationBlock->getAutoindex()){
         _data[__autoindex] = "on";
         _data[__contentType] = "text/html";
         return ;
@@ -139,6 +141,8 @@ void    ResponseManager::_setPath(){
     std::map<string, LocBlock>::const_iterator it; // it->first : locationIdentifier, it->second : locationBlock
     size_t i = path.find(".py");
 //location 블럭 식별
+    if (path == "")
+        path = "/";
     if (i != std::string::npos && \
         ((path.size() > i + 3 && path[i + 3] == '/') || path.substr(i, path.size()) == ".py")){
         it =  _sb.getPathIter(".py"); //py block
@@ -146,7 +150,7 @@ void    ResponseManager::_setPath(){
             throw std::runtime_error("400");
     }
     else{
-        it =  _sb.getPathIter(path); // others
+        it = _sb.getPathIter(path); // others
         if (_data[__requestMethod] == "POST" || _data[__requestMethod] == "DELETE") //post나 delete인데 py블럭이 아니면 400 error
             throw std::runtime_error("400");
     }
@@ -210,7 +214,10 @@ void    ResponseManager::_setPath(){
     }
     else{
         _checkPathStatus(path, pathStatus);
-        _checkPathIsDir(path, pathStatus, it->second);
+        if (it != _sb.getPath().end())
+            _checkPathIsDir(path, pathStatus, &it->second);
+        else
+            _checkPathIsDir(path, pathStatus, NULL);
     }
 }
 
