@@ -151,6 +151,7 @@ void Server::_sendError(int fd, const string& status, const string& phrase, cons
 
 	if (write(fd, response.c_str(), response.size()) <= 0)
 		closeClient(fd);
+	closeClient(fd);
 }
 
 void Server::acceptClient(int fd)
@@ -208,7 +209,6 @@ void Server::readClient(int fd, const ServConf& conf)
 			size_t bodySize = msgSize - headerEnd;
 			long contentLength = strtol(header.substr(start, end - start).c_str(), NULL, 10);
 
-			cout << "\r" << contentLength << ", " << bodySize << endl;
 			if (static_cast<size_t>(contentLength) > maxSize)
 				_sendError(fd, "413", "Request Entity Too Large", conf);
 			else if (bodySize >= static_cast<size_t>(contentLength))
@@ -261,7 +261,7 @@ void Server::sendClient(int fd, const ServConf& conf)
 			if (req.chkConnection())
 				closeClient(fd);
 			else
-				it->second.setMessage("", 0);
+				it->second.setMessage(NULL, 0);
 		}
 	}
 }

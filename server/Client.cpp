@@ -22,9 +22,9 @@ void Client::updateTime()
 	_lastTime = time(NULL);
 }
 
-void Client::setMessage(const string& message, size_t size)
+void Client::setMessage(char* message, size_t size)
 {
-	if (message == "")
+	if (size == 0)
 	{
 		_message.clear();
 		_message = "";
@@ -32,7 +32,8 @@ void Client::setMessage(const string& message, size_t size)
 	}
 	else
 	{
-		_message.append(message);
+		for (size_t i = 0; i < size; i++)
+			_message.push_back(message[i]);
 		_size += size;
 	}
 }
