@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <unordered_map>
+#include <map>
 #include <algorithm>
 #include <iterator>
 #include <string>
@@ -23,7 +23,7 @@ class Request
 		string _scriptPath;
 		string _cgiPath;
 		string _version;
-		unordered_map<string, string> _headers;	
+		map<string, string> _headers;	
 		string _body;
 		string _errorMessage;
 		string _errorCode;
@@ -51,12 +51,12 @@ class Request
 		string getScriptPath() const;
 		string getCgiPath() const;
 		string getVersion() const;
-		unordered_map<string, string> getHeaders() const;
+		map<string, string> getHeaders() const;
 		string getBody() const;
 		string getErrorMessage() const;
 		string getErrorCode() const;
 
 		bool chkConnection() const;
 		
-		typedef unordered_map<string, string>::const_iterator umap_it;
+		typedef map<string, string>::const_iterator umap_it;
 };

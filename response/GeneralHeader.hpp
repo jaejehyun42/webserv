@@ -19,11 +19,11 @@ general header:
 
 class GeneralHeader{
     public:
-        GeneralHeader(const std::unordered_map<int, std::string>& data);
+        GeneralHeader(const std::map<int, std::string>& data);
         ~GeneralHeader();
         string  getMessage() const;
     private:
-        const std::unordered_map<int, std::string>& _data;
+        const std::map<int, std::string>& _data;
         string  _message;
         void    _setMessage();
         void    _setConnection();

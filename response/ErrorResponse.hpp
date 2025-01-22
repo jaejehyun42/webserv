@@ -8,12 +8,12 @@ class ErrorResponse{
     public:
         ErrorResponse();
         ~ErrorResponse();
-        void            setMessage(const std::unordered_map<int, std::string>& data);
+        void            setMessage(const std::map<int, std::string>& data);
         const std::string    getMessage();
     private:
         std::string          _message;
-		void    _makeErrorMessage(const std::unordered_map<int, std::string>& data);
-		void    _makeErrorMessageFromErrorPage(std::ifstream& ifs, const std::unordered_map<int, std::string>& data);
+		void    _makeErrorMessage(const std::map<int, std::string>& data);
+		void    _makeErrorMessageFromErrorPage(std::ifstream& ifs, const std::map<int, std::string>& data);
 		void    _makeErrorMessageBody(std::string& body, const std::string& statusCode, const std::string& reasonPhrase);
 
 		void	_setContentTypeHeader(std::string& header);

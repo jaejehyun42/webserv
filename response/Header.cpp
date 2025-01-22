@@ -3,7 +3,7 @@
 #include "ResponseHeader.hpp"
 #include "EntityHeader.hpp"
 
-Header::Header(const std::unordered_map<int, std::string>& data) : _data(data){
+Header::Header(const std::map<int, std::string>& data) : _data(data){
     _setMessage();
 }
 

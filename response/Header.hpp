@@ -2,7 +2,7 @@
 #define __HEADER_H_
 
 #include <string>
-#include <unordered_map>
+#include <map>
 
 /* synopsis
 
@@ -15,11 +15,11 @@ header :
 
 class Header{
     public:
-        Header(const std::unordered_map<int, std::string>& data);
+        Header(const std::map<int, std::string>& data);
         ~Header();
         std::string  getMessage();
     private:
-        const std::unordered_map<int, std::string>& _data;
+        const std::map<int, std::string>& _data;
         std::string              _message;
         void                _setMessage();
 };

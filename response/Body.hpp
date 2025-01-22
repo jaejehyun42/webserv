@@ -2,7 +2,7 @@
 #define __BODY_H__
 
 #include <string>
-#include <unordered_map>
+#include <map>
 
 /* synopsis
 
@@ -12,11 +12,11 @@ message body:
 
 class Body{
     public:
-        Body(std::unordered_map<int, std::string>& data);
+        Body(std::map<int, std::string>& data);
         ~Body();
         std::string  getMessage();
     private:
-        std::unordered_map<int, std::string>& _data;
+        std::map<int, std::string>& _data;
         std::string _message;
 
         void    _setMessage();

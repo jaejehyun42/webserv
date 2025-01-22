@@ -2,7 +2,7 @@
 #define __STATUSLINE_H__
 
 #include <string>
-#include <unordered_map>
+#include <map>
 
 /* synopsis
 
@@ -56,11 +56,11 @@ Server error : 5xx
 
 class StatusLine{
     public:
-        StatusLine(std::unordered_map<int, std::string>& data);
+        StatusLine(std::map<int, std::string>& data);
         ~StatusLine();
         std::string getMessage();
     private:
-        std::unordered_map<int, std::string>& _data;
+        std::map<int, std::string>& _data;
         std::string         _message;
         std::string         _httpVersion;
 

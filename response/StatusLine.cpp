@@ -1,9 +1,9 @@
 #include <errno.h>
-#include <unordered_map>
+#include <map>
 #include "StatusLine.hpp"
 #include "ResponseManager.hpp"
 
-StatusLine::StatusLine(std::unordered_map<int, std::string>& data)
+StatusLine::StatusLine(std::map<int, std::string>& data)
 : _data(data), _httpVersion("HTTP/1.1"){
     _setMessage();
 }

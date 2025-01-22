@@ -1,6 +1,6 @@
 #include "ResponseHeader.hpp"
 
-ResponseHeader::ResponseHeader(const std::unordered_map<int, std::string>& data)
+ResponseHeader::ResponseHeader(const std::map<int, std::string>& data)
 : _data(data){
     (void)_data;
     _setMessage();

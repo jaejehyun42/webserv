@@ -3,7 +3,7 @@
 
 #include "Response.hpp"
 #include <string>
-#include <unordered_map>
+#include <map>
 
 enum eData{
     __statusCode,
@@ -37,7 +37,7 @@ class ResponseManager{
         void            printAllData();
     private:
         void        _setData();
-        const std::unordered_map<int, std::string>& _setErrorData(const std::string& errCode, const std::string& reasonPhrase);
+        const std::map<int, std::string>& _setErrorData(const std::string& errCode, const std::string& reasonPhrase);
         void        _setMessage();
         void        _setPath();
 		void        _setCgiEnv();
@@ -55,7 +55,7 @@ class ResponseManager{
         const Request&      _req;
         const ServConf&     _conf;
         const ServBlock&    _sb;
-        std::unordered_map<int,string>  _data;
+        std::map<int,string>  _data;
         std::string                     _message;
 };
 

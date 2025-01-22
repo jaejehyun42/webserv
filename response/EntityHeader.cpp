@@ -3,7 +3,7 @@
 #include <time.h>
 #include "EntityHeader.hpp"
 
-EntityHeader::EntityHeader(const std::unordered_map<int, std::string>& data)
+EntityHeader::EntityHeader(const std::map<int, std::string>& data)
 : _data(data){
     _setMessage();
 }

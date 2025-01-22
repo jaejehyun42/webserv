@@ -2,7 +2,7 @@
 # define SERVCONF_HPP
 
 #include <vector>
-#include <unordered_map>
+#include <map>
 #include <fstream>
 #include <iostream>
 #include <exception>
@@ -17,7 +17,7 @@ class ServConf
 private:
 	long _aliveTime;
 	vector<ServBlock> _serv;
-	unordered_map<string, string> _mime;
+	map<string, string> _mime;
 
 	void _includeFile(const string& fileName);
 	void _parseMime(ifstream& file);

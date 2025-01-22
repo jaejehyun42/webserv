@@ -289,7 +289,7 @@ string Request::getVersion() const
 	return (_version);
 }
 
-unordered_map<string, string> Request::getHeaders() const
+map<string, string> Request::getHeaders() const
 {
 	return (_headers);
 }

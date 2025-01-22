@@ -1,5 +1,5 @@
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <fstream>
 #include "ErrorResponse.hpp"
 
@@ -12,7 +12,7 @@ const std::string    ErrorResponse::getMessage(){
     return (_message);
 }
 
-void    ErrorResponse::setMessage(const std::unordered_map<int, std::string>& data){
+void    ErrorResponse::setMessage(const std::map<int, std::string>& data){
     _message = "HTTP/1.1 " + data.at(__statusCode) + " " + data.at(__reasonPhrase) + "\r\n";
 
     if (data.find(__path) != data.end() && data.at(__path).empty()){ //error page가 없는경우
@@ -26,7 +26,7 @@ void    ErrorResponse::setMessage(const std::unordered_map<int, std::string>& da
         _makeErrorMessageFromErrorPage(ifs, data);
 }
 
-void    ErrorResponse::_makeErrorMessage(const std::unordered_map<int, std::string>& data){
+void    ErrorResponse::_makeErrorMessage(const std::map<int, std::string>& data){
     std::string header;
     std::string body;
 
@@ -37,7 +37,7 @@ void    ErrorResponse::_makeErrorMessage(const std::unordered_map<int, std::stri
     _message += header + "\r\n" + body;
 }
 
-void    ErrorResponse::_makeErrorMessageFromErrorPage(std::ifstream& ifs, const std::unordered_map<int, std::string>& data){
+void    ErrorResponse::_makeErrorMessageFromErrorPage(std::ifstream& ifs, const std::map<int, std::string>& data){
     ifs.seekg(0, std::ios::end);
     std::streampos size = ifs.tellg();
     ifs.seekg(0, std::ios::beg);

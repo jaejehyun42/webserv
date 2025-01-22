@@ -1,7 +1,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <exception>
-#include <unordered_map>
+#include <map>
 #include <vector>
 #include <fstream>
 #include "ResponseManager.hpp"
@@ -65,14 +65,14 @@ void    ResponseManager::_setData(){
     _setCgiEnv();
 }
 
-const std::unordered_map<int, std::string>& ResponseManager::_setErrorData(const std::string& errCode, const std::string& reasonPhrase){
+const std::map<int, std::string>& ResponseManager::_setErrorData(const std::string& errCode, const std::string& reasonPhrase){
     _data[__statusCode] = errCode;
     _data[__reasonPhrase] = reasonPhrase;
     if (_data.find(__connection) == _data.end())
         _checkRequestConnection();
 
-    const std::unordered_map<long, string>& errPageMap = _sb.getErrorPage();
-	std::unordered_map<long, string>::const_iterator it = errPageMap.find(strtol(_data[__statusCode].c_str(), 0, 10));
+    const std::map<long, string>& errPageMap = _sb.getErrorPage();
+	std::map<long, string>::const_iterator it = errPageMap.find(strtol(_data[__statusCode].c_str(), 0, 10));
     if (it != errPageMap.end())
         _data[__path] = _sb.getRoot() + "/" + it->second;
     else
@@ -136,7 +136,7 @@ void    ResponseManager::_checkPathIsDir(std::string& path, struct stat& pathSta
 void    ResponseManager::_setPath(){
     string      path = _req.getPath();
     struct stat pathStatus;
-    std::unordered_map<string, LocBlock>::const_iterator it; // it->first : locationIdentifier, it->second : locationBlock
+    std::map<string, LocBlock>::const_iterator it; // it->first : locationIdentifier, it->second : locationBlock
     size_t i = path.find(".py");
 //location 블럭 식별
     if (i != std::string::npos && \
@@ -242,7 +242,7 @@ void ResponseManager::_setCgiEnv(){
     if (_req.getQuery().size())
         _data[__cgiQuery] += "QUERY_STRING=" + _req.getQuery();
 
-    std::unordered_map<std::string, std::string> requestHeaderMap = _req.getHeaders();
+    std::map<std::string, std::string> requestHeaderMap = _req.getHeaders();
     if (requestHeaderMap.find("Content-Length") != requestHeaderMap.end())
         _data[__cgiContentLength] += "CONTENT_LENGTH=" + requestHeaderMap["Content-Length"];
     if (requestHeaderMap.find("Content-Type") != requestHeaderMap.end())
@@ -252,7 +252,7 @@ void ResponseManager::_setCgiEnv(){
 }
 
 void    ResponseManager::_checkRequestConnection(){
-    std::unordered_map<std::string, std::string> requestHeaderMap = _req.getHeaders();
+    std::map<std::string, std::string> requestHeaderMap = _req.getHeaders();
     if (requestHeaderMap.find("Connection") != requestHeaderMap.end())
         _data[__connection] = requestHeaderMap["Connection"];
     else

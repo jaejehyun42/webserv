@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iomanip>
 
-GeneralHeader::GeneralHeader(const std::unordered_map<int, std::string>& data)
+GeneralHeader::GeneralHeader(const std::map<int, std::string>& data)
 : _data(data){
     _setMessage();
 }

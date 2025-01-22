@@ -28,11 +28,11 @@ entity header:
 
 class EntityHeader{
     public:
-        EntityHeader(const std::unordered_map<int, std::string>& data);
+        EntityHeader(const std::map<int, std::string>& data);
         ~EntityHeader();
         string  getMessage() const;
     private:
-        const std::unordered_map<int, std::string>& _data;
+        const std::map<int, std::string>& _data;
         string  _message;
         void    _setMessage();
         void    _setContentType();

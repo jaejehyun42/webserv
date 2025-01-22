@@ -166,7 +166,7 @@ const vector<ServBlock>& ServConf::getServ() const
 
 const string& ServConf::getMime(const string& key) const
 {
-	unordered_map<string, string>::const_iterator cit = _mime.find(key);
+	map<string, string>::const_iterator cit = _mime.find(key);
 	
 	if (cit == _mime.end())
 		cit = _mime.find("default");

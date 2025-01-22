@@ -2,7 +2,7 @@
 # define SERVER_HPP
 
 #include <vector>
-#include <unordered_map>
+#include <map>
 #include <cstring>
 #include <iostream>
 #include <string>
@@ -41,8 +41,8 @@ private:
 	vector<struct kevent> _evList;
 
 	struct addrinfo _hints;
-	unordered_map<int, int> _server;
-	unordered_map<int, Client> _client;
+	map<int, int> _server;
+	map<int, Client> _client;
 
 	void _setAddrInfo();
 	int _initSocket(const char* domain, const char* port);

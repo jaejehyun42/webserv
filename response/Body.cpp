@@ -13,7 +13,7 @@
 #include "Body.hpp"
 #include "ResponseManager.hpp"
 
-Body::Body(std::unordered_map<int, std::string>& data): _data(data){
+Body::Body(std::map<int, std::string>& data): _data(data){
 	_setMessage();
 }
 

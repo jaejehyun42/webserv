@@ -14,7 +14,7 @@ Server::Server(ServConf& sc)
 	
 Server::~Server()
 {
-	for (unordered_map<int, int>::iterator it = _server.begin(); it != _server.end(); it++)
+	for (map<int, int>::iterator it = _server.begin(); it != _server.end(); it++)
 		close(it->first);
 }
 
@@ -85,7 +85,7 @@ void Server::_setKqueue()
 		throw runtime_error("\rError: kqueue: " + string(strerror(errno)));
 	_evList.resize(MAX_EVENTS);
 
-	for (unordered_map<int, int>::iterator it = _server.begin(); it != _server.end(); it++)
+	for (map<int, int>::iterator it = _server.begin(); it != _server.end(); it++)
 	{
 		struct kevent evSet;
 		EV_SET(&evSet, it->first, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
@@ -122,8 +122,8 @@ void Server::_sendError(int fd, const string& status, const string& phrase, cons
 {
 	string error;
 	const string& root = conf.getServBlock(_client[fd].getIndex()).getRoot();
-	const unordered_map<long, string>& temp = conf.getServBlock(_client[fd].getIndex()).getErrorPage();
-	unordered_map<long, string>::const_iterator it = temp.find(strtol(status.c_str(), NULL, 10));
+	const map<long, string>& temp = conf.getServBlock(_client[fd].getIndex()).getErrorPage();
+	map<long, string>::const_iterator it = temp.find(strtol(status.c_str(), NULL, 10));
 
 	if (it != temp.end())
 	{
@@ -239,7 +239,7 @@ void Server::readClient(int fd, const ServConf& conf)
 
 void Server::sendClient(int fd, const ServConf& conf)
 {
-	unordered_map<int, Client>::iterator it = _client.find(fd);
+	map<int, Client>::iterator it = _client.find(fd);
 	if (it != _client.end() && it->second.getMessage() != "")
 	{
 		Request req;
@@ -271,7 +271,7 @@ void Server::_printLog(int fd, const string& one, const string& two, const strin
 {
 	time_t now = time(NULL);
 	char* timeInfo = ctime(&now);
-	unordered_map<int, Client>::iterator it = _client.find(fd);
+	map<int, Client>::iterator it = _client.find(fd);
 
 	timeInfo[strlen(timeInfo) - 1] = '\0';
 	cout << color << "\r[" << timeInfo << "] " << RESET;
@@ -285,7 +285,7 @@ void Server::checkTimeout(long timeout)
 		return ;
 		
 	time_t now = time(NULL); 
-	unordered_map<int, Client>::iterator it = _client.begin();
+	map<int, Client>::iterator it = _client.begin();
 	while (it != _client.end())
 	{
 		time_t last = it->second.getLastTime();
@@ -303,7 +303,7 @@ void Server::checkTimeout(long timeout)
 // getter 함수
 int Server::getServerIdx(int fd) const
 {
-	unordered_map<int, int>::const_iterator it = _server.find(fd);
+	map<int, int>::const_iterator it = _server.find(fd);
 	if (it != _server.end())
 		return (it->second);
 	return (-1);
@@ -311,7 +311,7 @@ int Server::getServerIdx(int fd) const
 
 int Server::getClientIdx(int fd) const
 {
-	unordered_map<int, Client>::const_iterator it = _client.find(fd);
+	map<int, Client>::const_iterator it = _client.find(fd);
 	if (it != _client.end())
 		return (it->second.getIndex());
 	return (-1);
