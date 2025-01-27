@@ -132,7 +132,7 @@ void    ResponseManager::_checkPathIsDir(std::string& path, struct stat& pathSta
         _data[__contentType] = "text/html";
         return ;
     }
-    throw std::runtime_error("404");
+    throw std::runtime_error("403");
 }
 
 void    ResponseManager::_setPath(){

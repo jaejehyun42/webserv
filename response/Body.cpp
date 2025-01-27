@@ -63,8 +63,12 @@ void    Body::_makeAutoindexMessage(){
 	while ((entry = readdir(dir)) != NULL){
 		if (entry->d_name[0] == '.')
 			continue;
-		_message +=
-		"		<li><a href=\"" + relativePath + "/" + entry->d_name + "\">" + entry->d_name + "</a></li>\n";
+		if (relativePath == "/")
+			_message +=
+			"		<li><a href=\"" + relativePath + entry->d_name + "\"'>" + entry->d_name + "</a></li>\n";	
+		else
+			_message +=
+			"		<li><a href=\"" + relativePath + "/" + entry->d_name + "\"'>" + entry->d_name + "</a></li>\n";
 	}
 	_message +=
 			"	</ul>\n"

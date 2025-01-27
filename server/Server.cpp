@@ -151,6 +151,7 @@ void Server::_sendError(int fd, const string& status, const string& phrase, cons
 
 	if (write(fd, response.c_str(), response.size()) <= 0)
 		closeClient(fd);
+	closeClient(fd);
 }
 
 void Server::acceptClient(int fd)
@@ -192,6 +193,7 @@ void Server::readClient(int fd, const ServConf& conf)
 	size_t msgSize = _client[fd].getSize();
 	size_t headerEnd = message.find("\r\n\r\n");
 	size_t maxSize = conf.getServBlock(_client[fd].getIndex()).getMaxSize();
+
 	if (headerEnd != string::npos)
 	{
 		headerEnd += 4;
@@ -208,7 +210,6 @@ void Server::readClient(int fd, const ServConf& conf)
 			size_t bodySize = msgSize - headerEnd;
 			long contentLength = strtol(header.substr(start, end - start).c_str(), NULL, 10);
 
-			cout << "\r" << contentLength << ", " << bodySize << endl;
 			if (static_cast<size_t>(contentLength) > maxSize)
 				_sendError(fd, "413", "Request Entity Too Large", conf);
 			else if (bodySize >= static_cast<size_t>(contentLength))
@@ -241,6 +242,8 @@ void Server::readClient(int fd, const ServConf& conf)
 		else
 			_setEvent(fd, EVFILT_WRITE, EV_ENABLE);
 	}
+	else if (msgSize > 8192)
+		return _sendError(fd, "431", "Request Header Fields Too Large", conf);
 }
 
 void Server::sendClient(int fd, const ServConf& conf)
