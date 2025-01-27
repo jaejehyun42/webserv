@@ -21,7 +21,7 @@ public:
 	~Client();
 
 	void updateTime();
-	void setMessage(const string& message, size_t size);
+	void setMessage(char* message, size_t size);
 
 	int getPort() const;
 	int getIndex() const;

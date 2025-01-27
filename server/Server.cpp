@@ -264,7 +264,7 @@ void Server::sendClient(int fd, const ServConf& conf)
 			if (req.chkConnection())
 				closeClient(fd);
 			else
-				it->second.setMessage("", 0);
+				it->second.setMessage(NULL, 0);
 		}
 	}
 }
